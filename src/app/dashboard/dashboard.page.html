@@ -1,43 +1,53 @@
-<ion-header no-border [style.height.px]="headerHeight">
-    <div class="background-image" [ngStyle]="{'background-image': 'url(' + url_dispenser_picture + ')'}">
+<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="screenWidth">
+  <div class="background-image" [ngStyle]="{'background-image': 'url(' + url_dispenser_picture + ')'}">
 
-      <div class="overlay">
-        <div class="logo">
-          <img src="assets/dashboard/acuo_logo.png">
-        </div>
-
-        <div class="trackButton">
-            <ion-icon slot="icon-only" name="star-outline" size="large" color="white"></ion-icon>
-        </div>
-
-        <div class="optionButton">
-          <ion-icon name="more" size="large"></ion-icon>
-        </div>
-
-        <div class="jellyfishIcon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
-          <img src="assets/dashboard/jellyfishIcon.png" height="120px" width="120px">
-        </div>
+    <div class="overlay">
+      <div class="logo">
+        <img src="assets/dashboard/acuo_logo.png">
       </div>
 
+      <span>
+        <button class="pressed header-button">
+          <ion-icon name="more" size="large"></ion-icon>
+        </button>
+      </span>
+
+      <span>
+        <button class="ripple header-button">
+          <ion-icon name="star-outline" size="large" color="white"></ion-icon>
+        </button>
+      </span>
+
+      <div class="jellyfish-icon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
+        <img alt="avatar" src="assets/dashboard/jellyfishIcon.png" >
+      </div>
     </div>
+
+  </div>
 </ion-header>
 
-<ion-content>
+<ion-content [style.height.px]="contentHeight" [style.width.px]="screenWidth" position="absolute">
 
-  <div class="bodyButtons" [style.height.px]="bodyButtonsHeight">
-    <div class="reportButton">
-      <img src="assets/dashboard/warning.png">
-      <p>Report problem</p>
-    </div>
+  <div class="content-button-space">
+    
+    <span class="content-button ">
+      <button class="ripple full-button">
+        <ion-icon name="pin" size="large"></ion-icon>
+        <p>Nearby dispenser</p>
+      </button>
+    </span>
 
-    <div class="nearbyButton">
-      <img src="assets/dashboard/gps.png">
-      <p>Nearby dispenser</p>
-    </div>
+    <span class="content-button">
+      <button class="ripple full-button">
+        <ion-icon name="warning" size="large"></ion-icon>
+        <p>Report dispenser</p>
+      </button>
+    </span>
+
   </div>
 
-  <div class="reportStatus" [style.height.px]=reportStatusHeight>
-    <ion-text color="#676563">No report problem</ion-text>
+  <div class="report-status">
+    No Report Problem
   </div>
 
 </ion-content>

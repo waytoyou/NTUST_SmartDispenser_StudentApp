@@ -21,17 +21,15 @@ export class DashboardPage implements OnInit {
   //variables for dispenser picture
   public url_dispenser_picture = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Image?Device_ID=' + this.device_id;
   
-  //variables for screen resolution
+  //variables for screen & item resolution
   public screenHeight: any;
   public screenWidth: any;
 
   public headerHeight: any;
+  public contentHeight: any;
 
   public jellyfishIconTop: any;
   public jellyfishIconLeft: any;
-
-  public bodyButtonsHeight: any;
-  public reportStatusHeight: any;
 
   //Variable for tracking progress
   public trackIsActive: boolean;
@@ -47,15 +45,13 @@ export class DashboardPage implements OnInit {
       this.screenHeight = window.innerHeight;
       
       this.headerHeight = this.screenHeight * 0.7;
-      
+      this.contentHeight = this.screenHeight * 0.3;
+
       this.jellyfishIconTop = this.headerHeight - 60;
       this.jellyfishIconLeft = this.screenWidth/2 - 60;
 
-      this.bodyButtonsHeight = window.innerHeight * 0.2;
-      this.reportStatusHeight = window.innerHeight * 0.1;
-      //console.log("Screen Width: " + this.screenWidth);
-      //console.log("Jellyfish position: " + this.jellyfishIconLeft);
-    }
+      this.contenButtonsWidth = this.screenWidth/2;
+  }
 
     maintenanceStatus(){
       this.http.get(this.url_maintenance_progress).subscribe(res => {
@@ -76,3 +72,5 @@ export class DashboardPage implements OnInit {
       return this.url_dispenser_picture;
     }
 }
+
+

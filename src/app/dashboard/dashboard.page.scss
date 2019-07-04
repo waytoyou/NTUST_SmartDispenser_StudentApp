@@ -1,13 +1,23 @@
+button {
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    overflow: hidden;
+    outline: none;
+    z-index: 1;
+}
+
 // Header Part CSS
 .ion-header {
     position: relative;
-    width:100%;
+    width: 100%;
 }
 
 .background-image{
     position: relative;
     background-repeat: no-repeat;
-    background-size: 100%;
+    background-size: cover;
+    background-position: center center;
     height: 100%;
     width: 100%;
 }
@@ -19,21 +29,26 @@
     background-color: rgba($color: #000000, $alpha: 0.5);
 }
 
-.jellyfishIcon{
+.jellyfish-icon{
     position: absolute;
-    width: 100%;
+    height: 120px;
+    width: 120px;
+    border-radius: 50px;
 }
 
-.optionButton, .trackButton, .logo{
+.logo{
     position: absolute;
     top: 20px;
 }
 
-.optionButton, .trackButton{
+.header-button{
+    position: relative;
+    top: 20px;
+    right: 20px;
+    float: right;
     height:40px;
     width:40px;
     color: white;
-    size: 100px;
 }
 
 .logo {
@@ -42,39 +57,56 @@
     left: 33px;
 }
 
-.optionButton{
-    right: 20px;
-}
-
-.trackButton{
-    right: 70px;
-}
-
 //Content Part CSS
 
-.bodyButtons{
+.content-button-space{
     position: relative;
+    height:65%;
+    width: 100%;
 }
 
-.reportButton, .nearbyButton{
+.content-button{
     position: relative;
-    text-align: center;
-    display: inline-block;
-    top: 10px;
-    width: 50%;
-    height: 70px;
-}
-
-.reportButton{
+    top: 0px;
     left: 0px;
-}
-
-.nearbyButton{
-    right: 0px;
-}
-
-.reportStatus{
+    float: left;
+    height:100%;
+    width: 50%;
     text-align: center;
+    color: black;
+}
+
+.full-button{
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.report-status{
+    text-align: center;
+    height: 35%;
     bottom: 0px;
     border-top: 1px solid #e9e9e9;
+}
+
+/* Ripple effect */
+.ripple {
+    background-position: center;
+    transition: background 0.8s;
+}
+
+.ripple:hover {
+    background:transparent radial-gradient(circle,  transparent 1%, white 1%) center/15000%;
+}
+
+.ripple:active {
+    color: #D3D3D3;
+    size: 100%;
+    transition: background 0s;
+}
+
+//Pressed effect
+
+.pressed:active {
+  transform: translateY(4px);
 }
