@@ -1,0 +1,80 @@
+// Header Part CSS
+.ion-header {
+    position: relative;
+    width:100%;
+}
+
+.background-image{
+    position: relative;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    height: 100%;
+    width: 100%;
+}
+
+.overlay {
+    z-index: 1;
+    height: 100%;
+    width: 100%;
+    background-color: rgba($color: #000000, $alpha: 0.5);
+}
+
+.jellyfishIcon{
+    position: absolute;
+    width: 100%;
+}
+
+.optionButton, .trackButton, .logo{
+    position: absolute;
+    top: 20px;
+}
+
+.optionButton, .trackButton{
+    height:40px;
+    width:40px;
+    color: white;
+    size: 100px;
+}
+
+.logo {
+    height: 50px;
+    width: 90px;
+    left: 33px;
+}
+
+.optionButton{
+    right: 20px;
+}
+
+.trackButton{
+    right: 70px;
+}
+
+//Content Part CSS
+
+.bodyButtons{
+    position: relative;
+}
+
+.reportButton, .nearbyButton{
+    position: relative;
+    text-align: center;
+    display: inline-block;
+    top: 10px;
+    width: 50%;
+    height: 70px;
+}
+
+.reportButton{
+    left: 0px;
+}
+
+.nearbyButton{
+    right: 0px;
+}
+
+.reportStatus{
+    text-align: center;
+    bottom: 0px;
+    border-top: 1px solid #e9e9e9;
+}

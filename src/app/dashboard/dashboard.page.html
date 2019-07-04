@@ -1,9 +1,43 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Dashboard</ion-title>
-  </ion-toolbar>
+<ion-header no-border [style.height.px]="headerHeight">
+    <div class="background-image" [ngStyle]="{'background-image': 'url(' + url_dispenser_picture + ')'}">
+
+      <div class="overlay">
+        <div class="logo">
+          <img src="assets/dashboard/acuo_logo.png">
+        </div>
+
+        <div class="trackButton">
+            <ion-icon slot="icon-only" name="star-outline" size="large" color="white"></ion-icon>
+        </div>
+
+        <div class="optionButton">
+          <ion-icon name="more" size="large"></ion-icon>
+        </div>
+
+        <div class="jellyfishIcon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
+          <img src="assets/dashboard/jellyfishIcon.png" height="120px" width="120px">
+        </div>
+      </div>
+
+    </div>
 </ion-header>
 
 <ion-content>
+
+  <div class="bodyButtons" [style.height.px]="bodyButtonsHeight">
+    <div class="reportButton">
+      <img src="assets/dashboard/warning.png">
+      <p>Report problem</p>
+    </div>
+
+    <div class="nearbyButton">
+      <img src="assets/dashboard/gps.png">
+      <p>Nearby dispenser</p>
+    </div>
+  </div>
+
+  <div class="reportStatus" [style.height.px]=reportStatusHeight>
+    <ion-text color="#676563">No report problem</ion-text>
+  </div>
 
 </ion-content>
