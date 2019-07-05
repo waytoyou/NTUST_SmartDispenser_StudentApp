@@ -49,8 +49,6 @@ export class DashboardPage implements OnInit {
 
       this.jellyfishIconTop = this.headerHeight - 60;
       this.jellyfishIconLeft = this.screenWidth/2 - 60;
-
-      this.contenButtonsWidth = this.screenWidth/2;
   }
 
     maintenanceStatus(){

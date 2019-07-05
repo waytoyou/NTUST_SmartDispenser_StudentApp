@@ -6,20 +6,26 @@
         <img src="assets/dashboard/acuo_logo.png">
       </div>
 
-      <span>
-        <button class="pressed header-button">
+      <!--More button for dropdown options-->
+      <span class="dropdown" style="float: right;">
+        <button class="pressed dropbtn">
           <ion-icon name="more" size="large"></ion-icon>
+          <div class="dropdown-content">
+            <button href="#" >Maintenance records</button>
+            <button href="#" >Detailed information</button>
+          </div>
         </button>
       </span>
 
+      <!--Star button for tracking feature-->
       <span>
         <button class="ripple header-button">
-          <ion-icon name="star-outline" size="large" color="white"></ion-icon>
+          <ion-icon name="star-outline" size="large"></ion-icon>
         </button>
       </span>
 
       <div class="jellyfish-icon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
-        <img alt="avatar" src="assets/dashboard/jellyfishIcon.png" >
+        <img alt="avatar" src="assets/dashboard/jellyfishIcon.png">
       </div>
     </div>
 
@@ -29,18 +35,20 @@
 <ion-content [style.height.px]="contentHeight" [style.width.px]="screenWidth" position="absolute">
 
   <div class="content-button-space">
-    
-    <span class="content-button ">
-      <button class="ripple full-button">
-        <ion-icon name="pin" size="large"></ion-icon>
-        <p>Nearby dispenser</p>
-      </button>
-    </span>
 
+    <!--Report Dispenser button-->
     <span class="content-button">
       <button class="ripple full-button">
         <ion-icon name="warning" size="large"></ion-icon>
         <p>Report dispenser</p>
+      </button>
+    </span>
+
+    <!--Nearby Dispenser button-->
+    <span class="content-button ">
+      <button class="ripple full-button">
+        <ion-icon name="pin" size="large"></ion-icon>
+        <p>Nearby dispenser</p>
       </button>
     </span>
 
