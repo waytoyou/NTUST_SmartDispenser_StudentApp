@@ -8,11 +8,11 @@
 
       <!--More button for dropdown options-->
       <span class="dropdown" style="float: right;">
-        <button class="pressed dropbtn">
+        <button class="ripple dropbtn">
           <ion-icon name="more" size="large"></ion-icon>
           <div class="dropdown-content">
-            <button href="#" >Maintenance records</button>
-            <button href="#" >Detailed information</button>
+            <button class="more-button">Maintenance records</button>
+            <button class="more-button" (click)="goToDetailedInformation()">Detailed information</button>
           </div>
         </button>
       </span>

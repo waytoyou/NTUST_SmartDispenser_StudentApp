@@ -34,7 +34,7 @@ export class DashboardPage implements OnInit {
   //Variable for tracking progress
   public trackIsActive: boolean;
   
-  constructor(private http:HttpClient) {  }
+  constructor(private http:HttpClient, private router: Router) {  }
   ngOnInit() {
     this.getScreenSize();
   }
@@ -68,6 +68,10 @@ export class DashboardPage implements OnInit {
     
     getDispenserPictureUrl(){
       return this.url_dispenser_picture;
+    }
+
+    goToDetailedInformation(){
+      this.router.navigate(['detailed-information']);
     }
 }
 

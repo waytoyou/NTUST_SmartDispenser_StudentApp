@@ -1,54 +1,3 @@
-button {
-    background-color: transparent;
-    background-repeat: no-repeat;
-    border: none;
-    overflow: hidden;
-    outline: none;
-    z-index: 1;
-}
-
-.dropbtn {
-    background-color: transparent;
-    border: none;
-    color: white;
-}
- 
-.dropdown {
-    top: 20px;
-    right: 20px;
-    position: relative;
-    display: inline-block;
-}
-    
-.dropdown-content {
-    position: absolute;
-    display: none;
-    right: 0;
-    border: none;
-    background-color: #f9f9f9;
-    min-width: 180px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-    border-radius: 8px;
-}
-  
-.dropdown-content button {
-    color: black;
-    padding: 20px;
-    top: 30%;
-    height: 50px;
-    text-decoration: none;
-    display: block;
-    border-bottom: black;
-    text-align: center;
-}
-  
-.dropdown-content button:hover {background-color: #f1f1f1;}
-  
-.dropdown:hover .dropdown-content {
-    display: block;
-}
-
 //=======================
 // Header Part CSS 
 //=======================
@@ -87,6 +36,7 @@ button {
 
 .header-button{
     position: relative;
+    background-color: transparent;
     top: 20px;
     right: 20px;
     float: right;
@@ -123,6 +73,7 @@ button {
 
 .full-button{
     position: relative;
+    background-color: transparent;
     height: 100%;
     width: 100%;
 }
@@ -133,6 +84,10 @@ button {
     bottom: 0px;
     border-top: 1px solid #e9e9e9;
 }
+
+//=============================
+// CSS properties Configuration
+//=============================
 
 /* Ripple effect */
 .ripple {
@@ -154,4 +109,57 @@ button {
 
 .pressed:active {
   transform: translateY(4px);
+}
+
+//button
+button{
+    outline: none;
+}
+
+//Dropdown button configuration
+.dropbtn {
+    background-color: transparent;
+    border: none;
+    color: white;
+}
+ 
+.dropdown {
+    top: 20px;
+    right: 20px;
+    position: relative;
+    display: inline-block;
+}
+    
+.dropdown-content {
+    position: absolute;
+    display: none;
+    right: 0;
+    border: none;
+    background-color: #f9f9f9;
+    min-width: 180px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 8px;
+}
+  
+.dropdown-content .more-button {
+    color: black;
+    padding: 20px;
+    top: 30%;
+    height: 50px;
+    text-decoration: none;
+    display: block;
+    border-bottom: black;
+    text-align: center;
+}
+
+.more-button{
+    border-radius: 8px;
+    background-color: white;
+    width: 100%;
+}
+.dropdown-content .more-button:hover {background-color: #f1f1f1;}
+
+.dropdown:hover .dropdown-content {
+    display: block;
 }
