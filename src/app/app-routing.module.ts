@@ -5,7 +5,6 @@ const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'dashboard', loadChildren: './pages/dashboard/dashboard.module#DashboardPageModule' },
   { path: 'detailed-information', loadChildren: './pages/detailed-information/detailed-information.module#DetailedInformationPageModule' }
-
 ];
 
 @NgModule({

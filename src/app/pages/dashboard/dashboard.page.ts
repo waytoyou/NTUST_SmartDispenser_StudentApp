@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http'
 import { HostListener } from "@angular/core";
 import { Router } from '@angular/router';
+import { DeviceDetectorService } from 'ngx-device-detector';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,34 +22,53 @@ export class DashboardPage implements OnInit {
   //variables for dispenser picture
   public url_dispenser_picture = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Image?Device_ID=' + this.device_id;
   
+  //variables for device detector
+  private isDesktopDevice;
+
   //variables for screen & item resolution
   public screenHeight: any;
   public screenWidth: any;
+  public scaledWidth: any;
 
   public headerHeight: any;
   public contentHeight: any;
 
+  public pageLeft: any;
   public jellyfishIconTop: any;
   public jellyfishIconLeft: any;
 
   //Variable for tracking progress
-  public trackIsActive: boolean;
+  public trackIsActive: boolean = false;
   
-  constructor(private http:HttpClient, private router: Router) {  }
+  deviceInfo = null;
+  constructor(private http:HttpClient, private router: Router, private deviceService: DeviceDetectorService) {
+    this.detectDevice();
+  }
+
   ngOnInit() {
     this.getScreenSize();
   }
-  
-    @HostListener('window:resize', ['$event'])
-    getScreenSize(event?: any) {
-      this.screenWidth = window.innerWidth;
-      this.screenHeight = window.innerHeight;
-      
-      this.headerHeight = this.screenHeight * 0.7;
-      this.contentHeight = this.screenHeight * 0.3;
 
-      this.jellyfishIconTop = this.headerHeight - 60;
-      this.jellyfishIconLeft = this.screenWidth/2 - 60;
+  detectDevice() {
+    this.isDesktopDevice = this.deviceService.isDesktop();
+  }
+  
+  @HostListener('window:resize', ['$event'])
+  getScreenSize(event?: any) {
+    this.screenWidth = window.innerWidth;
+    this.screenHeight = window.innerHeight;
+
+    if(this.isDesktopDevice)
+      this.scaledWidth = this.screenHeight/16 * 9;
+    else
+      this.scaledWidth = this.screenWidth;
+    
+    this.headerHeight = this.screenHeight * 0.7;
+    this.contentHeight = this.screenHeight * 0.3;
+
+    this.pageLeft = this.screenWidth/2 - this.scaledWidth/2;
+    this.jellyfishIconTop = this.headerHeight - 60;
+    this.jellyfishIconLeft = this.scaledWidth/2 - 60;
   }
 
     maintenanceStatus(){
@@ -57,12 +77,11 @@ export class DashboardPage implements OnInit {
         this.maintenance_status = this.maintenance_data["status"];
       })
       
-      if(this.maintenance_status != 4){
+      if(this.maintenance_status != 4)
         this.no_report_problem = true;
-      }else{
+      else
         this.no_report_problem = false;
-      }
-  
+        
       console.log('Report status: ' + this.no_report_problem);
     }
     
@@ -70,9 +89,20 @@ export class DashboardPage implements OnInit {
       return this.url_dispenser_picture;
     }
 
+    /**
+     * Methods for routing to another page
+     */
     goToDetailedInformation(){
       this.router.navigate(['detailed-information']);
     }
+
+    /**
+     * Methods for button status is on or off
+     */
+    trackButton(){
+      if(!this.trackIsActive)
+        this.trackIsActive = true;
+      else
+        this.trackIsActive = false;
+    }
 }
-
-
