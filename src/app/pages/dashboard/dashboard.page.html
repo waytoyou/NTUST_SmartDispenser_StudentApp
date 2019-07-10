@@ -1,0 +1,62 @@
+<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="scaledWidth" [style.left.px]="pageLeft" position="absolute">
+  <div class="background-image" [ngStyle]="{'background-image': 'url(' + url_dispenser_picture + ')'}">
+
+    <div class="overlay">
+      <div class="logo">
+        <img src="assets/dashboard/acuo_logo.png">
+      </div>
+
+      <!--More button for dropdown options-->
+      <span class="dropdown" style="float: right;">
+        <button class="ripple dropbtn">
+          <ion-icon name="more" size="large"></ion-icon>
+          <div class="dropdown-content">
+            <button class="more-button">Maintenance records</button>
+            <button class="more-button" (click)="goToDetailedInformation()">Detailed information</button>
+          </div>
+        </button>
+      </span>
+
+      <!--Star button for tracking feature-->
+      <span>
+        <button class="ripple header-button" (click)="trackButton()">
+          <ion-icon name="star" size="large" *ngIf="trackIsActive == true"></ion-icon>
+          <ion-icon name="star-outline" size="large" *ngIf="trackIsActive == false"></ion-icon>
+        </button>
+      </span>
+
+      <div class="jellyfish-icon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
+        <img alt="avatar" src="assets/dashboard/jellyfishIcon.png">
+      </div>
+    </div>
+
+  </div>
+</ion-header>
+
+<ion-content [style.height.px]="contentHeight" [style.width.px]="scaledWidth" [style.left.px]="pageLeft" position="absolute">
+
+  <div class="content-button-space">
+
+    <!--Report Dispenser button-->
+    <span class="content-button">
+      <button class="ripple full-button">
+        <ion-icon name="warning" size="large"></ion-icon>
+        <p>Report dispenser</p>
+      </button>
+    </span>
+
+    <!--Nearby Dispenser button-->
+    <span class="content-button ">
+      <button class="ripple full-button">
+        <ion-icon name="pin" size="large"></ion-icon>
+        <p>Nearby dispenser</p>
+      </button>
+    </span>
+
+  </div>
+
+  <div class="report-status">
+    No Report Problem
+  </div>
+
+</ion-content>

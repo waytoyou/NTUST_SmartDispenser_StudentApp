@@ -1,5 +1,7 @@
 {
   "name": "SmartDispenser",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }
