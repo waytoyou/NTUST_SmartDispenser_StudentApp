@@ -12,11 +12,11 @@ export class MaintenanceRecordsPage implements OnInit {
   constructor(public http: HttpClient, private router: Router) {
     this.getAPI();
   }
-    
+
   maintenanceData: any;
 
   ngOnInit() {
-   
+
   }
 
   async getAPI() {
@@ -86,19 +86,8 @@ export class MaintenanceRecordsPage implements OnInit {
       }
     }
     this.maintenanceData = yearArray;
-    // this.maintenanceData = [
-    //   {
-    //     'month': "March",
-    //     'DayMaintenacne': [
-    //       {
-    //         'ErrorMeaning': "Other"
-    //       }
-    //     ]
-    //   }
-    // ];
-    console.log(this.maintenanceData);
 
-    // console.log(this.maintenanceData);
+    //console.log(this.maintenanceData);
   }
 
 
@@ -151,7 +140,7 @@ export class MaintenanceRecordsPage implements OnInit {
   /**
    * Methods for routing to another page
    */
-  goToDashboard(){
+  goToDashboard() {
     this.router.navigate(['dashboard']);
   }
 }
