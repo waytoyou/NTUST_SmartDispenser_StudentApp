@@ -171,18 +171,32 @@ export class ReportProblemPage implements OnInit {
 
   async onFileSelect(event) {
 
-    if (event.target.files.length > 0) {
-      this.fileImage[this.imageIndex] = event.target.files[0];
+    if (event.target.files[0].size <= 10485760) {
+      if (event.target.files.length > 0) {
+        this.fileImage[this.imageIndex] = event.target.files[0];
 
-
-
-      var reader = new FileReader();
-      reader.readAsDataURL(event.target.files[0]); // read file as data url
-      reader.onload = (event) => { // called once readAsDataURL is completed
-        this.url[this.imageIndex] = reader.result;
-        this.imageIndex++;
+        var reader = new FileReader();
+        reader.readAsDataURL(event.target.files[0]); // read file as data url
+        reader.onload = (event) => { // called once readAsDataURL is completed
+          this.url[this.imageIndex] = reader.result;
+          this.imageIndex++;
+        }
       }
-
+    } else {
+      const toBig = await this.alertController.create({
+        mode: "ios",
+        header: 'File Size is to Big',
+        message: 'Please upload file below 10 Mb!',
+        buttons: [
+          {
+            text: 'OK',
+            handler: () => {
+              console.log('Confirm Cancel: Ok');
+            }
+          }
+        ]
+      });
+      await toBig.present();
     }
   }
 
