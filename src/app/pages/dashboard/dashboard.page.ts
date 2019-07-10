@@ -108,11 +108,11 @@ export class DashboardPage implements OnInit {
     }
 
     goToReportProblem(){
-      this.router.navigate(['maintenance-records']);
+      this.router.navigate(['report-problem']);
     }
 
     goToMaintenanceRecords(){
-      this.router.navigate(['report-problem']);
+      this.router.navigate(['maintenance-records']);
     }
     /**
      * Methods for button status is on or off
