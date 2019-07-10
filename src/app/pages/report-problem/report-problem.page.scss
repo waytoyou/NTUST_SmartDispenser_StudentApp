@@ -61,6 +61,7 @@ ion-content {
     display: block;
     opacity: 0.5;
     margin: 5px;
+    cursor: pointer;
 }
 
 .image-upload {
@@ -95,7 +96,7 @@ ion-content {
     border-radius: 5px;
     border-color: grey;
     margin-left: 5px;
-    cursor: pointer;
+
 }
 
 .delete {
