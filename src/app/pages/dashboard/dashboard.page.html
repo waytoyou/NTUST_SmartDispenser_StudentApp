@@ -11,7 +11,7 @@
         <button class="ripple dropbtn">
           <ion-icon name="more" size="large"></ion-icon>
           <div class="dropdown-content">
-            <button class="more-button">Maintenance records</button>
+            <button class="more-button" (click)="goToMaintenanceRecords()">Maintenance records</button>
             <button class="more-button" (click)="goToDetailedInformation()">Detailed information</button>
           </div>
         </button>
@@ -39,14 +39,14 @@
 
     <!--Report Dispenser button-->
     <span class="content-button">
-      <button class="ripple full-button">
+      <button class="ripple full-button" (click)="goToReportProblem()">
         <ion-icon name="warning" size="large"></ion-icon>
         <p>Report dispenser</p>
       </button>
     </span>
 
     <!--Nearby Dispenser button-->
-    <span class="content-button ">
+    <span class="content-button">
       <button class="ripple full-button">
         <ion-icon name="pin" size="large"></ion-icon>
         <p>Nearby dispenser</p>

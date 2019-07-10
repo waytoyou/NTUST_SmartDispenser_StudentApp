@@ -1,0 +1,125 @@
+
+ion-content {
+    --background: #FFFFFF;
+    --color: #000000;
+}
+
+.header {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center top;
+    color: #FFFFFF;
+    overflow: auto;
+}
+
+.header-inside {
+    padding: 15px;
+    overflow: auto;
+}
+
+.header-inside--icon-left {
+    width: 15%;
+    left: 0;
+    text-align: left;
+    height: 100%;
+}
+
+.header-inside--title-center {
+    width: 70%;
+    text-align: center;
+    height: 100%;
+    padding-top: 50px;
+    padding-bottom: 10px;
+}
+
+.header-inside--icon-right {
+    width: 15%;
+    right: 0;
+    text-align: right;
+    height: 100%;
+}
+
+.icon {
+    max-width: 100%;
+    height: auto;
+}
+
+.avatar {       
+    width: 70%; 
+    max-width: 100px;
+}
+
+.estimate {
+    margin: 20px 40px;
+    padding: 30px 0;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #EDEDED;
+    color: #444444;
+    overflow: auto;
+}
+
+.estimate-icon {
+    max-height: 50px;
+    
+    width: auto;
+}
+
+.estimate-title {
+    margin-top: 15px;
+}
+
+.estimate-subtitle {
+    margin-top: 10px;
+}
+
+.progress {
+    margin: 20px 40px;
+    padding: 0 10px;
+    overflow: auto;
+}
+
+ul li {
+    display: block;
+}
+
+ul li .fa {
+    background: #ededed;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    float: left;
+    z-index: 1;
+}
+
+ul li .fi {
+    border-left: solid thick #ededed;
+    border-width: 4px;
+    margin-left: 6px;
+    padding-left: 20px;
+    min-height: 100px;
+}
+
+ul li:first-child .fa {
+    background: #3880ff;
+}
+
+ul li:first-child .fi {
+    color: #3880ff;
+}
+
+ul li:last-child .fi {
+    border-width: 0;
+    padding-left: 24px;
+}
+
+.overlay {
+    z-index: 1;
+    height: 100%;
+    width: 100%;
+    background-color: rgba($color: #000000, $alpha: 0.5);
+}
+
+.float-left {
+    float: left;
+}

@@ -1,0 +1,81 @@
+<ion-content>
+
+  <!-- header -->
+  <div class="header" [style.backgroundImage]="'url(' + backgroundImg + ')'">
+    <div class="overlay header-inside">
+      
+      <div class="header-inside--icon-left float-left">
+        <img 
+          class="icon"
+          src="assets/acuo-icons/rectangle_2@3x.png" 
+          alt="acuo-icons1"
+        >
+      </div>
+      
+      <div class="header-inside--title-center float-left">
+        <img 
+          class="icon avatar"
+          src="assets\acuo-avatar\group-6@3x.png" 
+          alt="acuo-avatar1"
+        >
+        <h2>Maintenance Progress</h2>
+      </div>
+      
+      <div class="header-inside--icon-right float-left">
+        <img 
+          class="icon"
+          src="assets\cancel\rectangle@3x.png" 
+          alt="acuo-cancel1"
+          (click)="backFunc()"
+        >
+      </div>
+
+    </div>
+  </div>
+
+  <!-- estimate -->
+  <div class="estimate">
+    <div>
+      <!-- <img
+        class="estimate-icon"
+        src="assets\_ionicons_svg_md-alert.svg"
+        alt="alert image"> -->
+      <ion-icon name="alert" color="warning" size="large"></ion-icon>
+    </div>
+    <div class="estimate-title">
+      <b>Report submitted</b>
+    </div>
+    <div class="estimate-subtitle">
+      Estimated completion time: XX hours later
+    </div>
+  </div>
+
+  <!-- progress -->
+  <div class="progress">
+
+    <!-- make a list -->
+    <ul>
+      <li *ngFor="let item of items">
+
+        <!-- left side the dot -->
+        <div class="fa"></div>
+
+        <!-- right side the content with left border -->
+        <div class="fi">
+          {{item.UploadTimeString}}
+          <br>
+          Issue occured: {{item.ErrorType}}
+          <br>
+          Current status: {{item.Status}}
+          <br>
+          <!-- .. more details ..
+          <br>
+          .. more details .. -->
+        </div>
+
+      </li>
+    </ul>
+
+  </div>
+
+</ion-content>

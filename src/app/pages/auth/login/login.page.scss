@@ -1,0 +1,36 @@
+
+.i-theme1 {
+    --background: #dbdbdb;
+    --color: #000000;
+}
+
+.btn-yes {
+    margin-top: 20px;
+}
+
+.i-btn-yes {
+    --background: #259ed6;
+    --color: #ffffff;
+}
+
+.header {
+    text-align: center;
+    font-weight: bold;
+    margin: 0px 50px;
+}
+
+.img-header {
+    max-height: 60px; 
+    max-width: 100%; 
+    margin-top: 20px;
+}
+
+.section {
+    background: #ffffff;
+    color: #2c2c2c;
+    border-radius: 10px;
+    margin: 50px 25px 75px;
+    padding: 10px;
+    // max-width: 600px;
+    // position: relative;
+}

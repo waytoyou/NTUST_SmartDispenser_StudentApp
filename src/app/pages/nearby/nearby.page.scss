@@ -1,0 +1,192 @@
+
+ion-content {
+    --background: #FFFFFF;
+    --color: #000000;
+}
+
+.header {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+    color: #FFFFFF;
+    overflow: auto;
+}
+
+.header-inside {
+    padding: 15px;
+    overflow: auto;
+}
+
+.header-inside--icon-left {
+    width: 15%;
+    left: 0;
+    text-align: left;
+    height: 100%;
+}
+
+.header-inside--title-center {
+    width: 70%;
+    text-align: center;
+    height: 100%;
+    padding-top: 50px;
+    padding-bottom: 10px;
+}
+
+.header-inside--icon-right {
+    width: 15%;
+    right: 0;
+    text-align: right;
+    height: 100%;
+}
+
+.filter {
+    background-color: #EDEDED;
+    color: #444444;
+    padding: 15px;
+    overflow: auto;
+}
+
+.filter-icon {
+    max-height: 20px;
+    width: auto
+}
+
+.filter-content {
+    width: 90%;
+    padding-left: 10px
+}
+
+.filter-content--title {
+    bottom: 0; 
+    left: 0; 
+    margin-bottom: 5px
+}
+
+.filter-content--options {
+    top: 0;
+    left: 0;
+}
+
+.filter-content--options-item {
+    width: 30%; 
+    float: left;
+}
+
+.float-left {
+    float: left;
+}
+
+.body {
+    background-color: #FFFFFF;
+    color: #666666;
+    padding: 15px;
+    overflow: auto;
+}
+
+.body-content {
+    padding: 5px 0px 10px;
+}
+
+.body-content--card {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+    max-height: 200px;
+    overflow: hidden;
+}
+
+.body-content--card-inside {
+    max-height: 200px; 
+    overflow: auto; 
+    padding: 15px;
+}
+
+.body-content--card-item {
+    padding-top: 15px;
+}
+
+.body-content--card-item--icon {
+    text-align: center;
+    max-width: 75px;
+}
+
+.body-content--card-item--content {
+    max-width: 90%; 
+    padding-left: 10px;
+}
+
+.body-content--card-item--content-title {
+    bottom: 0; 
+    left: 0; 
+    margin-bottom: 5px;
+    color: #FFFFFF
+}
+
+.body-content--card-item--content-options {
+    top: 0;
+    left: 0;
+}
+
+.body-content--card-item--content-options-item {
+    border-radius: 10px;
+    padding: 5px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    text-align: center;
+    color: white;
+    width: 100px;
+}
+
+.color-cold {
+    background-color: #40cfe5;
+}
+
+.color-warm {
+    background-color: #efbe40;
+}
+
+.color-hot {
+    background-color: #ff6b6b;
+}
+
+.icon {
+    max-width: 100%;
+    height: auto;
+}
+
+.avatar {       
+    width: 70%; 
+    max-width: 100px;
+}
+
+.header-title {
+    padding-top: 50px;
+    padding-bottom: 10px;
+}
+
+.overlay {
+    z-index: 1;
+    height: 100%;
+    width: 100%;
+    background-color: rgba($color: #000000, $alpha: 0.3);
+}
+
+.btn-deactived {
+    --background: #bcbcbc;
+    --color: #ffffff;
+}
+
+.btn-cold-activated {
+    --background: #40cfe5;
+    --color: #ffffff;
+}
+
+.btn-warm-activated {
+    --background: #efbe40;
+    --color: #ffffff;
+}
+
+.btn-hot-activated {
+    --background: #ff6b6b;
+    --color: #ffffff;
+}
