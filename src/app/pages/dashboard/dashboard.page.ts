@@ -82,65 +82,65 @@ export class DashboardPage implements OnInit {
     this.jellyfishIconLeft = this.scaledWidth/2 - 60;
   }
 
-    maintenanceStatus(){
-      this.http.get(this.url_maintenance_progress).subscribe(res => {
-        this.maintenance_data = res["Data"];
-        this.maintenance_status = this.maintenance_data["status"];
-      })
+  maintenanceStatus(){
+    this.http.get(this.url_maintenance_progress).subscribe(res => {
+      this.maintenance_data = res["Data"];
+      this.maintenance_status = this.maintenance_data["status"];
+    })
+    
+    if(this.maintenance_status != 4)
+      this.no_report_problem = true;
+    else
+      this.no_report_problem = false;
       
-      if(this.maintenance_status != 4)
-        this.no_report_problem = true;
-      else
-        this.no_report_problem = false;
-        
-      console.log('Report status: ' + this.no_report_problem);
-    }
+    console.log('Report status: ' + this.no_report_problem);
+  }
     
-    getDispenserPictureUrl(){
-      return this.url_dispenser_picture;
-    }
+  getDispenserPictureUrl(){
+    return this.url_dispenser_picture;
+  }
 
-    /**
-     * Methods for routing to another page
-     */
-    goToDetailedInformation(){
-      this.router.navigate(['detailed-information']);
-    }
+  /**
+   * Methods for routing to another page
+   */
+  goToDetailedInformation(){
+    this.router.navigate(['detailed-information']);
+  }
 
-    goToReportProblem(){
-      this.router.navigate(['report-problem']);
-    }
+  goToReportProblem(){
+    this.router.navigate(['report-problem']);
+  }
 
-    goToMaintenanceRecords(){
-      this.router.navigate(['maintenance-records']);
-    }
-    /**
-     * Methods for button status is on or off
-     */
-    trackButton(){
-      if(!this.trackIsActive)
-        this.trackIsActive = true;
-      else
-        this.trackIsActive = false;
-    }
+  goToMaintenanceRecords(){
+    this.router.navigate(['maintenance-records']);
+  }
 
-    /**
-     * Check First Time Prefference
-     */
+  /**
+   * Methods for button status is on or off
+   */
+  trackButton(){
+    if(!this.trackIsActive)
+      this.trackIsActive = true;
+    else
+      this.trackIsActive = false;
+  }
 
-    async checkPrefFirstTime () {
-    
-      // in here check the first time when app opened
-      let a = await this.pref.getData(StaticVariable.KEY__CHECK_PREF_CREATED);
-      if (a === null || a === undefined) {
-  
-        // create some first
-        await this.pref.saveData(StaticVariable.KEY__CHECK_PREF_CREATED, true);
-        await this.pref.saveData(StaticVariable.KEY__LAST_DATE, new Date());
-        await this.pref.saveData(StaticVariable.KEY__LAST_PAGE, null);
-        await this.pref.saveData(StaticVariable.KEY__MAINTENANCE_PROGRESS__DEVICE_ID, null);
-        await this.pref.saveData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID, null);
-        await this.pref.saveData(StaticVariable.KEY__SESSION_ID, null); 
-      }
+  /**
+   * Check First Time Prefference
+   */
+  async checkPrefFirstTime () {
+      
+    // in here check the first time when app opened
+    let a = await this.pref.getData(StaticVariable.KEY__CHECK_PREF_CREATED);
+    if (a === null || a === undefined) {
+
+      // create some first
+      await this.pref.saveData(StaticVariable.KEY__CHECK_PREF_CREATED, true);
+      await this.pref.saveData(StaticVariable.KEY__LAST_DATE, new Date());
+      await this.pref.saveData(StaticVariable.KEY__LAST_PAGE, null);
+      await this.pref.saveData(StaticVariable.KEY__MAINTENANCE_PROGRESS__DEVICE_ID, null);
+      await this.pref.saveData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID, null);
+      await this.pref.saveData(StaticVariable.KEY__SESSION_ID, null); 
     }
+  }     
 }
