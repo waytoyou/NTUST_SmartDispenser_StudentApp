@@ -143,4 +143,4 @@ export class DashboardPage implements OnInit {
       await this.pref.saveData(StaticVariable.KEY__SESSION_ID, null); 
     }
   }     
-}  
+}
