@@ -599,7 +599,7 @@ export class DispenserAPIService {
    * @returns   boolean       Return true if success do action, false if
    *                          failed or something wrong with Promise
    */
-  async wantUpdateTrack (device_id: string, email: string, status: number) {
+  async wantUpdateTrack (device_id: string, email: string, status: boolean) {
     
     let url = this.urlUpdateTrack;
 
@@ -652,7 +652,7 @@ export class DispenserAPIService {
     let returnValue = {
       "Email": email,
       "Device_ID": device_id,
-      "Status": -1
+      "Status": false
     }
 
     await this.http.get(url).toPromise()
