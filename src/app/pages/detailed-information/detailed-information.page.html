@@ -1,34 +1,9 @@
-<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft"
-  position="absolute">
-  <div class="background-image" [ngStyle]="{'background-image': 'url(' + url_dispenser_picture + ')'}">
-
-    <div class="overlay">
-
-      <!--Acuo Logo-->
-      <div class="logo">
-        <img src="assets/dashboard/acuo_logo.png">
-      </div>
-
-      <!--Close Button to go back to Dashboard-->
-      <button class="close-button">
-        <ion-icon name="close" size="large"></ion-icon>
-      </button>
-
-      <!--Jellyfish icon-->
-      <div class="jellyfish-icon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
-        <img alt="avatar" src="assets/dashboard/jellyfishIcon.png">
-      </div>
-
-      <!--Detail Information text-->
-      <div class="detailed-information-text" [style.top.px]="detailedInformationTop">
-        Detailed Information
-      </div>
-
-    </div>
-
-  </div>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>detailed-information</ion-title>
+  </ion-toolbar>
 </ion-header>
 
-<ion-content [style.height.px]="contentHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft" position="absolute">
+<ion-content>
 
 </ion-content>
