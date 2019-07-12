@@ -271,7 +271,7 @@ export class DispenserAPIService {
 
     return await this.http.get(url).toPromise()
       .then((result) => {
-        return result['Data'];
+        return result;
       }, () => {
         console.error("Promise rejected: unable to get dispenser picture!");
         return null;
@@ -611,10 +611,11 @@ export class DispenserAPIService {
 
     return await this.http.post(url, postBody).toPromise()
       .then((result) => {
-        if (result === 200){
+        if (result['code'] === 200){
           return true;
         } else {
           console.error("Error while sending request: " + result['msg']);
+          return false;
         }
       }, () => {
         console.error("Promise rejected: unable to sending request to track!");
