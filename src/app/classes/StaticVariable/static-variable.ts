@@ -9,7 +9,4 @@ export class StaticVariable {
     public static SESSION_TIMEOUT = 60000;
 
     public static KEY__CHECK_PREF_CREATED = "check_pref";
-
-    public static KEY__DESKTOP_TYPE = "desktop_type";
-
 }
