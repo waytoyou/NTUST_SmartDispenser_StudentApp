@@ -1,3 +1,4 @@
+import { DispenserAPIService } from './../../services/DispenserAPI/dispenser-api.service';
 import { StaticVariable } from './../../classes/StaticVariable/static-variable';
 import { Component, OnInit } from '@angular/core';
 import { HostListener } from "@angular/core";
@@ -13,11 +14,11 @@ import { HttpClient } from '@angular/common/http';
 })
 export class DetailedInformationPage implements OnInit {
   
-  private screenHeight: any;
-  private screenWidth: any;
+  public screenHeight: any;
+  public screenWidth: any;
 
-  private headerHeight: any;
-  private contentHeight: any;
+  public headerHeight: any;
+  public contentHeight: any;
 
   public pageLeft: any;
 
@@ -25,33 +26,58 @@ export class DetailedInformationPage implements OnInit {
   public jellyfishIconLeft: any;
   public detailedInformationTop: any;
 
-  //variables for dispenser
-  private device_id = 'T4_07_01';
-  public url_dispenser_picture = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Image?Device_ID=' + this.device_id;
-  
+  //variables for dispenser APIs
+  private device_id = "MA_04_01";
+  public url_dispenser_picture: string;
+  public dispenser_rawdata: any;
+  public dispenser_detail: any;
+
+  //Variable for the device type is Desktop or not
   public isDesktopType: any = false;
 
+  //Variable for contain the dispenser detail
+  public dispenser_type: string;
+  public dispenser_position: string;
+
+  //Variables for temperature
+  public celciusHotTemp: number;
+  public celciusWarmTemp: number;
+  public celciusColdTemp: number;
+
+  public fahrenheitHotTemp: number;
+  public fahrenheitWarmTemp: number;
+  public fahrenheitColdTemp: number;
+
   constructor(
-    private http:HttpClient, 
+    private http: HttpClient, 
     private router: Router, 
     private deviceDetector: DeviceDetectorService,
-    private pref: PreferenceManagerService) {
-    
-  }
+    private pref: PreferenceManagerService,
+    private api: DispenserAPIService) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+
     this.detectDevice();
 
     if(this.isDesktopType)
       this.adjustDynamicDesktopScreen();
     else
       this.adjustDynamicMobileScreen();
+    
+    await this.setAPIsData();
 
+    this.setCelciusTemperatures();
+    this.setFahrenheitTempratures();
+    this.setDispenserDetail();
   }
 
   private detectDevice() {
     this.isDesktopType = this.deviceDetector.isDesktop();
   }
+  
+  //--------------------------------------------------
+  //Screen Configuration part
+  //--------------------------------------------------
   
   private getDesktopScreenSize(){
     this.screenHeight = window.innerHeight;
@@ -68,8 +94,8 @@ export class DetailedInformationPage implements OnInit {
     this.contentHeight = this.screenHeight * 0.7;
 
     this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
-    this.jellyfishIconTop = this.headerHeight/2 - 20;
-    this.jellyfishIconLeft = this.screenWidth/2 - 20;
+    this.jellyfishIconTop = this.headerHeight/2 - 25;
+    this.jellyfishIconLeft = this.screenWidth/2 - 25;
     this.detailedInformationTop = this.headerHeight/2;
   }
   
@@ -91,4 +117,40 @@ export class DetailedInformationPage implements OnInit {
       this.adjustDynamicMobileScreen();
   }
 
+  //--------------------------------------------------
+  //APIs part
+  //--------------------------------------------------
+  
+  async setAPIsData(){
+    this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);
+    this.dispenser_rawdata = await this.api.getDispenserRawData(this.device_id);
+    this.dispenser_detail = await this.api.getDispenserDetail(this.device_id);
+  }
+
+  //--------------------------------------------------
+  //Variable Assigning part
+  //--------------------------------------------------
+  setCelciusTemperatures(){
+    this.celciusHotTemp = this.dispenser_rawdata['HotTemp'];
+    this.celciusWarmTemp = this.dispenser_rawdata['WarmTemp'];
+    this.celciusColdTemp = this.dispenser_rawdata['ColdTemp'];
+  }
+
+  setFahrenheitTempratures(){
+    this.fahrenheitHotTemp = this.celciusHotTemp/5 * 9 + 32;
+    this.fahrenheitWarmTemp = this.celciusWarmTemp/5 * 9 + 32;
+    this.fahrenheitColdTemp = this.celciusColdTemp/5 * 9 + 32;
+  }
+
+  setDispenserDetail(){
+    this.dispenser_position = this.dispenser_detail['Position'];
+    this.dispenser_type = this.dispenser_detail['Type'];
+  }
+
+  //--------------------------------------------------
+  //Routing part
+  //--------------------------------------------------
+  goToDashboard(){
+    this.router.navigate(['dashboard']);
+  }
 }
