@@ -15,7 +15,7 @@ import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api
 })
 
 export class DashboardPage implements OnInit {
-  private device_id = 'T4_07_01';
+  private device_id: string;
   
   //variables for maintenance progress information
   private url_maintenance_progress = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Repair?Device_ID=' + this.device_id;
@@ -24,7 +24,7 @@ export class DashboardPage implements OnInit {
   private no_report_problem: boolean;
 
   //variables for dispenser picture
-  public url_dispenser_picture = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Image?Device_ID=' + this.device_id;
+  public url_dispenser_picture: string;
   
   //variables for device detector
   private isDesktopDevice;
@@ -62,8 +62,26 @@ export class DashboardPage implements OnInit {
   }
 
   async main () {
-    console.log(await this.pref.getData(StaticVariable.KEY__CHECK_PREF_CREATED));
+    
+    // check if preference is not build yet
     await this.checkPrefFirstTime();
+
+    /////////////////////////////////
+    // this is for testing only
+    await this.testingSetDeviceId();
+    ////////////////////////////////
+    
+    // get the device ID
+    this.device_id = await this.getDeviceId();
+
+    // set background picture
+    this.url_dispenser_picture = await this.getDispenserPictureUrl();
+
+  }
+
+  // this is for testing only
+  async testingSetDeviceId () {
+    await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, "T4_07_01");
   }
 
   detectDevice() {
@@ -101,9 +119,13 @@ export class DashboardPage implements OnInit {
       
     console.log('Report status: ' + this.no_report_problem);
   }
+
+  getDeviceId () {
+    return this.pref.getData(StaticVariable.KEY__DEVICE_ID);
+  }
     
   getDispenserPictureUrl(){
-    return this.url_dispenser_picture;
+    return this.api.getDispenserPictureUrlOnly(this.device_id);
   }
 
   /**
@@ -157,8 +179,7 @@ export class DashboardPage implements OnInit {
       await this.pref.saveData(StaticVariable.KEY__CHECK_PREF_CREATED, true);
       await this.pref.saveData(StaticVariable.KEY__LAST_DATE, new Date());
       await this.pref.saveData(StaticVariable.KEY__LAST_PAGE, "");
-      await this.pref.saveData(StaticVariable.KEY__MAINTENANCE_PROGRESS__DEVICE_ID, "");
-      await this.pref.saveData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID, "");
+      await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, "");
       await this.pref.saveData(StaticVariable.KEY__SESSION_ID, ""); 
     }
   }
