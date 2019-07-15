@@ -5,6 +5,8 @@ import { HostListener } from "@angular/core";
 import { Router } from '@angular/router';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { PreferenceManagerService } from '../../services/PreferenceManager/preference-manager.service';
+import { NavController, AlertController } from '@ionic/angular';
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -47,7 +49,10 @@ export class DashboardPage implements OnInit {
     private http:HttpClient, 
     private router: Router, 
     private deviceService: DeviceDetectorService,
-    private pref: PreferenceManagerService) {
+    private pref: PreferenceManagerService,
+    private navCtrl: NavController,
+    private alertCtrl: AlertController,
+    private api: DispenserAPIService) {
     this.detectDevice();
   }
 
@@ -57,6 +62,7 @@ export class DashboardPage implements OnInit {
   }
 
   async main () {
+    console.log(await this.pref.getData(StaticVariable.KEY__CHECK_PREF_CREATED));
     await this.checkPrefFirstTime();
   }
 
@@ -107,10 +113,6 @@ export class DashboardPage implements OnInit {
     this.router.navigate(['detailed-information']);
   }
 
-  goToReportProblem(){
-    this.router.navigate(['report-problem']);
-  }
-
   goToMaintenanceRecords(){
     this.router.navigate(['maintenance-records']);
   }
@@ -118,11 +120,28 @@ export class DashboardPage implements OnInit {
   /**
    * Methods for button status is on or off
    */
-  trackButton(){
-    if(!this.trackIsActive)
-      this.trackIsActive = true;
-    else
-      this.trackIsActive = false;
+  async trackButton(){
+
+    // check login first, return true if login is true
+    if (await this.checkLogin()) {
+
+      // act the active to 
+      if(!this.trackIsActive)
+        this.trackIsActive = true;
+      else
+        this.trackIsActive = false;
+
+      let email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+      await this.api.wantUpdateTrack(this.device_id, email, this.trackIsActive);
+    }
+  }
+
+  async goToReportProblem(){
+
+    // check login first, return true if login is true
+    if (await this.checkLogin()) {
+      this.router.navigate(['report-problem']);
+    }
   }
 
   /**
@@ -137,10 +156,57 @@ export class DashboardPage implements OnInit {
       // create some first
       await this.pref.saveData(StaticVariable.KEY__CHECK_PREF_CREATED, true);
       await this.pref.saveData(StaticVariable.KEY__LAST_DATE, new Date());
-      await this.pref.saveData(StaticVariable.KEY__LAST_PAGE, null);
-      await this.pref.saveData(StaticVariable.KEY__MAINTENANCE_PROGRESS__DEVICE_ID, null);
-      await this.pref.saveData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID, null);
-      await this.pref.saveData(StaticVariable.KEY__SESSION_ID, null); 
+      await this.pref.saveData(StaticVariable.KEY__LAST_PAGE, "");
+      await this.pref.saveData(StaticVariable.KEY__MAINTENANCE_PROGRESS__DEVICE_ID, "");
+      await this.pref.saveData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID, "");
+      await this.pref.saveData(StaticVariable.KEY__SESSION_ID, ""); 
     }
-  }     
+  }
+  
+  async checkLogin () {
+    
+    // check if there any session ID
+    let checkData = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+    let returnValue = false;
+
+    // if the data is not present or empty
+    if (checkData === "" || checkData === null || checkData === undefined) {
+
+      // create alert to choose login or not
+      let loginAlert = await this.alertCtrl.create({
+        mode: 'ios',
+        header: 'Log In Required',
+        message: 'You need to login first in order to report a problem or track dispenser status, please click the Log In button below.',
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            handler: () => {
+              console.log('Cancel clicked');
+            }
+          },
+          {
+            text: 'Log In',
+            handler: () => {
+              
+              // direct the user to login page
+              this.navCtrl.navigateForward(['login']);
+
+              console.log('Log In clicked');
+            }
+          }
+        ]
+      });
+
+      // display the alert controller
+      loginAlert.present();
+      
+    } else {
+
+      // return true if login process is done
+      returnValue = true;
+    }
+
+    return returnValue;
+  }
 }
