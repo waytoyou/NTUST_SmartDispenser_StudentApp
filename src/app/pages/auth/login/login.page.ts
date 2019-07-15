@@ -45,7 +45,7 @@ export class LoginPage {
       if (lastPage === null) {
 
         // if null route to home as default
-        this.navCtrl.navigateForward(['home']);
+        this.navCtrl.navigateForward(['dashboard']);
 
       } else {
 
