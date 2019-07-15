@@ -1,11 +1,6 @@
 import { DispenserAPIService } from './../../services/DispenserAPI/dispenser-api.service';
 import { StaticVariable } from './../../classes/StaticVariable/static-variable';
 import { Component, OnInit } from '@angular/core';
-import { HostListener } from "@angular/core";
-import { Router } from '@angular/router';
-import { DeviceDetectorService } from 'ngx-device-detector';
-import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-detailed-information',
@@ -13,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./detailed-information.page.scss'],
 })
 export class DetailedInformationPage implements OnInit {
-  
+ 
   public screenHeight: any;
   public screenWidth: any;
 
@@ -115,7 +110,6 @@ export class DetailedInformationPage implements OnInit {
       this.adjustDynamicDesktopScreen();
     else
       this.adjustDynamicMobileScreen();
-  }
 
   //--------------------------------------------------
   //APIs part
