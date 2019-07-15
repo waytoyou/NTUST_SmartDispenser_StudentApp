@@ -69,7 +69,7 @@ export class DispenserAPIService {
    * @param     password    Password of the user
    * @param     repassword  Re type the password
    * 
-   * @returns   boolean     Return true if success and false if failed
+   * @returns   number      Return 1 if success, 0 if not match, -1 if failed/error
    */
   async registerNewUser (email: string, password: string, repassword: string) {
     
@@ -80,7 +80,7 @@ export class DispenserAPIService {
       token = await this.getToken();
     } catch (e) {
       console.error("Function error: on registerNewUser while getToken => " + e);
-      return false;
+      return -1;
     }
 
     const postDataRegister = {
@@ -90,7 +90,7 @@ export class DispenserAPIService {
   
     if (password !== repassword) {
       console.error("Password not match!");
-      return false;
+      return 0;
     } else {      
       let httpOption = await {
         headers: new HttpHeaders({
@@ -100,15 +100,20 @@ export class DispenserAPIService {
       };
 
       return await this.http.post(url, postDataRegister, httpOption).toPromise()
-      .then(() => {
-        return true
+      .then((result) => {
+        if (result['code'] === 200){
+          return 1;
+        } else {
+          console.error("Error while sending request: " + result['msg']);
+          return -1;
+        }
       }, () => {
         console.error("Promise rejected: unable to register!");
-        return false;
+        return -1;
       })
       .catch((e) => {
         console.error("Function error: on registerNewUser => " + e);
-        return false;
+        return -1;
       });
     }
     
@@ -123,8 +128,7 @@ export class DispenserAPIService {
    * @param     email     Email address of the user
    * @param     password  Password of the user
    * 
-   * @returns   respond   Boolean value with true if success, and
-   *                      false if failed
+   * @returns   number    Return 1 if success, 0 if not match, -1 if failed/error
    */
   async loginUser (email: string, password: string) {
     
@@ -138,18 +142,18 @@ export class DispenserAPIService {
     return await this.http.post(url, postBody).toPromise()
       .then((result) => {
         if (result['code'] === 200) {
-          return true;
+          return 1;
         } else {
           console.error("Error while log in: " + result['msg']);
-          return false
+          return 0;
         }
       }, () => {
         console.error("Promise rejected: unable to login!");
-        return false;
+        return -1;
       })
       .catch((e) => {
         console.error("Function error: on loginUser => " + e);
-        return false;
+        return -1;
       });
   }
 
@@ -439,9 +443,8 @@ export class DispenserAPIService {
       "Device_ID": device_id,
       "UploadTime": "",
       "Status": -1,
-      "HotTemp": -1,
-      "WarmTemp": -1,
-      "ColdTemp": -1
+      "ErrorType": -1,
+      "Description": ""
     }
 
     await this.http.get(url).toPromise()
