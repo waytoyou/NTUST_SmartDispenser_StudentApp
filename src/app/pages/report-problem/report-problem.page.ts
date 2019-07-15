@@ -21,7 +21,7 @@ export class ReportProblemPage implements OnInit {
   // Data from previous page
   File: any = [];
   Device_ID: string = "MA_B1_01";
-  Email: string = "johnny258147@gmail.com";
+  Email: string = "AAAAA@gmail.com";
 
   // Initial data
   selectedDeviceId: string = "";
@@ -117,15 +117,6 @@ export class ReportProblemPage implements OnInit {
 
       } else {
 
-        const reportProblems = new FormData();
-        for (let i = 0; i < this.imageIndex; i++) {
-          reportProblems.append('File', this.fileImage[i]);
-        }
-
-        reportProblems.append('Device_ID', String(this.Device_ID));
-        reportProblems.append('Email', String(this.Email));
-        reportProblems.append('ErrorType', String(this.ErrorType));
-        reportProblems.append('Description', String(this.Description));
 
         const thank = await this.alertController.create({
           mode: "ios",
@@ -142,24 +133,10 @@ export class ReportProblemPage implements OnInit {
         });
         await thank.present();
 
-        this.http.post<any>("https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Report", reportProblems)
-          .subscribe(data => {
-            console.log(data);
-          }, error => {
-            console.log(error);
-          });
+        this.api.reportProblem(this.fileImage, this.Device_ID, this.Email, this.ErrorType, this.Description);
+
         if (this.updateTrack == true) { // If update status true
-          let updateData = {
-            'Email': this.Email,
-            'Device_ID': this.Device_ID,
-            'Status': 1
-          }
-          this.http.post<any>("https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Track", updateData)
-            .subscribe(data => {
-              console.log(data);
-            }, error => {
-              console.log(error);
-            });
+          this.api.wantUpdateTrack(this.Device_ID, this.Email, true);
         }
         this.router.navigate(['dashboard']);
       }

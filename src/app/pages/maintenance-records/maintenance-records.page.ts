@@ -36,20 +36,21 @@ export class MaintenanceRecordsPage implements OnInit {
   async getAPI() {
     await this.prefDeviceId();
     this.backgroundImg = await this.getPicture(this.selectedDeviceId);
-    const apiUrl = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Maintenance?Device_ID=T4_04_01';
-    let getAPI = await this.http.get(apiUrl).toPromise();
+
+    let getAPI = await this.api.getDispenserMaintenance(this.selectedDeviceId);
+
     let errorMeaning = ["Button does not respond", "Unable to water", "Leaking water", "Screen not shown", "Other"];
     let dayArray = [];
-    for (let i = getAPI['Data'].length - 1; i >= 0; i--) {
+    for (let i = getAPI.length - 1; i >= 0; i--) {
       let dataForMaintenance = {
-        'Device_ID': getAPI['Data'][i]['Device_ID'],
-        'ErrorType': getAPI['Data'][i]['ErrorType'],
-        'Description': getAPI['Data'][i]['Description'],
-        'CompleteTime': getAPI['Data'][i]['CompleteTime'],
-        'ErrorMeaning': errorMeaning[getAPI['Data'][i]['ErrorType'] - 1],
-        'Day': this.getTime(getAPI['Data'][i]['CompleteTime'])['dayForTime'],
-        'Month': this.getTime(getAPI['Data'][i]['CompleteTime'])['monthForTime'],
-        'Year': this.getTime(getAPI['Data'][i]['CompleteTime'])['yearForTime']
+        'Device_ID': getAPI[i]['Device_ID'],
+        'ErrorType': getAPI[i]['ErrorType'],
+        'Description': getAPI[i]['Description'],
+        'CompleteTime': getAPI[i]['CompleteTime'],
+        'ErrorMeaning': errorMeaning[getAPI[i]['ErrorType'] - 1],
+        'Day': this.getTime(getAPI[i]['CompleteTime'])['dayForTime'],
+        'Month': this.getTime(getAPI[i]['CompleteTime'])['monthForTime'],
+        'Year': this.getTime(getAPI[i]['CompleteTime'])['yearForTime']
       };
       dayArray.push(dataForMaintenance);
     }
@@ -62,10 +63,12 @@ export class MaintenanceRecordsPage implements OnInit {
     let lastYear;
 
     for (let i = 0; i < dayArray.length; i++) {
+
       if (i == 0) {
         lastMonth = dayArray[i]['Month'];
         lastYear = dayArray[i]['Year'];
         dayMaintenance.push(dayArray[i]);
+
       } else {
         if (dayArray[i]['Month'] == lastMonth) {
           dayMaintenance.push(dayArray[i]);
@@ -88,22 +91,22 @@ export class MaintenanceRecordsPage implements OnInit {
             monthMaintenance.push(monthArray[i]);
           }
         }
-        // If last array
-        if (i == dayArray.length - 1) {
-          monthArray.push({
-            'month': lastMonth,
-            'DayMaintenance': dayMaintenance
-          });
-          yearArray.push({
-            'year': lastYear,
-            'MonthMaintenance': monthArray
-          })
-        }
+      }
+      // If last array
+      if (i == dayArray.length - 1) {
+        monthArray.push({
+          'month': lastMonth,
+          'DayMaintenance': dayMaintenance
+        });
+        yearArray.push({
+          'year': lastYear,
+          'MonthMaintenance': monthArray
+        })
       }
     }
     this.maintenanceData = yearArray;
 
-    //console.log(this.maintenanceData);
+    console.log(this.maintenanceData);
   }
 
 
