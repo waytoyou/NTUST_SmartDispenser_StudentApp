@@ -20,7 +20,8 @@
 .logo{
     position: absolute;
     top: 20px;
-    left: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
     height: 43px;
     width: 80px;
 }
@@ -58,48 +59,71 @@
 //=======================
 // Content Part CSS
 //=======================
-.temperature-content{
+.temperature-display-content, .dispenser-position-content, .dispenser-type-content{
     position: relative;
-    background-color: #f3f3f3;
-    height: 112px;
     width: 90%;
     top: 20px;
-    left: 20px;
-    right: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+/*------------------------------------------------
+Dispenser Temperature Display
+------------------------------------------------*/
+.temperature-display-content, .temperature-switch, .immediate-temperature-text, .toggle-button, .degree-letter, .temperature-display-space, .temperature-display, .temperature-logo, .temperature-text{
+    position: relative;
+}
+
+.temperature-display-content{
+    height: 100px;
     border-radius: 7px;
+    background-color: #f3f3f3;
 }
 
 .temperature-switch{
-    position: relative;
-    height: 30%;
+    height: 40%;
     width: 100%;
-    background-color: transparent;
+}
+
+.immediate-temperature-text, .toggle-button, .degree-letter{
+    top: 5px;
+}
+
+.immediate-temperature-text{
+    left: 10px;
+    font-size: 15px;
+    color: #666666;
+}
+
+.toggle-button, .degree-letter{
+    float: right;
 }
 
 .toggle-button{
-    position: absolute;
-    float: right;
-    height: 32px;
-    width: 60px;
-    right: 10px;
+    height: 21px;
+    width: 30px;
+}
+
+.degree-letter{
+    width: 20px;
+    font-size: 17px;
+    font-family: PingFang-SC;
+    color: #666666;
 }
 
 .temperature-display-space{
-    position: relative;
-    height: 70%;
+    height: 60%;
     width: 100%;
     background-color: transparent;
 }
 
 .temperature-display-block{
-    position: relative;
     width: 33.33%;
     height: 100%;
     float: left;
 }
 
 .temperature-display{
-    position: relative;
     left: 0;
     width: 100px;
     height: 90%;
@@ -108,17 +132,16 @@
 }
 
 .temperature-logo{
-    position: relative;
     left: 3px;
     float: left;
-    top: 25%;
+    top: 10%;
 }
 
 .temperature-text{
     position: relative;
     float: left;
     left: 4px;
-    top: 40%;
+    top: 20%;
     font-size: 20px;
     font-family: Roboto;
 }
@@ -134,12 +157,51 @@
 .hot-color{
     color: #fb7581;
 }
+
+/*------------------------------------------------
+Dispenser Position Display
+------------------------------------------------*/
+.dispenser-position-content{
+    height: 90px;
+    border-bottom: 1px solid #e2e2e2;
+}
+
+.information-text, .position-display, .type-display{
+    position: relative;
+    font-size: 17px;
+    top: 25%;
+}
+
+.information-text{
+    font-family: PingFangSC;
+    float: left;
+    left: 10px;
+    color: #666666;
+}
+
+.position-display, .type-display{
+    float: right;
+    right: 10px;
+    font-family: PingFangTC;
+    text-align: right;
+}
+
+.position-display{
+    width: 70%;
+}
+
+/*------------------------------------------------
+Dispenser Type Display
+------------------------------------------------*/
+.dispenser-type-content{
+    height: 40px;
+}
+
 //=============================
 // CSS properties Configuration
 //=============================
 
 ion-toggle{
-    zoom: 0.9;
+    zoom: 0.5;
     position: relative;
-    float: right;
 }

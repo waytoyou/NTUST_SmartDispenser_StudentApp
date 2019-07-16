@@ -36,7 +36,9 @@ export class DetailedInformationPage implements OnInit {
 
   //Variable for contain the dispenser detail
   public dispenser_type: string;
-  public dispenser_position: string;
+  public dispenserBuildingPosition: string;
+  public dispenserPlacedPosition: string;
+
 
   //Variables for temperature
   public celsiusHotTemp: number;
@@ -146,9 +148,9 @@ export class DetailedInformationPage implements OnInit {
     this.celsiusWarmTemp = this.dispenser_rawdata['WarmTemp'];
     this.celsiusColdTemp = this.dispenser_rawdata['ColdTemp'];
 
-    this.displayCelsiusHot = this.celsiusHotTemp + "°C"
-    this.displayCelsiusWarm = this.celsiusWarmTemp + "°C"
-    this.displayCelsiusCold = this.celsiusColdTemp + "°C"
+    this.displayCelsiusHot = this.celsiusHotTemp + "°C";
+    this.displayCelsiusWarm = this.celsiusWarmTemp + "°C";
+    this.displayCelsiusCold = this.celsiusColdTemp + "°C";
   }
 
   setFahrenheitTemperatures(){
@@ -156,13 +158,14 @@ export class DetailedInformationPage implements OnInit {
     this.fahrenheitWarmTemp = this.celsiusWarmTemp/5 * 9 + 32;
     this.fahrenheitColdTemp = this.celsiusColdTemp/5 * 9 + 32;
 
-    this.displayFahrenheitHot = this.fahrenheitHotTemp + "°F"
-    this.displayFahrenheitWarm = this.fahrenheitWarmTemp + "°F"
-    this.displayFahrenheitCold = this.fahrenheitColdTemp + "°F"
+    this.displayFahrenheitHot = this.fahrenheitHotTemp + "°F";
+    this.displayFahrenheitWarm = this.fahrenheitWarmTemp + "°F";
+    this.displayFahrenheitCold = this.fahrenheitColdTemp + "°F";
   }
 
   setDispenserDetail(){
-    this.dispenser_position = this.dispenser_detail['Position'];
+    this.dispenserBuildingPosition = this.dispenser_detail['Building'];
+    this.dispenserPlacedPosition = this.dispenser_detail['Position'];
     this.dispenser_type = this.dispenser_detail['Type'];
   }
 

@@ -1,5 +1,4 @@
-<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft"
-            position="absolute">
+<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft" position="absolute">
   <div class="background-image" [ngStyle]="{'background-image': 'url(' + url_dispenser_picture + ')'}">
 
     <div class="overlay">
@@ -31,12 +30,18 @@
 
 <ion-content [style.height.px]="contentHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft" position="absolute">
 
-  <div class="temperature-content">
+  <div class="temperature-display-content">
     <div class="temperature-switch">
 
-      <span class="toggle-button" style="float: right;">
-        <ion-toggle></ion-toggle>
+      <span class="immediate-temperature-text">Immediate temperature</span>
+
+      <span class="degree-letter">°F</span>
+
+      <span class="toggle-button">
+        <ion-toggle mode="ios"></ion-toggle>
       </span>
+
+      <span class="degree-letter">°C</span>
 
     </div>
 
@@ -69,12 +74,20 @@
 
   </div>
 
-  <div>
+  <div class="dispenser-position-content">
+    <span class="information-text">Position</span>
 
+    <span class="position-display">
+      {{dispenserBuildingPosition}}
+      <br>
+      {{dispenserPlacedPosition}}
+    </span>
   </div>
 
-  <div>
+  <div class="dispenser-type-content">
+    <span class="information-text">Type</span>
 
+    <span class="type-display">{{dispenser_type}}</span>
   </div>
 
 </ion-content>
