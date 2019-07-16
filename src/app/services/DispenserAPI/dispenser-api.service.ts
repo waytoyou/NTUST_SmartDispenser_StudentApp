@@ -69,29 +69,45 @@ export class DispenserAPIService {
    * @param     password    Password of the user
    * @param     repassword  Re type the password
    * 
-   * @returns   number      Return 1 if success, 0 if not match, -1 if failed/error
+   * @returns   json        Return json object with respond number and message
+   * 
+   * @example
+   * 
+   * {
+   *    "RepsondNum": 1,
+   *    "Message": "Registration success!"
+   * }
    */
   async registerNewUser (email: string, password: string, repassword: string) {
     
     let url = this.urlCreateUser;
     let token: string = "";
+    let returnValue = {
+      "RepsondNum": -1,
+      "Message": "Null message."
+    }
 
     try {
       token = await this.getToken();
     } catch (e) {
       console.error("Function error: on registerNewUser while getToken => " + e);
-      return -1;
+      returnValue = {
+        "RepsondNum": -1,
+        "Message": "There is an error from server, please try again later!"
+      };
     }
 
     const postDataRegister = {
       "Email" : email,
       "Password" : password
     }
-  
+      
     if (password !== repassword) {
-      console.error("Password not match!");
-      return 0;
-    } else {      
+      returnValue = {
+        "RepsondNum": 0,
+        "Message": "Password not match!"
+      };
+    } else {
       let httpOption = await {
         headers: new HttpHeaders({
           'Content-Type': 'application/json',
@@ -99,23 +115,43 @@ export class DispenserAPIService {
         })
       };
 
-      return await this.http.post(url, postDataRegister, httpOption).toPromise()
+      await this.http.post(url, postDataRegister, httpOption).toPromise()
       .then((result) => {
+        console.log("Msg: " + result['msg']);
+
         if (result['code'] === 200){
-          return 1;
+          returnValue = {
+            "RepsondNum": 1,
+            "Message": "Registration success!"
+          };
         } else {
           console.error("Error while sending request: " + result['msg']);
-          return -1;
+          
+          returnValue = {
+            "RepsondNum": 0,
+            "Message": result['msg']
+          };
         }
-      }, () => {
+      }, (result) => {     
+        
         console.error("Promise rejected: unable to register!");
-        return -1;
+        
+        returnValue = {
+          "RepsondNum": -1,
+          "Message": result['error']['msg']
+        };
       })
       .catch((e) => {
         console.error("Function error: on registerNewUser => " + e);
-        return -1;
+        
+        returnValue = {
+          "RepsondNum": -1,
+          "Message": "There is an unexpected error, please try again later!"
+        };
       });
-    }
+    }  
+
+    return returnValue;
     
   }
 
@@ -149,7 +185,7 @@ export class DispenserAPIService {
         }
       }, () => {
         console.error("Promise rejected: unable to login!");
-        return -1;
+        return 0;
       })
       .catch((e) => {
         console.error("Function error: on loginUser => " + e);
