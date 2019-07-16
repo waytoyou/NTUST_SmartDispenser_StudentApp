@@ -1,6 +1,10 @@
 import { DispenserAPIService } from './../../services/DispenserAPI/dispenser-api.service';
-import { StaticVariable } from './../../classes/StaticVariable/static-variable';
 import { Component, OnInit } from '@angular/core';
+import { HostListener } from "@angular/core";
+import { Router } from '@angular/router';
+import { DeviceDetectorService } from 'ngx-device-detector';
+import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-detailed-information',
@@ -8,7 +12,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./detailed-information.page.scss'],
 })
 export class DetailedInformationPage implements OnInit {
- 
+
   public screenHeight: any;
   public screenWidth: any;
 
@@ -35,20 +39,28 @@ export class DetailedInformationPage implements OnInit {
   public dispenser_position: string;
 
   //Variables for temperature
-  public celciusHotTemp: number;
-  public celciusWarmTemp: number;
-  public celciusColdTemp: number;
+  public celsiusHotTemp: number;
+  public celsiusWarmTemp: number;
+  public celsiusColdTemp: number;
 
   public fahrenheitHotTemp: number;
   public fahrenheitWarmTemp: number;
   public fahrenheitColdTemp: number;
 
+  public displayCelsiusHot: string;
+  public displayCelsiusWarm: string;
+  public displayCelsiusCold: string;
+
+  public displayFahrenheitHot: string;
+  public displayFahrenheitWarm: string;
+  public displayFahrenheitCold: string;
+
   constructor(
-    private http: HttpClient, 
-    private router: Router, 
-    private deviceDetector: DeviceDetectorService,
-    private pref: PreferenceManagerService,
-    private api: DispenserAPIService) { }
+      private http: HttpClient,
+      private router: Router,
+      private deviceDetector: DeviceDetectorService,
+      private pref: PreferenceManagerService,
+      private api: DispenserAPIService) { }
 
   async ngOnInit() {
 
@@ -58,27 +70,27 @@ export class DetailedInformationPage implements OnInit {
       this.adjustDynamicDesktopScreen();
     else
       this.adjustDynamicMobileScreen();
-    
+
     await this.setAPIsData();
 
-    this.setCelciusTemperatures();
-    this.setFahrenheitTempratures();
+    this.setCelsiusTemperatures();
+    this.setFahrenheitTemperatures();
     this.setDispenserDetail();
   }
 
   private detectDevice() {
     this.isDesktopType = this.deviceDetector.isDesktop();
   }
-  
+
   //--------------------------------------------------
   //Screen Configuration part
   //--------------------------------------------------
-  
+
   private getDesktopScreenSize(){
     this.screenHeight = window.innerHeight;
     this.screenWidth = this.screenHeight/16 * 9;
   }
-    
+
   private getMobileScreenSize(){
     this.screenHeight = window.innerHeight;
     this.screenWidth = window.innerWidth;
@@ -86,35 +98,40 @@ export class DetailedInformationPage implements OnInit {
 
   private adjustScreen(){
     this.headerHeight = this.screenHeight * 0.3;
-    this.contentHeight = this.screenHeight * 0.7;
+
+    if(this.headerHeight < 150)
+      this.headerHeight = 150;
+
+    this.contentHeight = this.screenHeight - this.headerHeight;
 
     this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
-    this.jellyfishIconTop = this.headerHeight/2 - 25;
-    this.jellyfishIconLeft = this.screenWidth/2 - 25;
-    this.detailedInformationTop = this.headerHeight/2;
+    this.jellyfishIconTop = this.headerHeight/2 - 35;
+    this.jellyfishIconLeft = this.screenWidth/2 - 35;
+    this.detailedInformationTop = this.headerHeight/2 + 45;
   }
-  
+
   private adjustDynamicDesktopScreen(){
-    this.getDesktopScreenSize();    
+    this.getDesktopScreenSize();
     this.adjustScreen();
   }
 
-  private adjustDynamicMobileScreen(event?: any) {
+  private adjustDynamicMobileScreen() {
     this.getMobileScreenSize();
     this.adjustScreen();
   }
 
   @HostListener('window:resize', ['$event'])
-  onresize(event?: any) {
+  onresize() {
     if(this.isDesktopType)
       this.adjustDynamicDesktopScreen();
     else
       this.adjustDynamicMobileScreen();
+  }
 
   //--------------------------------------------------
   //APIs part
   //--------------------------------------------------
-  
+
   async setAPIsData(){
     this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);
     this.dispenser_rawdata = await this.api.getDispenserRawData(this.device_id);
@@ -124,16 +141,24 @@ export class DetailedInformationPage implements OnInit {
   //--------------------------------------------------
   //Variable Assigning part
   //--------------------------------------------------
-  setCelciusTemperatures(){
-    this.celciusHotTemp = this.dispenser_rawdata['HotTemp'];
-    this.celciusWarmTemp = this.dispenser_rawdata['WarmTemp'];
-    this.celciusColdTemp = this.dispenser_rawdata['ColdTemp'];
+  setCelsiusTemperatures(){
+    this.celsiusHotTemp = this.dispenser_rawdata['HotTemp'];
+    this.celsiusWarmTemp = this.dispenser_rawdata['WarmTemp'];
+    this.celsiusColdTemp = this.dispenser_rawdata['ColdTemp'];
+
+    this.displayCelsiusHot = this.celsiusHotTemp + "°C"
+    this.displayCelsiusWarm = this.celsiusWarmTemp + "°C"
+    this.displayCelsiusCold = this.celsiusColdTemp + "°C"
   }
 
-  setFahrenheitTempratures(){
-    this.fahrenheitHotTemp = this.celciusHotTemp/5 * 9 + 32;
-    this.fahrenheitWarmTemp = this.celciusWarmTemp/5 * 9 + 32;
-    this.fahrenheitColdTemp = this.celciusColdTemp/5 * 9 + 32;
+  setFahrenheitTemperatures(){
+    this.fahrenheitHotTemp = this.celsiusHotTemp/5 * 9 + 32;
+    this.fahrenheitWarmTemp = this.celsiusWarmTemp/5 * 9 + 32;
+    this.fahrenheitColdTemp = this.celsiusColdTemp/5 * 9 + 32;
+
+    this.displayFahrenheitHot = this.fahrenheitHotTemp + "°F"
+    this.displayFahrenheitWarm = this.fahrenheitWarmTemp + "°F"
+    this.displayFahrenheitCold = this.fahrenheitColdTemp + "°F"
   }
 
   setDispenserDetail(){

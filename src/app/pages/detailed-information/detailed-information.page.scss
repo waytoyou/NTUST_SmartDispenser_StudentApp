@@ -38,13 +38,13 @@
 
 .jellyfish-icon{
     position: relative;
-    height: 50px;
-    width: 50px;
+    height: 70px;
+    width: 70px;
     border-radius: 50px;
 }
 
 .detailed-information-text{
-    position: relative;
+    position: absolute;
     height: 20px;
     width: 100%;
     font-family: PingFang-SC;
@@ -53,4 +53,93 @@
     font-stretch: normal;
     text-align: center;
     color: white;
+}
+
+//=======================
+// Content Part CSS
+//=======================
+.temperature-content{
+    position: relative;
+    background-color: #f3f3f3;
+    height: 112px;
+    width: 90%;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    border-radius: 7px;
+}
+
+.temperature-switch{
+    position: relative;
+    height: 30%;
+    width: 100%;
+    background-color: transparent;
+}
+
+.toggle-button{
+    position: absolute;
+    float: right;
+    height: 32px;
+    width: 60px;
+    right: 10px;
+}
+
+.temperature-display-space{
+    position: relative;
+    height: 70%;
+    width: 100%;
+    background-color: transparent;
+}
+
+.temperature-display-block{
+    position: relative;
+    width: 33.33%;
+    height: 100%;
+    float: left;
+}
+
+.temperature-display{
+    position: relative;
+    left: 0;
+    width: 100px;
+    height: 90%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.temperature-logo{
+    position: relative;
+    left: 3px;
+    float: left;
+    top: 25%;
+}
+
+.temperature-text{
+    position: relative;
+    float: left;
+    left: 4px;
+    top: 40%;
+    font-size: 20px;
+    font-family: Roboto;
+}
+
+.cold-text{
+    color: #36a1ce;
+}
+
+.warm-color{
+    color: #f5a623;
+}
+
+.hot-color{
+    color: #fb7581;
+}
+//=============================
+// CSS properties Configuration
+//=============================
+
+ion-toggle{
+    zoom: 0.9;
+    position: relative;
+    float: right;
 }
