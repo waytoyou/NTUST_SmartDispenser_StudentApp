@@ -25,17 +25,17 @@ export class DashboardPage implements OnInit {
   public url_dispenser_picture = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Image?Device_ID=' + this.device_id;
   
   //variables for device detector
-  private isDesktopDevice;
+  private isDesktopType: boolean;
 
   //variables for screen & item resolution
   public screenHeight: any;
   public screenWidth: any;
-  public scaledWidth: any;
 
   public headerHeight: any;
   public contentHeight: any;
 
   public pageLeft: any;
+
   public jellyfishIconTop: any;
   public jellyfishIconLeft: any;
 
@@ -43,16 +43,22 @@ export class DashboardPage implements OnInit {
   public trackIsActive: boolean = false;
   
   deviceInfo = null;
+
   constructor(
     private http:HttpClient, 
     private router: Router, 
-    private deviceService: DeviceDetectorService,
+    private deviceDetector: DeviceDetectorService,
     private pref: PreferenceManagerService) {
-    this.detectDevice();
   }
 
   ngOnInit() {
-    this.getScreenSize();
+    this.detectDevice();
+
+    if(this.isDesktopType)
+      this.adjustDynamicDesktopScreen();
+    else
+      this.adjustDynamicMobileScreen();
+
     this.main();
   }
 
@@ -60,29 +66,49 @@ export class DashboardPage implements OnInit {
     await this.checkPrefFirstTime();
   }
 
-  detectDevice() {
-    this.isDesktopDevice = this.deviceService.isDesktop();
+  private detectDevice() {
+    this.isDesktopType = this.deviceDetector.isDesktop();
   }
   
-  @HostListener('window:resize', ['$event'])
-  getScreenSize(event?: any) {
-    this.screenWidth = window.innerWidth;
+  private getDesktopScreenSize(){
     this.screenHeight = window.innerHeight;
-
-    if(this.isDesktopDevice)
-      this.scaledWidth = this.screenHeight/16 * 9;
-    else
-      this.scaledWidth = this.screenWidth;
+    this.screenWidth = this.screenHeight/16 * 9;
+  }
     
+  private getMobileScreenSize(){
+    this.screenHeight = window.innerHeight;
+    this.screenWidth = window.innerWidth;
+  }
+
+  private adjustScreen(){
     this.headerHeight = this.screenHeight * 0.7;
     this.contentHeight = this.screenHeight * 0.3;
 
-    this.pageLeft = this.screenWidth/2 - this.scaledWidth/2;
+    this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
     this.jellyfishIconTop = this.headerHeight - 60;
-    this.jellyfishIconLeft = this.scaledWidth/2 - 60;
+    this.jellyfishIconLeft = this.screenWidth/2 - 60;
+  }
+  
+  private adjustDynamicDesktopScreen(){
+    this.getDesktopScreenSize();    
+    this.adjustScreen();
   }
 
-  maintenanceStatus(){
+  private adjustDynamicMobileScreen(event?: any) {
+    this.getMobileScreenSize();
+    this.adjustScreen();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onresize(event?: any) {
+    if(this.isDesktopType)
+      this.adjustDynamicDesktopScreen();
+    else
+      this.adjustDynamicMobileScreen();
+  }
+
+  
+  public maintenanceStatus(){
     this.http.get(this.url_maintenance_progress).subscribe(res => {
       this.maintenance_data = res["Data"];
       this.maintenance_status = this.maintenance_data["status"];
@@ -96,29 +122,29 @@ export class DashboardPage implements OnInit {
     console.log('Report status: ' + this.no_report_problem);
   }
     
-  getDispenserPictureUrl(){
+  public getDispenserPictureUrl(){
     return this.url_dispenser_picture;
   }
 
   /**
    * Methods for routing to another page
    */
-  goToDetailedInformation(){
+  public goToDetailedInformation(){
     this.router.navigate(['detailed-information']);
   }
 
-  goToReportProblem(){
+  public goToReportProblem(){
     this.router.navigate(['report-problem']);
   }
 
-  goToMaintenanceRecords(){
+  public goToMaintenanceRecords(){
     this.router.navigate(['maintenance-records']);
   }
 
   /**
    * Methods for button status is on or off
    */
-  trackButton(){
+  public trackButton(){
     if(!this.trackIsActive)
       this.trackIsActive = true;
     else
