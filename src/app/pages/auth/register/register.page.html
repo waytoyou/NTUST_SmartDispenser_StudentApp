@@ -22,12 +22,14 @@
   
       <ion-item>
         <ion-label position="floating">Email Address</ion-label>
-        <ion-input type="email" [(ngModel)]="email"></ion-input>
+        <ion-input type="email" [(ngModel)]="email" (change)=checkEmail(email)></ion-input>
+        <p *ngIf="emailFalse" class="falseInput">Email is invalid!</p>
       </ion-item>
   
       <ion-item>
         <ion-label position="floating">Password</ion-label>
-        <ion-input type="password" [(ngModel)]="password"></ion-input>
+        <ion-input type="password" [(ngModel)]="password" (change)=checkPassword(password)></ion-input>
+        <p *ngIf="passwordFalse" class="falseInput">Password must minimum 6 character with at least contains 1 alphabet and 1 number!</p>
       </ion-item>
   
       <ion-item>

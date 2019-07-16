@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController } from '@ionic/angular'
+import { NavController, ToastController } from '@ionic/angular'
 
 import { PreferenceManagerService } from '../../../services/PreferenceManager/preference-manager.service';
 import { StaticVariable } from '../../../classes/StaticVariable/static-variable';
@@ -18,7 +18,8 @@ export class LoginPage {
   constructor(
     private navCtrl: NavController,
     private pref: PreferenceManagerService,
-    private api: DispenserAPIService
+    private api: DispenserAPIService,
+    private toastCtrl: ToastController
     ) { }
 
   ngOnInit() {
@@ -30,7 +31,7 @@ export class LoginPage {
     let resultData = await this.api.loginUser(email, password);
     console.log(resultData);
 
-    if (resultData === true) {
+    if (resultData === 1) {
 
       // save the email into session_id
       await this.pref.saveData(StaticVariable.KEY__SESSION_ID, email);
@@ -59,8 +60,30 @@ export class LoginPage {
 
       console.log("Login successed!");
 
+    } else if (resultData === 0) {
+      
+      let myToast = await this.toastCtrl.create({
+        message: 'Email address or password is incorrect!',
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+
+      myToast.present();
+
     } else {
-      console.log("The email or password is incorrect!");
+      
+      let myToast = await this.toastCtrl.create({
+        message: 'There is an unexpected error, please try again later!',
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+
+      myToast.present();
+
     }
 
   }
