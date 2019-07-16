@@ -109,7 +109,7 @@ export class MtProgressPage implements OnInit {
     // const myUrl = this.urlGetRepair + device_id;
 
     // let myJson = await this.http.get(myUrl).toPromise();
-    let myData = await this.api.getDispenserMaintenance(device_id);
+    let myData = await this.api.getDispenserRepairCondition(device_id);
 
     let returnJson: any = [];
 

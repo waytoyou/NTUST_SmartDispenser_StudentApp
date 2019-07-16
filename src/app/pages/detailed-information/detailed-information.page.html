@@ -10,7 +10,7 @@
       </div>
 
       <!--Close Button to go back to Dashboard-->
-      <button class="close-button" (click)="goToDashboard()">
+      <button class="close-button">
         <ion-icon name="close" size="large"></ion-icon>
       </button>
 
@@ -30,51 +30,5 @@
 </ion-header>
 
 <ion-content [style.height.px]="contentHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft" position="absolute">
-
-  <div class="temperature-content">
-    <div class="temperature-switch">
-
-      <span class="toggle-button" style="float: right;">
-        <ion-toggle></ion-toggle>
-      </span>
-
-    </div>
-
-    <div class="temperature-display-space">
-
-      <span class="temperature-display-block">
-        <div class="temperature-display">
-          <img class="temperature-logo" src="assets/detailed-information/cold.png" alt="colt logo">
-
-          <span class="temperature-text cold-text">{{displayCelsiusCold}}</span>
-        </div>
-      </span>
-
-      <span class="temperature-display-block" color="#36a1ce">
-        <div class="temperature-display">
-          <img class="temperature-logo" src="assets/detailed-information/warm.png" alt="colt logo">
-
-          <span class="temperature-text warm-color">{{displayCelsiusWarm}}</span>
-        </div>
-      </span>
-
-      <span class="temperature-display-block" color="#36a1ce">
-        <div class="temperature-display">
-          <img class="temperature-logo" src="assets/detailed-information/hot.png" alt="colt logo">
-
-          <span class="temperature-text hot-color">{{displayCelsiusHot}}</span>
-        </div>
-      </span>
-    </div>
-
-  </div>
-
-  <div>
-
-  </div>
-
-  <div>
-
-  </div>
 
 </ion-content>
