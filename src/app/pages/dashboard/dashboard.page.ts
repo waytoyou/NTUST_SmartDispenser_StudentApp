@@ -2,7 +2,6 @@ import { StaticVariable } from './../../classes/StaticVariable/static-variable';
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http'
 import { HostListener } from "@angular/core";
-import { Router } from '@angular/router';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { PreferenceManagerService } from '../../services/PreferenceManager/preference-manager.service';
 import { NavController, AlertController } from '@ionic/angular';
@@ -43,22 +42,26 @@ export class DashboardPage implements OnInit {
 
   //Variable for tracking progress
   public trackIsActive: boolean = false;
+
+  public hasReportSubmitted: boolean = false;
   
   deviceInfo = null;
   constructor(
     private http:HttpClient, 
-    private router: Router, 
     private deviceService: DeviceDetectorService,
     private pref: PreferenceManagerService,
     private navCtrl: NavController,
     private alertCtrl: AlertController,
-    private api: DispenserAPIService) {
-    this.detectDevice();
-  }
+    private api: DispenserAPIService) 
+  {  }
 
   ngOnInit() {
-    this.getScreenSize();
     this.main();
+  }
+
+  ionViewDidEnter() {
+    this.detectDevice();
+    this.getScreenSize();
   }
 
   async main () {
@@ -68,20 +71,21 @@ export class DashboardPage implements OnInit {
 
     /////////////////////////////////
     // this is for testing only
-    await this.testingSetDeviceId();
+    await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, "MA_05_01");
+    // await this.pref.saveData(StaticVariable.KEY__SESSION_ID, "ntust.smartcampus@gmail.com");
     ////////////////////////////////
     
     // get the device ID
-    this.device_id = await this.getDeviceId();
+    this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
 
     // set background picture
-    this.url_dispenser_picture = await this.getDispenserPictureUrl();
+    this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);
 
-  }
-
-  // this is for testing only
-  async testingSetDeviceId () {
-    await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, "T4_07_01");
+    // check if user has report something
+    let email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+    if (email !== "" || email !== null || email !== undefined) {
+      this.hasReportSubmitted = await this.api.checkAnyReportSubmitted(email, this.device_id);
+    }
   }
 
   detectDevice() {
@@ -120,23 +124,23 @@ export class DashboardPage implements OnInit {
     console.log('Report status: ' + this.no_report_problem);
   }
 
-  getDeviceId () {
-    return this.pref.getData(StaticVariable.KEY__DEVICE_ID);
-  }
-    
-  getDispenserPictureUrl(){
-    return this.api.getDispenserPictureUrlOnly(this.device_id);
-  }
-
   /**
    * Methods for routing to another page
    */
   goToDetailedInformation(){
-    this.router.navigate(['detailed-information']);
+    this.navCtrl.navigateForward(['detailed-information']);
   }
 
   goToMaintenanceRecords(){
-    this.router.navigate(['maintenance-records']);
+    this.navCtrl.navigateForward(['maintenance-records']);
+  }
+
+  goToNearbyDispenser () {
+    this.navCtrl.navigateForward(['nearby']);
+  }
+
+  goToMaintenanceProgress() {
+    this.navCtrl.navigateForward(['mt-progress']);
   }
 
   /**
@@ -162,7 +166,7 @@ export class DashboardPage implements OnInit {
 
     // check login first, return true if login is true
     if (await this.checkLogin()) {
-      this.router.navigate(['report-problem']);
+      this.navCtrl.navigateForward(['report-problem']);
     }
   }
 
@@ -187,11 +191,11 @@ export class DashboardPage implements OnInit {
   async checkLogin () {
     
     // check if there any session ID
-    let checkData = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+    let checkData = await this.checkSession();
     let returnValue = false;
 
     // if the data is not present or empty
-    if (checkData === "" || checkData === null || checkData === undefined) {
+    if (!checkData) {
 
       // create alert to choose login or not
       let loginAlert = await this.alertCtrl.create({
@@ -229,5 +233,46 @@ export class DashboardPage implements OnInit {
     }
 
     return returnValue;
+  }
+
+  async checkSession() {
+    
+    // check session ID and date
+    let nowDate = new Date();
+    let lastDate = new Date(await this.pref.getData(StaticVariable.KEY__LAST_DATE));
+    let difDate = nowDate.getTime() - lastDate.getTime();
+
+    // check if there any session ID
+    let checkData = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+
+    let currentPage = "dashboard";
+
+    // check in console
+      // console.log(nowDate);
+      // console.log(lastDate);
+      // console.log(difDate);
+      // console.log(await this.pref.getData(StaticVariable.KEY__SESSION_ID));
+
+    if (checkData === "" || checkData === null) {
+
+      return false;
+      
+    } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
+
+      // remove the session ID from preference
+      this.pref.removeData(StaticVariable.KEY__SESSION_ID);
+
+      // save the name of page
+      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, currentPage);
+
+      return false;
+
+    } else if (!checkData && difDate <= StaticVariable.SESSION_TIMEOUT) {
+
+      // save new Date
+      this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+
+      return true;
+    }
   }
 }
