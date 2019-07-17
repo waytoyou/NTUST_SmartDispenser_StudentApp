@@ -16,27 +16,21 @@ import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api
 export class DashboardPage implements OnInit {
   private device_id: string;
   
-  //variables for maintenance progress information
-  private url_maintenance_progress = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Repair?Device_ID=' + this.device_id;
-  private maintenance_status: any;
-  private maintenance_data: any;
-  private no_report_problem: boolean;
-
   //variables for dispenser picture
   public url_dispenser_picture: string;
   
   //variables for device detector
-  private isDesktopDevice;
+  private isDesktopType: boolean;
 
   //variables for screen & item resolution
   public screenHeight: any;
   public screenWidth: any;
-  public scaledWidth: any;
 
   public headerHeight: any;
   public contentHeight: any;
 
   public pageLeft: any;
+
   public jellyfishIconTop: any;
   public jellyfishIconLeft: any;
 
@@ -47,27 +41,25 @@ export class DashboardPage implements OnInit {
   
   deviceInfo = null;
   constructor(
-    private http:HttpClient, 
-    private deviceService: DeviceDetectorService,
+    private http:HttpClient,
+    private deviceDetector: DeviceDetectorService,
     private pref: PreferenceManagerService,
     private navCtrl: NavController,
     private alertCtrl: AlertController,
     private api: DispenserAPIService) 
   {  }
 
-  ngOnInit() {
-    this.main();
-  }
-
-  ionViewDidEnter() {
+  async ngOnInit() {
     this.detectDevice();
-    this.getScreenSize();
-  }
 
-  async main () {
-    
+    if(this.isDesktopType)
+      this.adjustDynamicDesktopScreen();
+    else
+      this.adjustDynamicMobileScreen();
+
     // check if preference is not build yet
     await this.checkPrefFirstTime();
+    await this.setAPIsData();
 
     /////////////////////////////////
     // this is for testing only
@@ -78,9 +70,6 @@ export class DashboardPage implements OnInit {
     // get the device ID
     this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
 
-    // set background picture
-    this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);
-
     // check if user has report something
     let email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
     if (email !== "" || email !== null || email !== undefined) {
@@ -88,40 +77,50 @@ export class DashboardPage implements OnInit {
     }
   }
 
-  detectDevice() {
-    this.isDesktopDevice = this.deviceService.isDesktop();
+  private detectDevice() {
+    this.isDesktopType = this.deviceDetector.isDesktop();
   }
   
-  @HostListener('window:resize', ['$event'])
-  getScreenSize(event?: any) {
-    this.screenWidth = window.innerWidth;
+  private getDesktopScreenSize(){
     this.screenHeight = window.innerHeight;
-
-    if(this.isDesktopDevice)
-      this.scaledWidth = this.screenHeight/16 * 9;
-    else
-      this.scaledWidth = this.screenWidth;
+    this.screenWidth = this.screenHeight/16 * 9;
+  }
     
-    this.headerHeight = this.screenHeight * 0.7;
-    this.contentHeight = this.screenHeight * 0.3;
-
-    this.pageLeft = this.screenWidth/2 - this.scaledWidth/2;
-    this.jellyfishIconTop = this.headerHeight - 60;
-    this.jellyfishIconLeft = this.scaledWidth/2 - 60;
+  private getMobileScreenSize(){
+    this.screenHeight = window.innerHeight;
+    this.screenWidth = window.innerWidth;
   }
 
-  maintenanceStatus(){
-    this.http.get(this.url_maintenance_progress).subscribe(res => {
-      this.maintenance_data = res["Data"];
-      this.maintenance_status = this.maintenance_data["status"];
-    })
-    
-    if(this.maintenance_status != 4)
-      this.no_report_problem = true;
+  private adjustScreen(){
+    if((!this.isDesktopType) && (window.innerHeight < window.innerWidth)){
+      this.headerHeight = this.screenHeight * 0.6;
+      this.contentHeight = this.screenHeight * 0.4;
+    }else{
+      this.headerHeight = this.screenHeight * 0.7;
+      this.contentHeight = this.screenHeight * 0.3;
+    }
+
+    this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
+    this.jellyfishIconTop = this.headerHeight - 60;
+    this.jellyfishIconLeft = this.screenWidth/2 - 60;
+  }
+
+  private adjustDynamicDesktopScreen(){
+    this.getDesktopScreenSize();    
+    this.adjustScreen();
+  }
+
+  private adjustDynamicMobileScreen() {
+    this.getMobileScreenSize();
+    this.adjustScreen();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onresize() {
+    if(this.isDesktopType)
+      this.adjustDynamicDesktopScreen();
     else
-      this.no_report_problem = false;
-      
-    console.log('Report status: ' + this.no_report_problem);
+      this.adjustDynamicMobileScreen();
   }
 
   /**
@@ -170,6 +169,7 @@ export class DashboardPage implements OnInit {
     }
   }
 
+
   /**
    * Check First Time Prefference
    */
@@ -186,6 +186,10 @@ export class DashboardPage implements OnInit {
       await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, "");
       await this.pref.saveData(StaticVariable.KEY__SESSION_ID, ""); 
     }
+  }
+  
+  async setAPIsData(){
+    this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);
   }
   
   async checkLogin () {
