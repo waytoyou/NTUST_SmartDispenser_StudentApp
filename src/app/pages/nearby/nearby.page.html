@@ -97,7 +97,7 @@
                 </div>
     
                 <!-- dispenser detail -->
-                <div class="body-content--card-item--content float-left">                
+                <div class="body-content--card-item--content">                
                   <div class="body-content--card-item--content-title">
                     {{item.Building}}
                     <br>
@@ -143,7 +143,7 @@
       <div *ngIf="resultDone == true">
         <ion-card *ngFor="let item of nearbyNextBuilding" >
 
-          <div class="body-content--card">
+          <div class="body-content--card" [style.backgroundImage]="'url(' + item.Picture + ')'">
             <div class="overlay body-content--card-inside">
               <div class="body-content--card-item">
   
@@ -153,7 +153,7 @@
                 </div>
     
                 <!-- dispenser detail -->
-                <div class="body-content--card-item--content float-left">
+                <div class="body-content--card-item--content">
                   <div class="body-content--card-item--content-title">
                     {{item.Building}}
                     <br>

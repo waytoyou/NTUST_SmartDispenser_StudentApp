@@ -2,9 +2,10 @@ import { StaticVariable } from './../../classes/StaticVariable/static-variable';
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http'
 import { HostListener } from "@angular/core";
-import { Router } from '@angular/router';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { PreferenceManagerService } from '../../services/PreferenceManager/preference-manager.service';
+import { NavController, AlertController } from '@ionic/angular';
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,7 +14,7 @@ import { PreferenceManagerService } from '../../services/PreferenceManager/prefe
 })
 
 export class DashboardPage implements OnInit {
-  private device_id = 'T4_07_01';
+  private device_id: string;
   
   //variables for maintenance progress information
   private url_maintenance_progress = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Repair?Device_ID=' + this.device_id;
@@ -22,7 +23,7 @@ export class DashboardPage implements OnInit {
   private no_report_problem: boolean;
 
   //variables for dispenser picture
-  public url_dispenser_picture = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Image?Device_ID=' + this.device_id;
+  public url_dispenser_picture: string;
   
   //variables for device detector
   private isDesktopDevice;
@@ -41,23 +42,50 @@ export class DashboardPage implements OnInit {
 
   //Variable for tracking progress
   public trackIsActive: boolean = false;
+
+  public hasReportSubmitted: boolean = false;
   
   deviceInfo = null;
   constructor(
     private http:HttpClient, 
-    private router: Router, 
     private deviceService: DeviceDetectorService,
-    private pref: PreferenceManagerService) {
-    this.detectDevice();
-  }
+    private pref: PreferenceManagerService,
+    private navCtrl: NavController,
+    private alertCtrl: AlertController,
+    private api: DispenserAPIService) 
+  {  }
 
   ngOnInit() {
-    this.getScreenSize();
     this.main();
   }
 
+  ionViewDidEnter() {
+    this.detectDevice();
+    this.getScreenSize();
+  }
+
   async main () {
+    
+    // check if preference is not build yet
     await this.checkPrefFirstTime();
+
+    /////////////////////////////////
+    // this is for testing only
+    await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, "MA_05_01");
+    // await this.pref.saveData(StaticVariable.KEY__SESSION_ID, "ntust.smartcampus@gmail.com");
+    ////////////////////////////////
+    
+    // get the device ID
+    this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
+
+    // set background picture
+    this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);
+
+    // check if user has report something
+    let email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+    if (email !== "" || email !== null || email !== undefined) {
+      this.hasReportSubmitted = await this.api.checkAnyReportSubmitted(email, this.device_id);
+    }
   }
 
   detectDevice() {
@@ -95,34 +123,51 @@ export class DashboardPage implements OnInit {
       
     console.log('Report status: ' + this.no_report_problem);
   }
-    
-  getDispenserPictureUrl(){
-    return this.url_dispenser_picture;
-  }
 
   /**
    * Methods for routing to another page
    */
   goToDetailedInformation(){
-    this.router.navigate(['detailed-information']);
-  }
-
-  goToReportProblem(){
-    this.router.navigate(['report-problem']);
+    this.navCtrl.navigateForward(['detailed-information']);
   }
 
   goToMaintenanceRecords(){
-    this.router.navigate(['maintenance-records']);
+    this.navCtrl.navigateForward(['maintenance-records']);
+  }
+
+  goToNearbyDispenser () {
+    this.navCtrl.navigateForward(['nearby']);
+  }
+
+  goToMaintenanceProgress() {
+    this.navCtrl.navigateForward(['mt-progress']);
   }
 
   /**
    * Methods for button status is on or off
    */
-  trackButton(){
-    if(!this.trackIsActive)
-      this.trackIsActive = true;
-    else
-      this.trackIsActive = false;
+  async trackButton(){
+
+    // check login first, return true if login is true
+    if (await this.checkLogin()) {
+
+      // act the active to 
+      if(!this.trackIsActive)
+        this.trackIsActive = true;
+      else
+        this.trackIsActive = false;
+
+      let email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+      await this.api.wantUpdateTrack(this.device_id, email, this.trackIsActive);
+    }
+  }
+
+  async goToReportProblem(){
+
+    // check login first, return true if login is true
+    if (await this.checkLogin()) {
+      this.navCtrl.navigateForward(['report-problem']);
+    }
   }
 
   /**
@@ -137,10 +182,97 @@ export class DashboardPage implements OnInit {
       // create some first
       await this.pref.saveData(StaticVariable.KEY__CHECK_PREF_CREATED, true);
       await this.pref.saveData(StaticVariable.KEY__LAST_DATE, new Date());
-      await this.pref.saveData(StaticVariable.KEY__LAST_PAGE, null);
-      await this.pref.saveData(StaticVariable.KEY__MAINTENANCE_PROGRESS__DEVICE_ID, null);
-      await this.pref.saveData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID, null);
-      await this.pref.saveData(StaticVariable.KEY__SESSION_ID, null); 
+      await this.pref.saveData(StaticVariable.KEY__LAST_PAGE, "");
+      await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, "");
+      await this.pref.saveData(StaticVariable.KEY__SESSION_ID, ""); 
     }
-  }     
+  }
+  
+  async checkLogin () {
+    
+    // check if there any session ID
+    let checkData = await this.checkSession();
+    let returnValue = false;
+
+    // if the data is not present or empty
+    if (!checkData) {
+
+      // create alert to choose login or not
+      let loginAlert = await this.alertCtrl.create({
+        mode: 'ios',
+        header: 'Log In Required',
+        message: 'You need to login first in order to report a problem or track dispenser status, please click the Log In button below.',
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            handler: () => {
+              console.log('Cancel clicked');
+            }
+          },
+          {
+            text: 'Log In',
+            handler: () => {
+              
+              // direct the user to login page
+              this.navCtrl.navigateForward(['login']);
+
+              console.log('Log In clicked');
+            }
+          }
+        ]
+      });
+
+      // display the alert controller
+      loginAlert.present();
+      
+    } else {
+
+      // return true if login process is done
+      returnValue = true;
+    }
+
+    return returnValue;
+  }
+
+  async checkSession() {
+    
+    // check session ID and date
+    let nowDate = new Date();
+    let lastDate = new Date(await this.pref.getData(StaticVariable.KEY__LAST_DATE));
+    let difDate = nowDate.getTime() - lastDate.getTime();
+
+    // check if there any session ID
+    let checkData = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+
+    let currentPage = "dashboard";
+
+    // check in console
+      // console.log(nowDate);
+      // console.log(lastDate);
+      // console.log(difDate);
+      // console.log(await this.pref.getData(StaticVariable.KEY__SESSION_ID));
+
+    if (checkData === "" || checkData === null) {
+
+      return false;
+      
+    } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
+
+      // remove the session ID from preference
+      this.pref.removeData(StaticVariable.KEY__SESSION_ID);
+
+      // save the name of page
+      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, currentPage);
+
+      return false;
+
+    } else if (!checkData && difDate <= StaticVariable.SESSION_TIMEOUT) {
+
+      // save new Date
+      this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+
+      return true;
+    }
+  }
 }
