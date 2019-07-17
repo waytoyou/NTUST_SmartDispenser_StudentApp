@@ -19,9 +19,12 @@ export class MtProgressPage implements OnInit {
    * - ErrorType
    */
   arrayStatus: string[] = [
-    "Waiting for confirmation",
+    "Report sent, waiting for confirmation",
     "Send error information to Union",
-    "The repairment has been completed",
+    "Report confirmed, repairman will fix soon",
+    "Repairment in progress",
+    "Repairment done, waiting for validation",
+    "Validation complete",
     "Complete"
   ];
   arrayErrorType: string[] = [
@@ -116,7 +119,11 @@ export class MtProgressPage implements OnInit {
 
     let returnValue = [];
     // let myEmail = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+
+    //////////////////
+    // TESTING ONLY //
     let myEmail = "ntust.smartcampus@gmail.com";
+    //////////////////
 
     if (myEmail === null || myEmail === "" || myEmail === undefined) {
       
@@ -223,29 +230,47 @@ export class MtProgressPage implements OnInit {
     let returnValue = [];
 
     // 7 time stored
+    // let timeStored = [
+    //   myJson['UploadTime'],
+    //   myJson['NotifyTime'],
+    //   myJson['Time3'],
+    //   myJson['Time4'],
+    //   myJson['Time5'],
+    //   myJson['Time6'],
+    //   myJson['CompleteTime']
+    // ];
+
+    //////////////////
+    // TESTING ONLY //
     let timeStored = [
-      myJson['UploadTime'],
-      myJson['NotifyTime'],
-      myJson['Time3'],
-      myJson['Time4'],
-      myJson['Time5'],
-      myJson['Time6'],
-      myJson['CompleteTime']
+      "2019-01-02 09:36:44",
+      "2019-01-03 08:22:31",
+      "2019-01-03 14:12:43",
+      "2019-01-04 10:20:02",
+      "2019-01-06 09:04:51",
+      "2019-01-07 08:05:38",
+      "2019-01-07 10:07:49"
     ];
+    //////////////////
 
     // 7 more information stored
     let infoStored = [
-      "",
+      null,
       "(Person in charge: " + myJson['Maintainer'] + ")",
-      "",
-      "",
-      "",
-      "",
-      "(Result: " + myJson['Result'] + ")"
+      null,
+      null,
+      "(Result: " + myJson['Result'] + ")",
+      null,
+      null
     ];
 
     // check how many steps
-    let steps = myJson['Status'];
+    // let steps = myJson['Status'];
+
+    //////////////////
+    // TESTING ONLY //
+    let steps = 7;
+    //////////////////
  
     for (let i = steps ; i > 0 ; i--) {
       

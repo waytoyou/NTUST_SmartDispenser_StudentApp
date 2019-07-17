@@ -46,7 +46,9 @@
       <b>Report submitted</b>
     </div>
     <div class="estimate-subtitle">
-      Estimated completion time: XX hours later
+      Estimated completion time:
+      <br>
+      XX hours later
     </div>
   </div>
 
@@ -66,8 +68,10 @@
           <br>
           {{item.Status}}
           <br>
-          {{item.Information}}
-          <br>
+          <span *ngIf="item.Information !== null">
+            {{item.Information}}
+            <br>
+          </span>
           <!-- .. more details ..
           <br>
           .. more details .. -->
