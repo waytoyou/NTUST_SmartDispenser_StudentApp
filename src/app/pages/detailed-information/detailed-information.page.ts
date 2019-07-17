@@ -39,7 +39,6 @@ export class DetailedInformationPage implements OnInit {
   public dispenserBuildingPosition: string;
   public dispenserPlacedPosition: string;
 
-
   //Variables for temperature
   public celsiusHotTemp: number;
   public celsiusWarmTemp: number;
@@ -49,20 +48,19 @@ export class DetailedInformationPage implements OnInit {
   public fahrenheitWarmTemp: number;
   public fahrenheitColdTemp: number;
 
-  public displayCelsiusHot: string;
-  public displayCelsiusWarm: string;
-  public displayCelsiusCold: string;
+  public displayHotTemp: string;
+  public displayWarmTemp: string;
+  public displayColdTemp: string;
 
-  public displayFahrenheitHot: string;
-  public displayFahrenheitWarm: string;
-  public displayFahrenheitCold: string;
+  //Variable for toggle condition
+  public isToggleActive: boolean = false;
 
   constructor(
       private http: HttpClient,
       private router: Router,
       private deviceDetector: DeviceDetectorService,
       private pref: PreferenceManagerService,
-      private api: DispenserAPIService) { }
+      private api: DispenserAPIService) {}
 
   async ngOnInit() {
 
@@ -78,6 +76,7 @@ export class DetailedInformationPage implements OnInit {
     this.setCelsiusTemperatures();
     this.setFahrenheitTemperatures();
     this.setDispenserDetail();
+    this.setTemperatureDisplay();
   }
 
   private detectDevice() {
@@ -147,26 +146,36 @@ export class DetailedInformationPage implements OnInit {
     this.celsiusHotTemp = this.dispenser_rawdata['HotTemp'];
     this.celsiusWarmTemp = this.dispenser_rawdata['WarmTemp'];
     this.celsiusColdTemp = this.dispenser_rawdata['ColdTemp'];
-
-    this.displayCelsiusHot = this.celsiusHotTemp + "°C";
-    this.displayCelsiusWarm = this.celsiusWarmTemp + "°C";
-    this.displayCelsiusCold = this.celsiusColdTemp + "°C";
   }
 
   setFahrenheitTemperatures(){
-    this.fahrenheitHotTemp = this.celsiusHotTemp/5 * 9 + 32;
-    this.fahrenheitWarmTemp = this.celsiusWarmTemp/5 * 9 + 32;
-    this.fahrenheitColdTemp = this.celsiusColdTemp/5 * 9 + 32;
-
-    this.displayFahrenheitHot = this.fahrenheitHotTemp + "°F";
-    this.displayFahrenheitWarm = this.fahrenheitWarmTemp + "°F";
-    this.displayFahrenheitCold = this.fahrenheitColdTemp + "°F";
+    this.fahrenheitHotTemp = Math.round(this.celsiusHotTemp/5 * 9 + 32);
+    this.fahrenheitWarmTemp = Math.round(this.celsiusWarmTemp/5 * 9 + 32);
+    this.fahrenheitColdTemp = Math.round(this.celsiusColdTemp/5 * 9 + 32);
   }
 
   setDispenserDetail(){
     this.dispenserBuildingPosition = this.dispenser_detail['Building'];
     this.dispenserPlacedPosition = this.dispenser_detail['Position'];
     this.dispenser_type = this.dispenser_detail['Type'];
+  }
+
+  setTemperatureToggle(){
+    this.isToggleActive = !this.isToggleActive;
+
+    this.setTemperatureDisplay();
+  }
+
+  setTemperatureDisplay(){
+    if(!this.isToggleActive){
+      this.displayHotTemp = this.celsiusHotTemp + "°C";
+      this.displayWarmTemp = this.celsiusWarmTemp + "°C";
+      this.displayColdTemp = this.celsiusColdTemp + "°C";
+    }else{
+      this.displayHotTemp = this.fahrenheitHotTemp + "°F";
+      this.displayWarmTemp = this.fahrenheitWarmTemp + "°F";
+      this.displayColdTemp = this.fahrenheitColdTemp + "°F";
+    }
   }
 
   //--------------------------------------------------

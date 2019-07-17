@@ -79,7 +79,7 @@ export class MtProgressPage implements OnInit {
    }   
 
     // get items from API
-    this.items = await this.getRepairCondition(this.device_id);
+    //this.items = await this.getRepairCondition(this.device_id);
 
     // set image
     this.backgroundImg = await this.getPicture(this.device_id);
@@ -105,7 +105,7 @@ export class MtProgressPage implements OnInit {
     });
   }
 
-  async getRepairCondition (device_id: string) {
+  /*async getRepairCondition (device_id: string) {
     // const myUrl = this.urlGetRepair + device_id;
 
     // let myJson = await this.http.get(myUrl).toPromise();
@@ -140,7 +140,7 @@ export class MtProgressPage implements OnInit {
     }
 
     return returnJson;
-  }
+  }*/
 
   getTime (time) {
     // time passed is String, construct into Date format

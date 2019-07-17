@@ -38,7 +38,7 @@
       <span class="degree-letter">°F</span>
 
       <span class="toggle-button">
-        <ion-toggle mode="ios"></ion-toggle>
+        <ion-toggle (click)="setTemperatureToggle()" mode="ios"></ion-toggle>
       </span>
 
       <span class="degree-letter">°C</span>
@@ -51,7 +51,7 @@
         <div class="temperature-display">
           <img class="temperature-logo" src="assets/detailed-information/cold.png" alt="colt logo">
 
-          <span class="temperature-text cold-text">{{displayCelsiusCold}}</span>
+          <span class="temperature-text cold-text">{{displayColdTemp}}</span>
         </div>
       </span>
 
@@ -59,7 +59,7 @@
         <div class="temperature-display">
           <img class="temperature-logo" src="assets/detailed-information/warm.png" alt="colt logo">
 
-          <span class="temperature-text warm-color">{{displayCelsiusWarm}}</span>
+          <span class="temperature-text warm-color">{{displayWarmTemp}}</span>
         </div>
       </span>
 
@@ -67,7 +67,7 @@
         <div class="temperature-display">
           <img class="temperature-logo" src="assets/detailed-information/hot.png" alt="colt logo">
 
-          <span class="temperature-text hot-color">{{displayCelsiusHot}}</span>
+          <span class="temperature-text hot-color">{{displayHotTemp}}</span>
         </div>
       </span>
     </div>
@@ -78,8 +78,7 @@
     <span class="information-text">Position</span>
 
     <span class="position-display">
-      {{dispenserBuildingPosition}}
-      <br>
+      {{dispenserBuildingPosition}}<br>
       {{dispenserPlacedPosition}}
     </span>
   </div>

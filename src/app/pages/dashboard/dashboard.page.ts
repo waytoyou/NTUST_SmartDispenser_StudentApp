@@ -5,6 +5,7 @@ import { HostListener } from "@angular/core";
 import { Router } from '@angular/router';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { PreferenceManagerService } from '../../services/PreferenceManager/preference-manager.service';
+import {DispenserAPIService} from "../../services/DispenserAPI/dispenser-api.service";
 
 @Component({
   selector: 'app-dashboard',
@@ -15,14 +16,8 @@ import { PreferenceManagerService } from '../../services/PreferenceManager/prefe
 export class DashboardPage implements OnInit {
   private device_id = 'T4_07_01';
   
-  //variables for maintenance progress information
-  private url_maintenance_progress = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Repair?Device_ID=' + this.device_id;
-  private maintenance_status: any;
-  private maintenance_data: any;
-  private no_report_problem: boolean;
-
   //variables for dispenser picture
-  public url_dispenser_picture = 'https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Image?Device_ID=' + this.device_id;
+  public url_dispenser_picture: string;
   
   //variables for device detector
   private isDesktopType: boolean;
@@ -41,17 +36,16 @@ export class DashboardPage implements OnInit {
 
   //Variable for tracking progress
   public trackIsActive: boolean = false;
-  
-  deviceInfo = null;
 
   constructor(
     private http:HttpClient, 
     private router: Router, 
     private deviceDetector: DeviceDetectorService,
-    private pref: PreferenceManagerService) {
+    private pref: PreferenceManagerService,
+    private api: DispenserAPIService) {
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.detectDevice();
 
     if(this.isDesktopType)
@@ -59,11 +53,8 @@ export class DashboardPage implements OnInit {
     else
       this.adjustDynamicMobileScreen();
 
-    this.main();
-  }
-
-  async main () {
     await this.checkPrefFirstTime();
+    await this.setAPIsData();
   }
 
   private detectDevice() {
@@ -81,49 +72,35 @@ export class DashboardPage implements OnInit {
   }
 
   private adjustScreen(){
-    this.headerHeight = this.screenHeight * 0.7;
-    this.contentHeight = this.screenHeight * 0.3;
+    if((!this.isDesktopType) && (window.innerHeight < window.innerWidth)){
+      this.headerHeight = this.screenHeight * 0.6;
+      this.contentHeight = this.screenHeight * 0.4;
+    }else{
+      this.headerHeight = this.screenHeight * 0.7;
+      this.contentHeight = this.screenHeight * 0.3;
+    }
 
     this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
     this.jellyfishIconTop = this.headerHeight - 60;
     this.jellyfishIconLeft = this.screenWidth/2 - 60;
   }
-  
+
   private adjustDynamicDesktopScreen(){
     this.getDesktopScreenSize();    
     this.adjustScreen();
   }
 
-  private adjustDynamicMobileScreen(event?: any) {
+  private adjustDynamicMobileScreen() {
     this.getMobileScreenSize();
     this.adjustScreen();
   }
 
   @HostListener('window:resize', ['$event'])
-  onresize(event?: any) {
+  onresize() {
     if(this.isDesktopType)
       this.adjustDynamicDesktopScreen();
     else
       this.adjustDynamicMobileScreen();
-  }
-
-  
-  public maintenanceStatus(){
-    this.http.get(this.url_maintenance_progress).subscribe(res => {
-      this.maintenance_data = res["Data"];
-      this.maintenance_status = this.maintenance_data["status"];
-    })
-    
-    if(this.maintenance_status != 4)
-      this.no_report_problem = true;
-    else
-      this.no_report_problem = false;
-      
-    console.log('Report status: ' + this.no_report_problem);
-  }
-    
-  public getDispenserPictureUrl(){
-    return this.url_dispenser_picture;
   }
 
   /**
@@ -151,6 +128,7 @@ export class DashboardPage implements OnInit {
       this.trackIsActive = false;
   }
 
+
   /**
    * Check First Time Prefference
    */
@@ -168,5 +146,9 @@ export class DashboardPage implements OnInit {
       await this.pref.saveData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID, null);
       await this.pref.saveData(StaticVariable.KEY__SESSION_ID, null); 
     }
-  }     
+  }
+
+  async setAPIsData(){
+    this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);
+  }
 }
