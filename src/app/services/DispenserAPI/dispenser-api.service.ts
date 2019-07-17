@@ -461,43 +461,46 @@ export class DispenserAPIService {
    * 
    * @returns   value       The json object of data
    * 
-   * @example
+   * @example   
+   * 
+   * *noted that the  email with "at" because using
+   * symbol will break the comment line
    *
    * [
-    *  {
-    *    "Device_ID": "MA_05_01",
-    *    "Email": "ntust.smartcampus@gmail.com",
-    *    "ErrorType": 5,
-    *    "Description": "Broken",
-    *    "Status": 4,
-    *    "UploadTime": "2019-01-02 09:36:00",
-    *    "NotifyTime": "2019-01-02 09:36:00",
-    *    "Maintainer": "Mr.Pang",
-    *    "Result": "Someone push powersaving button",
-    *    "CompleteTime": "2019-01-02 24:00:00",
-    *    "Index": 0,
-    *    "Source": null,
-    *    "Source2": null,
-    *    "Source3": null
-    *  },
-    *  {
-    *    "Device_ID": "T4_04_01",
-    *    "Email": "ntust.smartcampus@gmail.com",
-    *    "ErrorType": 3,
-    *    "Description": "Leaking water",
-    *    "Status": 4,
-    *    "UploadTime": "2019-01-02 20:16:00",
-    *    "NotifyTime": "2019-01-02 20:16:00",
-    *    "Maintainer": "Mr.Pang",
-    *    "Result": "Fan and Compressor are broken",
-    *    "CompleteTime": "2019-01-02 24:00:00",
-    *    "Index": 0,
-    *    "Source": null,
-    *    "Source2": null,
-    *    "Source3": null
-    *  },
-    *  ...
-    * ]
+   *    {
+   *      "Device_ID": "MA_05_01",
+   *      "Email": "ntust.smartcampusgmail.com",
+   *      "ErrorType": 5,
+   *      "Description": "Broken",
+   *      "Status": 4,
+   *      "UploadTime": "2019-01-02 09:36:00",
+   *      "NotifyTime": "2019-01-02 09:36:00",
+   *      "Maintainer": "Mr.Pang",
+   *      "Result": "Someone push powersaving button",
+   *      "CompleteTime": "2019-01-02 24:00:00",
+   *      "Index": 0,
+   *      "Source": null,
+   *      "Source2": null,
+   *      "Source3": null
+   *    },
+   *    {
+   *      "Device_ID": "MA_05_01",
+   *      "Email": "ntust.smartcampusgmail.com",
+   *      "ErrorType": 3,
+   *      "Description": "Leaking water",
+   *      "Status": 4,
+   *      "UploadTime": "2019-01-02 20:16:00",
+   *      "NotifyTime": "2019-01-02 20:16:00",
+   *      "Maintainer": "Mr.Pang",
+   *      "Result": "Fan and Compressor are broken",
+   *      "CompleteTime": "2019-01-02 24:00:00",
+   *      "Index": 0,
+   *      "Source": null,
+   *      "Source2": null,
+   *      "Source3": null
+   *    },
+   *    ...
+   * ]
    */
   async getDispenserRepairCondition (device_id: string) {
     
@@ -661,10 +664,15 @@ export class DispenserAPIService {
    * 
    * @example
    * 
+   * @example   
+   * 
+   * *noted that the  email with "at" because using
+   * symbol will break the comment line
+   *
    * [
    *  {
    *    "Device_ID": "MA_05_01",
-   *    "Email": "ntust.smartcampus@gmail.com",
+   *    "Email": "ntust.smartcampusgmail.com",
    *    "ErrorType": 5,
    *    "Description": "Broken",
    *    "Status": 4,
@@ -680,7 +688,7 @@ export class DispenserAPIService {
    *  },
    *  {
    *    "Device_ID": "T4_04_01",
-   *    "Email": "ntust.smartcampus@gmail.com",
+   *    "Email": "ntust.smartcampusgmail.com",
    *    "ErrorType": 3,
    *    "Description": "Leaking water",
    *    "Status": 4,
