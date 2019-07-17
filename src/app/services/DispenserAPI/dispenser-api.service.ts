@@ -721,4 +721,34 @@ export class DispenserAPIService {
         return [{}];
       });
   }
+
+  /**
+   * This function is to check from getDispenserRepairCondition
+   * function if user has reported problem. If user has problem
+   * being submited the return true value, false if not has.
+   * 
+   * @param     email         User's email address
+   * @param     device_id     Device id of the dispenser
+   * 
+   * @returns   boolean       True if has report, false if not
+   */
+  async checkAnyReportSubmitted (email: string, device_id: string) {
+
+    let data = await this.getDispenserRepairCondition(device_id);
+    let hasCorrectEmail = false;
+
+    // check if dispenser has problem reported
+    if (data.length > 0) {
+      for (let i = 0 ; i < data.length ; i++) {
+        
+        // check if any problem submitted by the user
+        if (data[i]['Email'] === email) {
+          hasCorrectEmail = true;
+          break;
+        }
+      }
+    }
+
+    return hasCorrectEmail;
+  }
 }
