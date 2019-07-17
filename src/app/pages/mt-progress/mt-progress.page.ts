@@ -118,12 +118,7 @@ export class MtProgressPage implements OnInit {
   async getRepairCondition (device_id: string) {
 
     let returnValue = [];
-    // let myEmail = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
-
-    //////////////////
-    // TESTING ONLY //
-    let myEmail = "ntust.smartcampus@gmail.com";
-    //////////////////
+    let myEmail = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
 
     if (myEmail === null || myEmail === "" || myEmail === undefined) {
       

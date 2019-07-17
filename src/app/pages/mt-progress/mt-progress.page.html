@@ -36,10 +36,6 @@
   <!-- estimate -->
   <div class="estimate">
     <div>
-      <!-- <img
-        class="estimate-icon"
-        src="assets\_ionicons_svg_md-alert.svg"
-        alt="alert image"> -->
       <ion-icon name="alert" color="warning" size="large"></ion-icon>
     </div>
     <div class="estimate-title">
@@ -50,6 +46,10 @@
       <br>
       XX hours later
     </div>
+  </div>
+
+  <div class="progress" style="text-align: center" *ngIf="items.length === 0">
+    <b>No progress is available</b>
   </div>
 
   <!-- progress -->
@@ -72,9 +72,6 @@
             {{item.Information}}
             <br>
           </span>
-          <!-- .. more details ..
-          <br>
-          .. more details .. -->
         </div>
 
       </li>
