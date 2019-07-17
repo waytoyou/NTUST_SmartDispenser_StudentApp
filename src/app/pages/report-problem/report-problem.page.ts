@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
-
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 
 @Component({
   selector: 'app-report-problem',
@@ -11,17 +11,32 @@ import { Router } from '@angular/router';
 })
 export class ReportProblemPage implements OnInit {
 
-  constructor(public alertController: AlertController, private http: HttpClient, private router: Router) { }
+  constructor(public alertController: AlertController, private http: HttpClient, private router: Router, private api: DispenserAPIService) {
+    this.getBackground();
+  }
 
   ngOnInit() {
   }
 
+  // Data from previous page
   File: any = [];
   Device_ID: string = "MA_B1_01";
-  Email: string = "johnny258147@gmail.com";
+  Email: string = "AAAAA@gmail.com";
+
+  // Initial data
+  selectedDeviceId: string = "";
+  backgroundImg: any;
   ErrorType = 0;
   Description: string = '';
+  url: any = [];
+  fileImage: any = [];
+  imageIndex = 0;
+  updateTrack: boolean = false;
+  public selected: string;
+  public type;
 
+
+  // list of problem
   problems = [
     { problem: 'Button does not respond' },
     { problem: 'Unable to water' },
@@ -29,15 +44,15 @@ export class ReportProblemPage implements OnInit {
     { problem: 'Screen not shown' },
     { problem: 'Other' }
   ];
-  url: any = [];
-  fileImage: any = [];
-  imageIndex = 0;
 
-  updateTrack: boolean = false;
+  async getBackground() {
+    await this.prefDeviceId();
+    this.backgroundImg = await this.getPicture(this.selectedDeviceId);
+  }
 
-  public selected: string;
-  public type;
-
+  /*
+  Method to make check button like radio button
+  */
   public toggle(selected, type) {
     this.ErrorType = type + 1;
     if (type != 4) {
@@ -50,8 +65,22 @@ export class ReportProblemPage implements OnInit {
     }
   }
 
+  /*
+  Method to clear all check problem and check other if other description is filled
+  */
+  onKey(event: any) {
+    for (let index = 0; index < this.problems.length; index++) {
+      this.problems[index]['isChecked'] = null;
+    }
+    this.problems[4]['isChecked'] = 1;
+    this.ErrorType = 5;
+  }
+
+  /*
+  Method if user submit the report problem  
+  */
   async submit() {
-    if (this.ErrorType == 0) {
+    if (this.ErrorType == 0) { // If user not fill the problem
       const error = await this.alertController.create({
         mode: "ios",
         header: 'Dispenser problem is incorret',
@@ -70,7 +99,7 @@ export class ReportProblemPage implements OnInit {
 
     } else {
 
-      if ((this.Description == '') && (this.ErrorType == 5)) {
+      if ((this.Description == '') && (this.ErrorType == 5)) { // If other description blank
         const error = await this.alertController.create({
           mode: "ios",
           header: 'Dispenser problem is left blank',
@@ -88,15 +117,6 @@ export class ReportProblemPage implements OnInit {
 
       } else {
 
-        const reportProblems = new FormData();
-        for (let i = 0; i < this.imageIndex; i++) {
-          reportProblems.append('File', this.fileImage[i]);
-        }
-
-        reportProblems.append('Device_ID', String(this.Device_ID));
-        reportProblems.append('Email', String(this.Email));
-        reportProblems.append('ErrorType', String(this.ErrorType));
-        reportProblems.append('Description', String(this.Description));
 
         const thank = await this.alertController.create({
           mode: "ios",
@@ -113,37 +133,20 @@ export class ReportProblemPage implements OnInit {
         });
         await thank.present();
 
-        this.http.post<any>("https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Report", reportProblems)
-          .subscribe(data => {
-            console.log(data);
-          }, error => {
-            console.log(error);
-          });
-        if (this.updateTrack == true) {
-          let updateData = {
-            'Email': this.Email,
-            'Device_ID': this.Device_ID,
-            'Status': 1
-          }
-          this.http.post<any>("https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Track", updateData)
-            .subscribe(data => {
-              console.log(data);
-            }, error => {
-              console.log(error);
-            });
+        this.api.reportProblem(this.fileImage, this.Device_ID, this.Email, this.ErrorType, this.Description);
+
+        if (this.updateTrack == true) { // If update status true
+          this.api.wantUpdateTrack(this.Device_ID, this.Email, true);
         }
         this.router.navigate(['dashboard']);
       }
     }
   }
-  onKey(event: any) {
-    for (let index = 0; index < this.problems.length; index++) {
-      this.problems[index]['isChecked'] = null;
-    }
-    this.problems[4]['isChecked'] = 1;
-    this.ErrorType = 5;
-  }
 
+
+  /*
+  Method to show alert message if user left the page
+  */
   async AlertConfirm() {
     const alert = await this.alertController.create({
       mode: "ios",
@@ -169,23 +172,43 @@ export class ReportProblemPage implements OnInit {
     await alert.present();
   }
 
+  /*
+  Method to add image
+  */
   async onFileSelect(event) {
 
-    if (event.target.files.length > 0) {
-      this.fileImage[this.imageIndex] = event.target.files[0];
+    if (event.target.files[0].size <= 10485760) { // Limit image size to 10 Mb
+      if (event.target.files.length > 0) {
+        this.fileImage[this.imageIndex] = event.target.files[0];
 
-
-
-      var reader = new FileReader();
-      reader.readAsDataURL(event.target.files[0]); // read file as data url
-      reader.onload = (event) => { // called once readAsDataURL is completed
-        this.url[this.imageIndex] = reader.result;
-        this.imageIndex++;
+        var reader = new FileReader();
+        reader.readAsDataURL(event.target.files[0]); // read file as data url
+        reader.onload = (event) => { // called once readAsDataURL is completed
+          this.url[this.imageIndex] = reader.result;
+          this.imageIndex++;
+        }
       }
-
+    } else {
+      const toBig = await this.alertController.create({
+        mode: "ios",
+        header: 'File Size is to Big',
+        message: 'Please upload file below 10 Mb!',
+        buttons: [
+          {
+            text: 'OK',
+            handler: () => {
+              console.log('Confirm Cancel: Ok');
+            }
+          }
+        ]
+      });
+      await toBig.present();
     }
   }
 
+  /*
+  Method to rearrange array if user delete the image
+  */
   async delete(index) {
     if (index === 0) {
       this.url[0] = this.url[1];
@@ -206,5 +229,22 @@ export class ReportProblemPage implements OnInit {
 
     }
     this.imageIndex--;
+  }
+
+  /*
+  Method to get device ID
+  */
+  async prefDeviceId() {
+    //await this.pref.getData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID).then((value) => {
+    this.selectedDeviceId = 'EE_06_01';
+    //});
+  }
+
+  /*
+  Method to get picture of device
+  */
+  async getPicture(device_id) {
+    let myUrl = await this.api.getDispenserPictureUrlOnly(device_id);
+    return myUrl;
   }
 }

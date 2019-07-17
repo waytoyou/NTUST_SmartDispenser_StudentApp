@@ -36,18 +36,20 @@
   <!-- estimate -->
   <div class="estimate">
     <div>
-      <!-- <img
-        class="estimate-icon"
-        src="assets\_ionicons_svg_md-alert.svg"
-        alt="alert image"> -->
       <ion-icon name="alert" color="warning" size="large"></ion-icon>
     </div>
     <div class="estimate-title">
       <b>Report submitted</b>
     </div>
     <div class="estimate-subtitle">
-      Estimated completion time: XX hours later
+      Estimated completion time:
+      <br>
+      XX hours later
     </div>
+  </div>
+
+  <div class="progress" style="text-align: center" *ngIf="items.length === 0">
+    <b>No progress is available</b>
   </div>
 
   <!-- progress -->
@@ -62,15 +64,14 @@
 
         <!-- right side the content with left border -->
         <div class="fi">
-          {{item.UploadTimeString}}
+          {{item.Time}}
           <br>
-          Issue occured: {{item.ErrorType}}
+          {{item.Status}}
           <br>
-          Current status: {{item.Status}}
-          <br>
-          <!-- .. more details ..
-          <br>
-          .. more details .. -->
+          <span *ngIf="item.Information !== null">
+            {{item.Information}}
+            <br>
+          </span>
         </div>
 
       </li>

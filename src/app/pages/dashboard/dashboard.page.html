@@ -46,7 +46,7 @@
 
     <!--Nearby Dispenser button-->
     <span class="content-button">
-      <button class="ripple full-button">
+      <button class="ripple full-button" (click)="goToNearbyDispenser()">
         <ion-icon name="pin" size="large"></ion-icon>
         <p>Nearby dispenser</p>
       </button>
@@ -54,8 +54,12 @@
 
   </div>
 
-  <div class="report-status">
-    <div class="report-status-information">No Report Problem</div>
+  <div class="report-status transparent" *ngIf="!hasReportSubmitted">
+    No Report Problem
+  </div>
+
+  <div class="report-status" *ngIf="hasReportSubmitted" (click)="goToMaintenanceProgress()">
+    View maintenance progress >
   </div>
 
 </ion-content>

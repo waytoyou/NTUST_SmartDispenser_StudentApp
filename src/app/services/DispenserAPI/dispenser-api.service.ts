@@ -69,29 +69,45 @@ export class DispenserAPIService {
    * @param     password    Password of the user
    * @param     repassword  Re type the password
    * 
-   * @returns   boolean     Return true if success and false if failed
+   * @returns   json        Return json object with respond number and message
+   * 
+   * @example
+   * 
+   * {
+   *    "RepsondNum": 1,
+   *    "Message": "Registration success!"
+   * }
    */
   async registerNewUser (email: string, password: string, repassword: string) {
     
     let url = this.urlCreateUser;
     let token: string = "";
+    let returnValue = {
+      "RepsondNum": -1,
+      "Message": "Null message."
+    }
 
     try {
       token = await this.getToken();
     } catch (e) {
       console.error("Function error: on registerNewUser while getToken => " + e);
-      return false;
+      returnValue = {
+        "RepsondNum": -1,
+        "Message": "There is an error from server, please try again later!"
+      };
     }
 
     const postDataRegister = {
       "Email" : email,
       "Password" : password
     }
-  
+      
     if (password !== repassword) {
-      console.error("Password not match!");
-      return false;
-    } else {      
+      returnValue = {
+        "RepsondNum": 0,
+        "Message": "Password not match!"
+      };
+    } else {
       let httpOption = await {
         headers: new HttpHeaders({
           'Content-Type': 'application/json',
@@ -99,24 +115,49 @@ export class DispenserAPIService {
         })
       };
 
-      return await this.http.post(url, postDataRegister, httpOption).toPromise()
-      .then(() => {
-        return true
-      }, () => {
+      await this.http.post(url, postDataRegister, httpOption).toPromise()
+      .then((result) => {
+        console.log("Msg: " + result['msg']);
+
+        if (result['code'] === 200){
+          returnValue = {
+            "RepsondNum": 1,
+            "Message": "Registration success!"
+          };
+        } else {
+          console.error("Error while sending request: " + result['msg']);
+          
+          returnValue = {
+            "RepsondNum": 0,
+            "Message": result['msg']
+          };
+        }
+      }, (result) => {     
+        
         console.error("Promise rejected: unable to register!");
-        return false;
+        
+        returnValue = {
+          "RepsondNum": -1,
+          "Message": result['error']['msg']
+        };
       })
       .catch((e) => {
         console.error("Function error: on registerNewUser => " + e);
-        return false;
+        
+        returnValue = {
+          "RepsondNum": -1,
+          "Message": "There is an unexpected error, please try again later!"
+        };
       });
+    }  
+
+    return returnValue;
     
       // return await this.http.post(url, postDataRegister, httpOption).subscribe(() => {
       //   return true;
       // }, () => {
       //   console.error("Promise rejected: unable to get token!");
       // });
-    }
 
   }
 
@@ -129,8 +170,7 @@ export class DispenserAPIService {
    * @param     email     Email address of the user
    * @param     password  Password of the user
    * 
-   * @returns   respond   Boolean value with true if success, and
-   *                      false if failed
+   * @returns   number    Return 1 if success, 0 if not match, -1 if failed/error
    */
   async loginUser (email: string, password: string) {
     
@@ -144,18 +184,18 @@ export class DispenserAPIService {
     return await this.http.post(url, postBody).toPromise()
       .then((result) => {
         if (result['code'] === 200) {
-          return true;
+          return 1;
         } else {
           console.error("Error while log in: " + result['msg']);
-          return false
+          return 0;
         }
       }, () => {
         console.error("Promise rejected: unable to login!");
-        return false;
+        return 0;
       })
       .catch((e) => {
         console.error("Function error: on loginUser => " + e);
-        return false;
+        return -1;
       });
 
     // if (value['code'] === 200) {
@@ -488,28 +528,52 @@ export class DispenserAPIService {
    * 
    * @returns   value       The json object of data
    * 
-   * @example
+   * @example   
+   * 
+   * *noted that the  email with "at" because using
+   * symbol will break the comment line
    *
-   * {
-   *    "Device_ID": "EE_06_01",
-   *    "UploadTime": "2019-03-08 16:32:00",
-   *    "Status": 4,
-   *    "ErrorType": 5,
-   *    "Description": "Coldd water button is broken"
-   * }
+   * [
+   *    {
+   *      "Device_ID": "MA_05_01",
+   *      "Email": "ntust.smartcampusgmail.com",
+   *      "ErrorType": 5,
+   *      "Description": "Broken",
+   *      "Status": 4,
+   *      "UploadTime": "2019-01-02 09:36:00",
+   *      "NotifyTime": "2019-01-02 09:36:00",
+   *      "Maintainer": "Mr.Pang",
+   *      "Result": "Someone push powersaving button",
+   *      "CompleteTime": "2019-01-02 24:00:00",
+   *      "Index": 0,
+   *      "Source": null,
+   *      "Source2": null,
+   *      "Source3": null
+   *    },
+   *    {
+   *      "Device_ID": "MA_05_01",
+   *      "Email": "ntust.smartcampusgmail.com",
+   *      "ErrorType": 3,
+   *      "Description": "Leaking water",
+   *      "Status": 4,
+   *      "UploadTime": "2019-01-02 20:16:00",
+   *      "NotifyTime": "2019-01-02 20:16:00",
+   *      "Maintainer": "Mr.Pang",
+   *      "Result": "Fan and Compressor are broken",
+   *      "CompleteTime": "2019-01-02 24:00:00",
+   *      "Index": 0,
+   *      "Source": null,
+   *      "Source2": null,
+   *      "Source3": null
+   *    },
+   *    ...
+   * ]
    */
   async getDispenserRepairCondition (device_id: string) {
     
     let url = this.urlDispenserRepairCondition + device_id;
 
-    let returnValue = {
-      "Device_ID": device_id,
-      "UploadTime": "",
-      "Status": -1,
-      "HotTemp": -1,
-      "WarmTemp": -1,
-      "ColdTemp": -1
-    }
+    let returnValue = [{}];
 
     await this.http.get(url).toPromise()
       .then((result) => {
@@ -680,10 +744,15 @@ export class DispenserAPIService {
    * 
    * @example
    * 
+   * @example   
+   * 
+   * *noted that the  email with "at" because using
+   * symbol will break the comment line
+   *
    * [
    *  {
    *    "Device_ID": "MA_05_01",
-   *    "Email": "ntust.smartcampus@gmail.com",
+   *    "Email": "ntust.smartcampusgmail.com",
    *    "ErrorType": 5,
    *    "Description": "Broken",
    *    "Status": 4,
@@ -699,7 +768,7 @@ export class DispenserAPIService {
    *  },
    *  {
    *    "Device_ID": "T4_04_01",
-   *    "Email": "ntust.smartcampus@gmail.com",
+   *    "Email": "ntust.smartcampusgmail.com",
    *    "ErrorType": 3,
    *    "Description": "Leaking water",
    *    "Status": 4,
@@ -731,5 +800,35 @@ export class DispenserAPIService {
         console.error("Function error: on getRepairThingworx => " + e);
         return [{}];
       });
+  }
+
+  /**
+   * This function is to check from getDispenserRepairCondition
+   * function if user has reported problem. If user has problem
+   * being submited the return true value, false if not has.
+   * 
+   * @param     email         User's email address
+   * @param     device_id     Device id of the dispenser
+   * 
+   * @returns   boolean       True if has report, false if not
+   */
+  async checkAnyReportSubmitted (email: string, device_id: string) {
+
+    let data = await this.getDispenserRepairCondition(device_id);
+    let hasCorrectEmail = false;
+
+    // check if dispenser has problem reported
+    if (data.length > 0) {
+      for (let i = 0 ; i < data.length ; i++) {
+        
+        // check if any problem submitted by the user
+        if (data[i]['Email'] === email) {
+          hasCorrectEmail = true;
+          break;
+        }
+      }
+    }
+
+    return hasCorrectEmail;
   }
 }

@@ -19,9 +19,12 @@ export class MtProgressPage implements OnInit {
    * - ErrorType
    */
   arrayStatus: string[] = [
-    "Waiting for confirmation",
+    "Report sent, waiting for confirmation",
     "Send error information to Union",
-    "The repairment has been completed，and waits for validation",
+    "Report confirmed, repairman will fix soon",
+    "Repairment in progress",
+    "Repairment done, waiting for validation",
+    "Validation complete",
     "Complete"
   ];
   arrayErrorType: string[] = [
@@ -51,19 +54,24 @@ export class MtProgressPage implements OnInit {
    * 
    */
   ionViewDidEnter() {
-    this.checkSession();
+    // this.checkSession();
+  }
+
+  /**
+   * Go Back
+   */
+  backFunc() {
+    this.navCtrl.back();
   }
 
   async main () {
     
    // check id from preference
-   await this.prefDeviceId();
+   this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
     
    // check if device id is available
    try {
-     this.device_id = await this.pref.getData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID);
-     await this.api.getNearbyDispenser(this.device_id);
-     
+     await this.api.getDispenserDetail(this.device_id);
    } catch (error) {
 
      // send Toast messsage (announce) on top of page if device id is incorrect
@@ -74,22 +82,24 @@ export class MtProgressPage implements OnInit {
        showCloseButton: true,
        closeButtonText: 'Close'
      });
+     
      myToast.present();
      return;
    }   
 
-    // get items from API
-    //this.items = await this.getRepairCondition(this.device_id);
+    // choose which report still in maintenance
+    let chosenMaintenance = await this.getRepairCondition(this.device_id);
+
+    // get data for maintenance
+    if (chosenMaintenance !== []) {
+      this.items = chosenMaintenance;
+    }
 
     // set image
     this.backgroundImg = await this.getPicture(this.device_id);
-    // console.log(this.backgroundImg);
 
     // sort items array from the latest
-    await this.sortFunction(this.items);
-
-    // test to console
-    // console.log(this.items);
+    // await this.sortFunction(this.items);
   }
 
   async sortFunction (myArray) {
@@ -105,42 +115,272 @@ export class MtProgressPage implements OnInit {
     });
   }
 
-  /*async getRepairCondition (device_id: string) {
-    // const myUrl = this.urlGetRepair + device_id;
+  async getRepairCondition (device_id: string) {
 
-    // let myJson = await this.http.get(myUrl).toPromise();
-    let myData = await this.api.getDispenserRepairCondition(device_id);
+    let returnValue = [];
+    let myEmail = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
 
-    let returnJson: any = [];
+    if (myEmail === null || myEmail === "" || myEmail === undefined) {
+      
+      // if there is no email, can enter without email
+      // send Toast messsage (announce) on top of page if device id is incorrect
+      let myToast = await this.toastCtrl.create({
+        message: 'No email address or session login is valid!',
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+      
+      myToast.present();
 
-    for (let i = 0 ; i < myData.length ; i++) {
-      let status: number = myData[i]['Status'];
-      let statusString: string = this.arrayStatus[status - 1];
+      // set current page
+      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, "mt-progress");
+      
+      // go to login page
+      this.navCtrl.navigateForward(['login']);
 
-      let errorType: number = myData[i]['ErrorType'];
-      let errorTypeString: string;
-      if (errorType == 5) {
-        errorTypeString = myData[i]['Description'];
-      } else {
-        errorTypeString = this.arrayErrorType[errorType - 1];
+    } else {
+
+      // get data
+      let myData = await this.getData(myEmail, device_id);
+
+      // using 1st data
+      let myMaintenance = myData[0];
+
+      // check the maintenance steps inside the data
+      let myMtResult = await this.getMtResult(myMaintenance);
+
+      returnValue = myMtResult;
+    }
+
+    // let myData = await this.api.getDispenserRepairCondition(device_id);
+    // let returnJson: any = [];
+    // let alreadyGetData = false;
+    // let i = 0;
+
+    // for (let i = 0 ; i < myData.length ; i++) {
+    //   if (myData[i]['Status'] !== 4 && !alreadyGetData) {
+    //     returnJson = myData[i];
+    //     alreadyGetData = true;
+    //   }
+    // }
+
+    // while (i < myData.length && !alreadyGetData) {
+    //   if (myData[i]['Status'] !== 4) {
+    //     returnJson = myData[i];
+    //     alreadyGetData = true;
+    //     i++;
+    //     console.log(i);
+        
+    //   }
+    // }
+
+    // for (let i = 0 ; i < myData.length ; i++) {
+    //   let status: number = myData[i]['Status'];
+    //   let statusString: string = this.arrayStatus[status - 1];
+
+    //   let errorType: number = myData[i]['ErrorType'];
+    //   let errorTypeString: string;
+    //   if (errorType == 5) {
+    //     errorTypeString = myData[i]['Description'];
+    //   } else {
+    //     errorTypeString = this.arrayErrorType[errorType - 1];
+    //   }
+
+    //   let uploadTime = await this.getTime(myData[i]['UploadTime']);
+
+    //   let result = {
+    //     'UploadTime': uploadTime,
+    //     'UploadTimeString': myData[i]['UploadTime'],
+    //     'StatusNum': status,
+    //     'Status': statusString,
+    //     'ErrorTypeNum': errorType,
+    //     'ErrorType': errorTypeString
+    //   };
+
+    //   returnJson.push(result);
+    // }
+
+    return returnValue;
+  }
+
+  async getData (email: string, device_id: string) {
+
+    let data = await this.api.getDispenserRepairCondition(device_id);
+    let returnJson = [];
+
+    for (let i = 0 ; i < data.length ; i++) {
+      if (data[i]['Email'] === email && data[i]['Device_ID'] === device_id) {
+        returnJson.push(data[i]);
       }
-
-      let uploadTime = await this.getTime(myData[i]['UploadTime']);
-
-      let result = {
-        'UploadTime': uploadTime,
-        'UploadTimeString': myData[i]['UploadTime'],
-        'StatusNum': status,
-        'Status': statusString,
-        'ErrorTypeNum': errorType,
-        'ErrorType': errorTypeString
-      };
-
-      returnJson.push(result);
     }
 
     return returnJson;
-  }*/
+  }
+
+  async getMtResult (myJson: any) {
+
+    // initial empty array
+    let returnValue = [];
+
+    // 7 time stored
+    // let timeStored = [
+    //   myJson['UploadTime'],
+    //   myJson['NotifyTime'],
+    //   myJson['Time3'],
+    //   myJson['Time4'],
+    //   myJson['Time5'],
+    //   myJson['Time6'],
+    //   myJson['CompleteTime']
+    // ];
+
+    //////////////////
+    // TESTING ONLY //
+    let timeStored = [
+      "2019-01-02 09:36:44",
+      "2019-01-03 08:22:31",
+      "2019-01-03 14:12:43",
+      "2019-01-04 10:20:02",
+      "2019-01-06 09:04:51",
+      "2019-01-07 08:05:38",
+      "2019-01-07 10:07:49"
+    ];
+    //////////////////
+
+    // 7 more information stored
+    let infoStored = [
+      null,
+      "(Person in charge: " + myJson['Maintainer'] + ")",
+      null,
+      null,
+      "(Result: " + myJson['Result'] + ")",
+      null,
+      null
+    ];
+
+    // check how many steps
+    // let steps = myJson['Status'];
+
+    //////////////////
+    // TESTING ONLY //
+    let steps = 7;
+    //////////////////
+ 
+    for (let i = steps ; i > 0 ; i--) {
+      
+      let tempJson = {
+        'Time': timeStored[i-1],
+        'Status': this.arrayStatus[i-1],
+        'Information': infoStored[i-1]
+      }
+
+      returnValue.push(tempJson);
+    }
+
+    // switch (steps) {
+    //   case 1: {
+
+    //     tempJson = {
+    //       'Time': myJson['UploadTime'],
+    //       'Status': this.arrayStatus[0],
+    //       'Information': ""
+    //     }
+    //     returnValue.push(tempJson);
+
+    //     break;
+    //   }
+
+    //   case 2: {
+
+    //     tempJson = {
+    //       'Time': myJson['NotifyTime'],
+    //       'Status': this.arrayStatus[1],
+    //       'Information': "(Person in charge: " + myJson['Maintainer'] + ")"
+    //     }
+
+    //     returnValue.push(tempJson);
+
+    //     tempJson = {
+    //       'Time': myJson['UploadTime'],
+    //       'Status': this.arrayStatus[0],
+    //       'Information': ""
+    //     }
+
+    //     returnValue.push(tempJson);
+
+    //     break;
+    //   }
+
+    //   case 3: {
+
+    //     tempJson = {
+    //       'Time': myJson['CompleteTime'],
+    //       'Status': this.arrayStatus[2],
+    //       'Information': ""
+    //     }
+
+    //     returnValue.push(tempJson);
+
+    //     tempJson = {
+    //       'Time': myJson['NotifyTime'],
+    //       'Status': this.arrayStatus[1],
+    //       'Information': "(Person in charge: " + myJson['Maintainer'] + ")"
+    //     }
+
+    //     returnValue.push(tempJson);
+
+    //     tempJson = {
+    //       'Time': myJson['UploadTime'],
+    //       'Status': this.arrayStatus[0],
+    //       'Information': ""
+    //     }
+
+    //     returnValue.push(tempJson);
+
+    //     break;
+    //   }
+      
+    //   case 4: {
+
+    //     tempJson = {
+    //       'Time': myJson['CompleteTime'],
+    //       'Status': this.arrayStatus[3],
+    //       'Information': "(Result: " + myJson['Result'] + ")"
+    //     }
+
+    //     returnValue.push(tempJson);
+
+    //     tempJson = {
+    //       'Time': myJson['CompleteTime'],
+    //       'Status': this.arrayStatus[2],
+    //       'Information': ""
+    //     }
+
+    //     returnValue.push(tempJson);
+
+    //     tempJson = {
+    //       'Time': myJson['NotifyTime'],
+    //       'Status': this.arrayStatus[1],
+    //       'Information': "(Person in charge: " + myJson['Maintainer'] + ")"
+    //     }
+
+    //     returnValue.push(tempJson);
+
+    //     tempJson = {
+    //       'Time': myJson['UploadTime'],
+    //       'Status': this.arrayStatus[0],
+    //       'Information': ""
+    //     }
+
+    //     returnValue.push(tempJson);
+
+    //     break;
+    //   }
+    // }
+
+    return returnValue;
+  }
 
   getTime (time) {
     // time passed is String, construct into Date format
@@ -192,7 +432,7 @@ export class MtProgressPage implements OnInit {
   }
 
   async prefDeviceId () {
-    await this.pref.getData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID).then((value) => {
+    await this.pref.getData(StaticVariable.KEY__DEVICE_ID).then((value) => {
       this.device_id = value;
     });
   }
@@ -205,8 +445,7 @@ export class MtProgressPage implements OnInit {
     let difDate = nowDate.getTime() - lastDate.getTime();
 
     // check if there any session ID
-    let checkData = await this.pref.checkData(StaticVariable.KEY__SESSION_ID, null);
-
+    let checkData = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
     let currentPage = "mt-progress";
 
     // check in console
@@ -215,7 +454,7 @@ export class MtProgressPage implements OnInit {
       console.log(difDate);
       console.log(await this.pref.getData(StaticVariable.KEY__SESSION_ID));
 
-    if (checkData) {
+    if (checkData === "" || checkData === null) {
 
       // direct the user to login page
       this.navCtrl.navigateForward(['login']);

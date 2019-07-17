@@ -24,7 +24,7 @@ export class NearbyPage implements OnInit {
   private onlyHot : boolean = false;
   private resultDone: boolean = false;
 
-  backgroundImg: any;
+  backgroundImg: string = "";
 
   // get deviceId from entering page
   selectedDeviceId: string = "";
@@ -50,13 +50,6 @@ export class NearbyPage implements OnInit {
   }
 
   /**
-   * 
-   */
-  ionViewDidEnter() {
-    this.checkSession();
-  }
-
-  /**
    * Go Back
    */
   backFunc() {
@@ -69,8 +62,6 @@ export class NearbyPage implements OnInit {
    * - it will adjust the conditionalFilter() method
    */
   coldFilter () {
-    this.checkSession();
-
     if (this.resultDone) {
       if (!this.onlyCold)
         this.onlyCold = true;
@@ -87,8 +78,6 @@ export class NearbyPage implements OnInit {
    * - it will adjust the conditionalFilter() method
    */
   warmFilter () {
-    this.checkSession();
-
     if (this.resultDone) {
       if (!this.onlyWarm)
         this.onlyWarm = true;
@@ -104,9 +93,7 @@ export class NearbyPage implements OnInit {
    * - it will change boolean parameter for onlyHot
    * - it will adjust the conditionalFilter() method
    */
-  hotFilter () {
-    this.checkSession();
-    
+  hotFilter () { 
     if (this.resultDone) {
       if (!this.onlyHot)
         this.onlyHot = true;
@@ -132,14 +119,12 @@ export class NearbyPage implements OnInit {
   async main () {
 
     // check id from preference
-    await this.prefDeviceId();
+    this.selectedDeviceId = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
     
     // check if device id is available
     try {
-      this.selectedDeviceId = await this.pref.getData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID);
       await this.api.getNearbyDispenser(this.selectedDeviceId);
-      
-    } catch (error) {
+    } catch (e) {
 
       // send Toast messsage (announce) on top of page if device id is incorrect
       let myToast = await this.toastCtrl.create({
@@ -149,6 +134,8 @@ export class NearbyPage implements OnInit {
         showCloseButton: true,
         closeButtonText: 'Close'
       });
+
+      // present toast and break code as if ends here
       myToast.present();
       return;
     }    
@@ -314,51 +301,5 @@ export class NearbyPage implements OnInit {
 
     // set resultDone to true
     this.resultDone = true;
-  }
-
-  async prefDeviceId () {
-    await this.pref.getData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID).then((value) => {
-      this.selectedDeviceId = value;
-    });
-  }
-
-  async checkSession() {
-    
-    // check session ID and date
-    let nowDate = new Date();
-    let lastDate = await this.pref.getData(StaticVariable.KEY__LAST_DATE)
-    let difDate = nowDate.getTime() - lastDate.getTime();
-
-    // check if there any session ID
-    let checkData = await this.pref.checkData(StaticVariable.KEY__SESSION_ID, null);
-
-    let currentPage = "nearby";
-
-    // check in console
-      console.log(nowDate);
-      console.log(lastDate);
-      console.log(difDate);
-      console.log(await this.pref.getData(StaticVariable.KEY__SESSION_ID));
-
-    if (checkData) {
-
-      // direct the user to login page
-      this.navCtrl.navigateForward(['login']);
-      
-    } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
-
-      // direct the user to login page
-      this.navCtrl.navigateForward(['login']);
-      
-      // remove the session ID from preference
-      this.pref.removeData(StaticVariable.KEY__SESSION_ID);
-
-      // save the name of page
-      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, currentPage);
-    } else if (!checkData && difDate <= StaticVariable.SESSION_TIMEOUT) {
-
-      // save new Date
-      this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
-    }
   }
 }
