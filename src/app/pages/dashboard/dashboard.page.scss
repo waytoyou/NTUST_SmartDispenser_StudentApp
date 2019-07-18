@@ -1,11 +1,6 @@
 //=======================
 // Header Part CSS 
 //=======================
-.ion-header {
-    position: relative;
-    width: 100%;
-}
-
 .background-image, .overlay{
     height: 100%;
     width: 100%;
@@ -79,6 +74,7 @@
 }
 
 .report-status{
+    position: relative;
     text-align: center;
     height: 35%;
     bottom: 0px;
@@ -106,7 +102,6 @@
 
 .ripple:active {
     color: #D3D3D3;
-    size: 100%;
     transition: background 0s;
 }
 
