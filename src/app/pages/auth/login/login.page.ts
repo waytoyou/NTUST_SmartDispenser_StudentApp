@@ -25,6 +25,10 @@ export class LoginPage {
   ngOnInit() {
   }
 
+  backFunc() {
+    this.navCtrl.back();
+  }
+
   async login() {
     const { email, password } = this;
 
@@ -58,7 +62,15 @@ export class LoginPage {
         this.navCtrl.back();
       }
 
-      console.log("Login successed!");
+      let myToast = await this.toastCtrl.create({
+        message: "Login success!",
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+  
+      myToast.present();
 
     } else if (resultData === 0) {
       

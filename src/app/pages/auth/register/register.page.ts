@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-
-import { DispenserAPIService } from '../../../services/DispenserAPI/dispenser-api.service';
 import { NavController, ToastController } from '@ionic/angular';
+
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 
 @Component({
   selector: 'app-register',
@@ -19,6 +19,10 @@ export class RegisterPage {
     private api: DispenserAPIService,
     private toastCtrl: ToastController
   ) { }
+
+  backFunc() {
+    this.navCtrl.back();
+  }
 
   emailFalse = false;
   checkEmail (email) {
@@ -61,7 +65,7 @@ export class RegisterPage {
     }
 
     if (resultData['RepsondNum'] === 1) {
-      this.navCtrl.navigateForward(['dashboard']);
+      this.backFunc();
     }
 
     let myToast = await this.toastCtrl.create({
