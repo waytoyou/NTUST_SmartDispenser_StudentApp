@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { NavController, ToastController } from '@ionic/angular'
-
-import { PreferenceManagerService } from '../../../services/PreferenceManager/preference-manager.service';
-import { StaticVariable } from '../../../classes/StaticVariable/static-variable';
-import { DispenserAPIService } from '../../../services/DispenserAPI/dispenser-api.service';
+import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
+import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 
 @Component({
   selector: 'app-login',
@@ -25,16 +24,23 @@ export class LoginPage {
   ngOnInit() {
   }
 
+  /**
+   * This function is to going back, or route back, to the previous
+   * opened page.
+   */
   backFunc() {
     this.navCtrl.back();
   }
 
   async login() {
+
+    // get email and password from ion input
     const { email, password } = this;
 
+    // check using API, return with number value
     let resultData = await this.api.loginUser(email, password);
-    console.log(resultData);
 
+    // if true
     if (resultData === 1) {
 
       // save the email into session_id
@@ -44,21 +50,20 @@ export class LoginPage {
       let nowDate = new Date();
       await this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
 
-      // get last page if exists
+      // get last page if exists (true)
       let lastPage = await this.pref.getData(StaticVariable.KEY__LAST_PAGE);
 
-      if (lastPage === null) {
+      if (lastPage === false) {
 
-        // if null route to home as default
+        // if no last page, route to dashboard as default
         this.navCtrl.navigateForward(['dashboard']);
 
       } else {
 
-        // delete last_page from preference
-        await this.pref.removeData(StaticVariable.KEY__LAST_PAGE);
+        // set last_page to false from preference
+        await this.pref.saveData(StaticVariable.KEY__LAST_PAGE, false);
 
-        // route to going back
-        // this is because when login page called is above the current page
+        // route to going back because when login page called is above the current page
         this.navCtrl.back();
       }
 

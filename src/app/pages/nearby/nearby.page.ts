@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ToastController, NavController } from '@ionic/angular';
-
-import { PreferenceManagerService } from '../../services/PreferenceManager/preference-manager.service';
-import { StaticVariable } from '../../classes/StaticVariable/static-variable';
-import { DispenserAPIService } from '../../services/DispenserAPI/dispenser-api.service';
+import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
+import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 
 @Component({
   selector: 'app-nearby',
@@ -25,9 +24,7 @@ export class NearbyPage implements OnInit {
   private resultDone: boolean = false;
 
   backgroundImg: string = "";
-
-  // get deviceId from entering page
-  selectedDeviceId: string = "";
+  device_id: string = "";
 
   constructor(
     public http: HttpClient,
@@ -38,15 +35,102 @@ export class NearbyPage implements OnInit {
   ) {  }
 
   /**
-   * ngOnInit() is the function that called when page being loaded.
-   * Like in many programming, it's like main function.
+   * This function being called in the first time page
+   * being accessed. It run several code to get dispenser
+   * maintenance progress and display the value in HTML.
    * 
-   * If want to use async function:
-   * - create new function with async (ex: async myFunctionName() { } )
-   * - call in here with "this.myFunctionName();"
+   * Parameter needed to be mapped into page:
+   * - Device_ID    => getNearby(device_id), urlDetails(device_id)
+   * - Status       => getNearby(device_id)
+   * - HotTemp      => getNearby(device_id)
+   * - WarmTemp     => getNearby(device_id)
+   * - ColdTemp     => getNearby(device_id)
+   * - Building     => getDetails(device_id)
+   * - BuildingLoc  => getBuildingLocation (detailsJson) => for filtering
+   * - Position     => getDetails(device_id)
+   * - Picture      => getPicture(device_id)
    */
-  ngOnInit() {
-    this.main();
+  async ngOnInit() {
+    
+    // check id from preference
+    this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
+    
+    try {
+      
+      // check if device id is available
+      await this.api.getNearbyDispenser(this.device_id);
+
+    } catch (e) {
+
+      // send Toast messsage (announce) on top of page if device id is incorrect
+      let myToast = await this.toastCtrl.create({
+        message: 'Dispenser is incorrect, please scan the QR Code once again!',
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+
+      // present toast and break code as if ends here
+      myToast.present();
+      return;
+    }    
+
+    // get the details of selected dispenser
+    let currentDispenserDetails = await this.getDetails(this.device_id);
+
+    // set img background
+    this.backgroundImg = await this.getPicture(this.device_id);
+
+    // get the location of selected dispensed
+    let currentBuildingLocation = await this.getBuildingLocation(currentDispenserDetails);  
+
+    // get nearby dispensers from selected dispenser
+    let getNearbyDispenserJson = await this.getNearby(this.device_id);
+    
+    // for every dispenser in array
+    for (let i = 0 ; i < getNearbyDispenserJson.length ; i++) {
+
+      // get the dispenser ID
+      let dispenserId = getNearbyDispenserJson[i]['Device_ID'];
+
+      // get dispenser details
+      let dispenserDetails = await this.getDetails(dispenserId);
+
+      // get dispenser picture
+      let dispenserPicture = await this.getPicture(dispenserId);
+
+      // get dispenser location
+      let dispenserBuildingLoc = await this.getBuildingLocation(dispenserDetails);
+
+      // build all components into an object
+      let tempAllDetails = {
+        'Device_ID': dispenserId,
+        'Status': getNearbyDispenserJson[i]['Status'],
+        'HotTemp': getNearbyDispenserJson[i]['HotTemp'],
+        'WarmTemp': getNearbyDispenserJson[i]['WarmTemp'],
+        'ColdTemp': getNearbyDispenserJson[i]['ColdTemp'],
+        'Building': dispenserDetails['Building'],
+        'Position': dispenserDetails['Position'],
+        'Picture': dispenserPicture
+      };
+
+      // conditional if this dispenser is in same location with the selected dispenser
+      if (dispenserBuildingLoc == currentBuildingLocation) {
+
+        // group for same building
+        this.tempSameBuilding.push(tempAllDetails);
+
+      } else {
+
+        // group for different building
+        this.tempNextBuilding.push(tempAllDetails);
+
+      }
+    } // end FOR
+
+    // call conditionalFilter for push from TEMP to NEARBY array field
+    this.conditionalFilter();
   }
 
   /**
@@ -105,99 +189,12 @@ export class NearbyPage implements OnInit {
   }
 
   /**
-   * Parameter needed to be mapped into page:
-   * - Device_ID    => getNearby(device_id), urlDetails(device_id)
-   * - Status       => getNearby(device_id)
-   * - HotTemp      => getNearby(device_id)
-   * - WarmTemp     => getNearby(device_id)
-   * - ColdTemp     => getNearby(device_id)
-   * - Building     => getDetails(device_id)
-   * - BuildingLoc  => getBuildingLocation (detailsJson) => for filtering
-   * - Position     => getDetails(device_id)
-   * - Picture      => getPicture(device_id)
-   */
-  async main () {
-
-    // check id from preference
-    this.selectedDeviceId = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
-    
-    // check if device id is available
-    try {
-      await this.api.getNearbyDispenser(this.selectedDeviceId);
-    } catch (e) {
-
-      // send Toast messsage (announce) on top of page if device id is incorrect
-      let myToast = await this.toastCtrl.create({
-        message: 'Dispenser is not found or ID is incorrect!',
-        duration: 2000,
-        position: 'top',
-        showCloseButton: true,
-        closeButtonText: 'Close'
-      });
-
-      // present toast and break code as if ends here
-      myToast.present();
-      return;
-    }    
-
-    // get the details of selected dispenser
-    let currentDispenserDetails = await this.getDetails(this.selectedDeviceId);
-
-    // set img background
-    this.backgroundImg = await this.getPicture(this.selectedDeviceId);
-
-    // get the location of selected dispensed
-    let currentBuildingLocation = await this.getBuildingLocation(currentDispenserDetails);  
-
-    // get nearby dispensers from selected dispenser
-    let getNearbyDispenserJson = await this.getNearby(this.selectedDeviceId);
-    
-    // for every dispenser in array
-    for (let i = 0 ; i < getNearbyDispenserJson.length ; i++) {
-
-      // get the dispenser ID
-      let dispenserId = getNearbyDispenserJson[i]['Device_ID'];
-
-      // get dispenser details
-      let dispenserDetails = await this.getDetails(dispenserId);
-
-      // get dispenser picture
-      let dispenserPicture = await this.getPicture(dispenserId);
-
-      // get dispenser location
-      let dispenserBuildingLoc = await this.getBuildingLocation(dispenserDetails);
-
-      // build all components into an object
-      let tempAllDetails = {
-        'Device_ID': dispenserId,
-        'Status': getNearbyDispenserJson[i]['Status'],
-        'HotTemp': getNearbyDispenserJson[i]['HotTemp'],
-        'WarmTemp': getNearbyDispenserJson[i]['WarmTemp'],
-        'ColdTemp': getNearbyDispenserJson[i]['ColdTemp'],
-        'Building': dispenserDetails['Building'],
-        'Position': dispenserDetails['Position'],
-        'Picture': dispenserPicture
-      };
-
-      // conditional if this dispenser is in same location with the selected dispenser
-      if (dispenserBuildingLoc == currentBuildingLocation) {
-        this.tempSameBuilding.push(tempAllDetails);
-      } else {
-        this.tempNextBuilding.push(tempAllDetails);
-      }
-    } // end FOR
-
-    // call conditionalFilter for push from TEMP to NEARBY array field
-    this.conditionalFilter();
-  }
-
-  /**
    * this method is for getting the nearby dispenser list in Array
    * 
    * @param   device_id id of the dispenser
    * @returns myJson    json of the nearby dispenser
    */
-  async getNearby (device_id) {    
+  async getNearby (device_id: string) {    
     let myJson = await this.api.getNearbyDispenser(device_id);
     return myJson;
   }
@@ -208,7 +205,7 @@ export class NearbyPage implements OnInit {
    * @param   device_id id of the dispenser
    * @returns myJson    json of dispenser's details
    */
-  async getDetails (device_id) {
+  async getDetails (device_id: string) {
     let myJson = await this.api.getDispenserDetail(device_id);
     return myJson;
   }
@@ -218,7 +215,7 @@ export class NearbyPage implements OnInit {
    * 
    * @param   device_id id of the dispenser
    */
-  async getPicture (device_id) {
+  async getPicture (device_id: string) {
     let myUrl = await this.api.getDispenserPictureUrlOnly(device_id);
     return myUrl;
   }
@@ -231,7 +228,7 @@ export class NearbyPage implements OnInit {
    * @param   device_id   id of the dispenser
    * @returns mbSplit[0]  location ID from device ID, explained in above
    */
-  async getBuildingLocation (detailsJson) {
+  async getBuildingLocation (detailsJson: any) {
     let myBuilding = detailsJson['Device_ID'];
     let mbSplit = myBuilding.split("_");
 
