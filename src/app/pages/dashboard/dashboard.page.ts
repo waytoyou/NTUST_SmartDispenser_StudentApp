@@ -267,7 +267,7 @@ export class DashboardPage implements OnInit {
 
       return false;
 
-    } else if (!checkData && difDate <= StaticVariable.SESSION_TIMEOUT) {
+    } else if (difDate <= StaticVariable.SESSION_TIMEOUT) {
 
       // save new Date
       this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
