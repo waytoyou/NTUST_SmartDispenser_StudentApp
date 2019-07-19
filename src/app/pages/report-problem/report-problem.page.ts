@@ -14,39 +14,22 @@ import { PreferenceManagerService } from 'src/app/services/PreferenceManager/pre
 })
 export class ReportProblemPage implements OnInit {
 
-  constructor(public alertController: AlertController, private http: HttpClient, private router: Router, private api: DispenserAPIService, private pref: PreferenceManagerService) {
-    // Get Backgroud and data from previous page
-    this.getBackground();
-  }
-
-  /**
-     * ngOnInit() is the function that called when page being loaded.
-     * Like in many programming, it's like main function.
-     * 
-     * If want to use async function:
-     * - create new function with async (ex: async myFunctionName() { } )
-     * - call in here with "this.myFunctionName();"
-     */
-  ngOnInit() {
-  }
-
   // Initiate data get from previous page
-  File: any = [];
-  Device_ID: string = "";
-  Email: string = "";
-
-  // Initial data
   selectedDeviceId: string = "";
+  Email: string = "";
   backgroundImg: any;
+
+  // Initial data for report problem
   ErrorType = 0;
   Description: string = '';
-  url: any = [];
+  urlImage: any = [];
   fileImage: any = [];
   imageIndex = 0;
   updateTrack: boolean = false;
-  public selected: string;
-  public type;
 
+  // Initial data for toggle(make check button as radio button)
+  selectedButton: string;
+  type;
 
   // list of problem
   problems = [
@@ -57,10 +40,19 @@ export class ReportProblemPage implements OnInit {
     { problem: 'Other' }
   ];
 
+  constructor(public alertController: AlertController, private http: HttpClient, private router: Router, private api: DispenserAPIService, private pref: PreferenceManagerService) {
+  }
+
   /**
-  * Method to get backgroud and data from previous page
-  */
-  async getBackground() {
+     * ngOnInit() is the function that called when page being loaded.
+     * Like in many programming, it's like main function.
+     * 
+     * If want to use async function:
+     * - create new function with async (ex: async myFunctionName() { } )
+     * - call in here with "this.myFunctionName();"
+     */
+  async ngOnInit() {
+
     // get Device_ID
     await this.prefDeviceId();
     // get Email
@@ -72,7 +64,7 @@ export class ReportProblemPage implements OnInit {
   /**
   * Method to make check button like radio button
   */
-  public toggle(selected, type) {
+  async toggle(selectedButton, type) {
     this.ErrorType = type + 1;
 
     // If not 'Other' option
@@ -83,7 +75,7 @@ export class ReportProblemPage implements OnInit {
     // Make other option null
     for (let index = 0; index < this.problems.length; index++) {
 
-      if (this.problems['problem'] != selected['problem']) {
+      if (this.problems['problem'] != selectedButton['problem']) {
         this.problems[index]['isChecked'] = null;
       }
     }
@@ -92,7 +84,7 @@ export class ReportProblemPage implements OnInit {
   /**
   * Method to clear all check problem and check other if other description is filled
   */
-  onKey() {
+  async checkOther() {
 
     for (let index = 0; index < this.problems.length; index++) {
       this.problems[index]['isChecked'] = null;
@@ -166,11 +158,11 @@ export class ReportProblemPage implements OnInit {
         await thank.present();
 
         // Send data from API
-        this.api.reportProblem(this.fileImage, this.Device_ID, this.Email, this.ErrorType, this.Description);
+        this.api.reportProblem(this.fileImage, this.selectedDeviceId, this.Email, this.ErrorType, this.Description);
 
         // If update track is true
         if (this.updateTrack == true) {
-          this.api.wantUpdateTrack(this.Device_ID, this.Email, true);
+          this.api.wantUpdateTrack(this.selectedDeviceId, this.Email, true);
         }
 
         // Go back to dashboard 
@@ -226,7 +218,7 @@ export class ReportProblemPage implements OnInit {
 
         // Called once readAsDataURL is completed
         reader.onload = (event) => {
-          this.url[this.imageIndex] = reader.result;
+          this.urlImage[this.imageIndex] = reader.result;
           this.imageIndex++;
         }
       }
@@ -259,21 +251,21 @@ export class ReportProblemPage implements OnInit {
 
     // Change the image array if image is delete by user
     if (index === 0) {
-      this.url[0] = this.url[1];
-      this.url[1] = this.url[2];
-      this.url[2] = null;
+      this.urlImage[0] = this.urlImage[1];
+      this.urlImage[1] = this.urlImage[2];
+      this.urlImage[2] = null;
       this.fileImage[0] = this.fileImage[1];
       this.fileImage[1] = this.fileImage[2];
       this.fileImage[2] = null;
 
     } else if (index === 1) {
-      this.url[1] = this.url[2];
-      this.url[2] = null;
+      this.urlImage[1] = this.urlImage[2];
+      this.urlImage[2] = null;
       this.fileImage[1] = this.fileImage[2];
       this.fileImage[2] = null;
     } else {
 
-      this.url[2] = null;
+      this.urlImage[2] = null;
       this.fileImage[2] = null;
     }
     this.imageIndex--;
@@ -285,7 +277,6 @@ export class ReportProblemPage implements OnInit {
   async prefDeviceId() {
     await this.pref.getData(StaticVariable.KEY__DEVICE_ID).then((value) => {
       this.selectedDeviceId = value;
-      this.Device_ID = value;
     });
   }
 
@@ -302,7 +293,7 @@ export class ReportProblemPage implements OnInit {
   * Method to get picture of device
   */
   async getPicture(device_id) {
-    let myUrl = await this.api.getDispenserPictureUrlOnly(device_id);
-    return myUrl;
+    let picUrl = await this.api.getDispenserPictureUrlOnly(device_id);
+    return picUrl;
   }
 }

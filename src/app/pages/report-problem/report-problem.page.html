@@ -26,7 +26,7 @@
       <ion-checkbox slot="start" color="medium" [(ngModel)]="problemName['isChecked']" (click)="toggle(problemName, i)">
       </ion-checkbox>
 
-      <ion-input style="border-bottom: 1px solid grey" *ngIf="j" [(ngModel)]="Description" (keyup)="onKey()">
+      <ion-input style="border-bottom: 1px solid grey" *ngIf="j" [(ngModel)]="Description" (keyup)="checkOther()">
       </ion-input>
     </ion-item>
 
@@ -34,16 +34,16 @@
       <h4 lines="none" style="margin: 5px; width: 250px;">
         Upload image optional
       </h4>
-      <div *ngIf="url[0]!=null" class="addImage">
-        <img [src]="url[0]" class="imageUrl">
+      <div *ngIf="urlImage[0]!=null" class="addImage">
+        <img [src]="urlImage[0]" class="imageUrl">
         <div class="delete" (click)="delete(0)"><u><b>Delete</b></u></div>
       </div>
-      <div *ngIf="url[1]!=null" class="addImage">
-        <img [src]="url[1]" class="imageUrl">
+      <div *ngIf="urlImage[1]!=null" class="addImage">
+        <img [src]="urlImage[1]" class="imageUrl">
         <div class="delete" (click)="delete(1)"><u><b>Delete</b></u></div>
       </div>
-      <div *ngIf="url[2]!=null" class="addImage">
-        <img [src]="url[2]" class="imageUrl">
+      <div *ngIf="urlImage[2]!=null" class="addImage">
+        <img [src]="urlImage[2]" class="imageUrl">
         <div class="delete" (click)="delete(2)"><u><b>Delete</b></u></div>
       </div>
       <div *ngIf="imageIndex < 3" class="image-upload">

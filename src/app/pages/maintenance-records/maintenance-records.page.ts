@@ -19,8 +19,6 @@ export class MaintenanceRecordsPage implements OnInit {
   backgroundImg: any;
 
   constructor(public http: HttpClient, private router: Router, private api: DispenserAPIService, private pref: PreferenceManagerService) {
-    // Get data from API
-    this.getAPI();
   }
 
   /**
@@ -31,7 +29,16 @@ export class MaintenanceRecordsPage implements OnInit {
      * - create new function with async (ex: async myFunctionName() { } )
      * - call in here with "this.myFunctionName();"
      */
-  ngOnInit() {
+  async ngOnInit() {
+    //  get Device_ID to change the background
+    await this.prefDeviceId();
+    this.backgroundImg = await this.getPicture(this.selectedDeviceId);
+
+    // get data from API and save to getAPI
+    let getAPI = await this.api.getDispenserMaintenance(this.selectedDeviceId);
+
+    // Change format to make easier to display
+    this.maintenanceData = this.changeFormat(getAPI);
   }
 
   /**
@@ -51,13 +58,8 @@ export class MaintenanceRecordsPage implements OnInit {
    * - CompleteTime
    * - ErrorMeaning
    */
-  async getAPI() {
-    //  get Device_ID to change the background
-    await this.prefDeviceId();
-    this.backgroundImg = await this.getPicture(this.selectedDeviceId);
 
-    // get data from API and save to getAPI
-    let getAPI = await this.api.getDispenserMaintenance(this.selectedDeviceId);
+  changeFormat(data) {
 
     // Initiate error meaning to translate from error type
     let errorMeaning = ["Button does not respond", "Unable to water", "Leaking water", "Screen not shown", "Other"];
@@ -66,21 +68,18 @@ export class MaintenanceRecordsPage implements OnInit {
     let dayArray = [];
 
     // This loop is to take data from API
-    for (let i = getAPI.length - 1; i >= 0; i--) {
-      console.log(getAPI[i]['CompleteTime']);
-      console.log(i);
+    for (let i = data.length - 1; i >= 0; i--) {
       let dataForMaintenance = {
-        'Device_ID': getAPI[i]['Device_ID'],
-        'ErrorType': getAPI[i]['ErrorType'],
-        'Description': getAPI[i]['Description'],
-        'CompleteTime': getAPI[i]['CompleteTime'],
-        'ErrorMeaning': errorMeaning[getAPI[i]['ErrorType'] - 1],
-        'Day': this.getTime(getAPI[i]['CompleteTime'])['dayForTime'],
-        'Month': this.getTime(getAPI[i]['CompleteTime'])['monthForTime'],
-        'Year': this.getTime(getAPI[i]['CompleteTime'])['yearForTime']
+        'Device_ID': data[i]['Device_ID'],
+        'ErrorType': data[i]['ErrorType'],
+        'Description': data[i]['Description'],
+        'CompleteTime': data[i]['CompleteTime'],
+        'ErrorMeaning': errorMeaning[data[i]['ErrorType'] - 1],
+        'Day': this.getTime(data[i]['CompleteTime'])['dayForTime'],
+        'Month': this.getTime(data[i]['CompleteTime'])['monthForTime'],
+        'Year': this.getTime(data[i]['CompleteTime'])['yearForTime']
       };
       dayArray.push(dataForMaintenance);
-
     }
 
     // Initiate variabel to store data for parsing
@@ -142,8 +141,7 @@ export class MaintenanceRecordsPage implements OnInit {
     }
 
     // Save parsing data to maintenanceData
-    this.maintenanceData = yearArray;
-
+    return yearArray;
   }
 
   /**
@@ -204,7 +202,7 @@ export class MaintenanceRecordsPage implements OnInit {
   * Method to get picture of device
   */
   async getPicture(device_id) {
-    let myUrl = await this.api.getDispenserPictureUrlOnly(device_id);
-    return myUrl;
+    let picUrl = await this.api.getDispenserPictureUrlOnly(device_id);
+    return picUrl;
   }
 }
