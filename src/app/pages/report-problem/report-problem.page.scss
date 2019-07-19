@@ -4,6 +4,7 @@ ion-content {
 }
 
 .header {
+    background-image: url("https://blog.tiket.com/wp-content/uploads/Gambar-Pemandangan-Alam-Terindah-Danau-Toba.jpg");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center center;
@@ -36,7 +37,6 @@ ion-content {
     right: 0;
     text-align: right;
     height: 100%;
-    cursor: pointer;
 }
 
 .avatar {
@@ -60,7 +60,6 @@ ion-content {
     display: block;
     opacity: 0.5;
     margin: 5px;
-    cursor: pointer;
 }
 
 .image-upload {
@@ -95,7 +94,6 @@ ion-content {
     border-radius: 5px;
     border-color: grey;
     margin-left: 5px;
-
 }
 
 .delete {

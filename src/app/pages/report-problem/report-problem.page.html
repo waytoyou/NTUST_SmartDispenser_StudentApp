@@ -1,5 +1,5 @@
 <ion-content>
-  <div class="header" [style.backgroundImage]="'url(' + backgroundImg + ')'">
+  <div class="header">
     <div class="overlay header-inside">
 
       <div class="header-inside--icon-left float-left">
@@ -26,7 +26,7 @@
       <ion-checkbox slot="start" color="medium" [(ngModel)]="problemName['isChecked']" (click)="toggle(problemName, i)">
       </ion-checkbox>
 
-      <ion-input style="border-bottom: 1px solid grey" *ngIf="j" [(ngModel)]="Description" (keyup)="onKey($event)">
+      <ion-input style="border-bottom: 1px solid grey" *ngIf="j" [(ngModel)]="Description" (keyup)="onKey()">
       </ion-input>
     </ion-item>
 
