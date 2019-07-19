@@ -153,6 +153,12 @@ export class DispenserAPIService {
 
     return returnValue;
     
+      // return await this.http.post(url, postDataRegister, httpOption).subscribe(() => {
+      //   return true;
+      // }, () => {
+      //   console.error("Promise rejected: unable to get token!");
+      // });
+
   }
 
   /**
@@ -191,6 +197,12 @@ export class DispenserAPIService {
         console.error("Function error: on loginUser => " + e);
         return -1;
       });
+
+    // if (value['code'] === 200) {
+    //   respond = true;
+    // }
+    
+    // return respond;
   }
 
   /**
@@ -274,6 +286,14 @@ export class DispenserAPIService {
         console.error("Function error: on getNearbyDispenser => " + e);
         return [{}];
       });
+    
+    // try {
+    //   let value = await this.http.get(url).toPromise();
+    //   return value['Data'];
+    // } catch (e) {
+    //   console.error("Error in getNearbyDispenser: " + e);
+    //   return [{}];
+    // }
   }
 
   /**
@@ -291,7 +311,7 @@ export class DispenserAPIService {
 
     return await this.http.get(url).toPromise()
       .then((result) => {
-        return result;
+        return result['Data'];
       }, () => {
         console.error("Promise rejected: unable to get dispenser picture!");
         return null;
@@ -300,6 +320,14 @@ export class DispenserAPIService {
         console.error("Function error: on getDispenserPicture => " + e);
         return null;
       });
+    
+    // try {
+    //   let value = await this.http.get(url).toPromise();
+    //   return value['Data'];
+    // } catch (e) {
+    //   console.error("Error in getDispenserPicture: " + e);
+    //   return null;
+    // }
   }
 
   /**
@@ -358,6 +386,19 @@ export class DispenserAPIService {
       });
 
     return returnValue;
+    
+    // try {
+    //   let value = await this.http.get(url).toPromise();
+    //   return value['Data'];
+    // } catch (e) {
+    //   console.error("Error in getDispenserDetail: " + e);
+    //   return {
+    //     "Device_ID": device_id,
+    //     "Building": "",
+    //     "Position": "",
+    //     "Type": ""
+    //   };
+    // }
   }
 
   /**
@@ -403,6 +444,14 @@ export class DispenserAPIService {
         console.error("Function error: on getDispenserMaintenance => " + e);
         return [{}];
       });
+    
+    // try {
+    //   let value = await this.http.get(url).toPromise();
+    //   return value['Data'];
+    // } catch (e) {
+    //   console.error("Error in getDispenserMaintenance: " + e);
+    //   return [{}];
+    // }
   }
 
   /**
@@ -449,6 +498,24 @@ export class DispenserAPIService {
       });
 
     return returnValue;
+
+    // let myJson;
+    // await this.http.get(url).toPromise().then((success) => {
+    //   console.log("Success");
+    //   myJson = success['Data'];
+    // }).catch(() => {
+    //   console.error("Error while getting data: " + device_id + ", in getDispenserRawData");
+    //   myJson = {
+    //     "Device_ID": device_id,
+    //     "UploadTime": "",
+    //     "Status": -1,
+    //     "HotTemp": -1,
+    //     "WarmTemp": -1,
+    //     "ColdTemp": -1
+    //   }
+    // });
+
+    // return myJson;
   }
 
   /**
@@ -519,6 +586,20 @@ export class DispenserAPIService {
       });
 
     return returnValue;
+    
+    // try {
+    //   let value = await this.http.get(url).toPromise();
+    //   return value['Data'];
+    // } catch (e) {
+    //   console.error("Error in getDispenserRepairCondition: " + e);
+    //   return {
+    //     "Device_ID": device_id,
+    //     "UploadTime": "",
+    //     "Status": -1,
+    //     "ErrorType": -1,
+    //     "Description": ""
+    //   };
+    // }
   }
 
   /**
@@ -594,11 +675,10 @@ export class DispenserAPIService {
 
     return await this.http.post(url, postBody).toPromise()
       .then((result) => {
-        if (result['code'] === 200){
+        if (result === 200){
           return true;
         } else {
           console.error("Error while sending request: " + result['msg']);
-          return false;
         }
       }, () => {
         console.error("Promise rejected: unable to sending request to track!");
