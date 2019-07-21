@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { HttpClient } from '@angular/common/http';
+import {StaticVariable} from "../../classes/StaticVariable/static-variable";
 
 @Component({
   selector: 'app-detailed-information',
@@ -26,7 +27,7 @@ export class DetailedInformationPage implements OnInit {
   public detailedInformationTop: any;
 
   //variables for dispenser APIs
-  private device_id = "MA_04_01";
+  private device_id;
   public url_dispenser_picture: string;
   public dispenser_rawdata: any;
   public dispenser_detail: any;
@@ -71,6 +72,7 @@ export class DetailedInformationPage implements OnInit {
     else
       this.adjustDynamicMobileScreen();
 
+    await this.getPrefsData();
     await this.setAPIsData();
 
     this.setCelsiusTemperatures();
@@ -127,6 +129,10 @@ export class DetailedInformationPage implements OnInit {
       this.adjustDynamicDesktopScreen();
     else
       this.adjustDynamicMobileScreen();
+  }
+
+  async getPrefsData(){
+    this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
   }
 
   //--------------------------------------------------

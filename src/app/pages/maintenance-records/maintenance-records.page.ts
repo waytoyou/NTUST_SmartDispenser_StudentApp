@@ -32,6 +32,8 @@ export class MaintenanceRecordsPage implements OnInit {
   async ngOnInit() {
     //  get Device_ID to change the background
     await this.prefDeviceId();
+
+    console.log("device id: " + this.selectedDeviceId);
     this.backgroundImg = await this.getPicture(this.selectedDeviceId);
 
     // get data from API and save to getAPI
@@ -193,9 +195,7 @@ export class MaintenanceRecordsPage implements OnInit {
    * Method to get device ID
    */
   async prefDeviceId() {
-    await this.pref.getData(StaticVariable.KEY__DEVICE_ID).then((value) => {
-      this.selectedDeviceId = value;
-    });
+    this.selectedDeviceId = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
   }
 
   /**
