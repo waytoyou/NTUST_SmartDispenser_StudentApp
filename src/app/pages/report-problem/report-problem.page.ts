@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
+
 import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
+import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
+import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 
 @Component({
   selector: 'app-report-problem',
@@ -11,30 +14,22 @@ import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api
 })
 export class ReportProblemPage implements OnInit {
 
-  constructor(public alertController: AlertController, private http: HttpClient, private router: Router, private api: DispenserAPIService) {
-    this.getBackground();
-  }
-
-  ngOnInit() {
-  }
-
-  // Data from previous page
-  File: any = [];
-  Device_ID: string = "MA_B1_01";
-  Email: string = "AAAAA@gmail.com";
-
-  // Initial data
+  // Initiate data get from previous page
   selectedDeviceId: string = "";
+  Email: string = "";
   backgroundImg: any;
+
+  // Initial data for report problem
   ErrorType = 0;
   Description: string = '';
-  url: any = [];
+  urlImage: any = [];
   fileImage: any = [];
   imageIndex = 0;
   updateTrack: boolean = false;
-  public selected: string;
-  public type;
 
+  // Initial data for toggle(make check button as radio button)
+  selectedButton: string;
+  type;
 
   // list of problem
   problems = [
@@ -45,42 +40,69 @@ export class ReportProblemPage implements OnInit {
     { problem: 'Other' }
   ];
 
-  async getBackground() {
+  constructor(public alertController: AlertController, private http: HttpClient, private router: Router, private api: DispenserAPIService, private pref: PreferenceManagerService) {
+  }
+
+  /**
+     * ngOnInit() is the function that called when page being loaded.
+     * Like in many programming, it's like main function.
+     * 
+     * If want to use async function:
+     * - create new function with async (ex: async myFunctionName() { } )
+     * - call in here with "this.myFunctionName();"
+     */
+  async ngOnInit() {
+
+    // get Device_ID
     await this.prefDeviceId();
+    // get Email
+    await this.prefEmail();
+    // Get background
     this.backgroundImg = await this.getPicture(this.selectedDeviceId);
   }
 
-  /*
-  Method to make check button like radio button
+  /**
+  * Method to make check button like radio button
   */
-  public toggle(selected, type) {
+  async toggle(selectedButton, type) {
     this.ErrorType = type + 1;
+
+    // If not 'Other' option
     if (type != 4) {
       this.Description = '';
     }
+
+    // Make other option null
     for (let index = 0; index < this.problems.length; index++) {
-      if (this.problems['problem'] != selected['problem']) {
+
+      if (this.problems['problem'] != selectedButton['problem']) {
         this.problems[index]['isChecked'] = null;
       }
     }
   }
 
-  /*
-  Method to clear all check problem and check other if other description is filled
+  /**
+  * Method to clear all check problem and check other if other description is filled
   */
-  onKey(event: any) {
+  async checkOther() {
+
     for (let index = 0; index < this.problems.length; index++) {
       this.problems[index]['isChecked'] = null;
     }
+
     this.problems[4]['isChecked'] = 1;
     this.ErrorType = 5;
   }
 
-  /*
-  Method if user submit the report problem  
+  /**
+  * Method if user submit the report problem  
   */
   async submit() {
-    if (this.ErrorType == 0) { // If user not fill the problem
+
+    // If user not fill the problem  make alert message else do next 
+    if (this.ErrorType == 0) {
+
+      // Make alert message
       const error = await this.alertController.create({
         mode: "ios",
         header: 'Dispenser problem is incorret',
@@ -96,10 +118,12 @@ export class ReportProblemPage implements OnInit {
       });
       await error.present();
 
-
     } else {
 
-      if ((this.Description == '') && (this.ErrorType == 5)) { // If other description blank
+      // If user not fill 'Other' problem  make alert message else do thank message
+      if ((this.Description == '') && (this.ErrorType == 5)) {
+
+        // Make alert message
         const error = await this.alertController.create({
           mode: "ios",
           header: 'Dispenser problem is left blank',
@@ -117,7 +141,7 @@ export class ReportProblemPage implements OnInit {
 
       } else {
 
-
+        // Make thank message
         const thank = await this.alertController.create({
           mode: "ios",
           header: 'Thank you for your assistance!',
@@ -133,19 +157,23 @@ export class ReportProblemPage implements OnInit {
         });
         await thank.present();
 
-        this.api.reportProblem(this.fileImage, this.Device_ID, this.Email, this.ErrorType, this.Description);
+        // Send data from API
+        this.api.reportProblem(this.fileImage, this.selectedDeviceId, this.Email, this.ErrorType, this.Description);
 
-        if (this.updateTrack == true) { // If update status true
-          this.api.wantUpdateTrack(this.Device_ID, this.Email, true);
+        // If update track is true
+        if (this.updateTrack == true) {
+          this.api.wantUpdateTrack(this.selectedDeviceId, this.Email, true);
         }
+
+        // Go back to dashboard 
         this.router.navigate(['dashboard']);
       }
     }
   }
 
 
-  /*
-  Method to show alert message if user left the page
+  /**
+  * Method to show alert message if user left the page
   */
   async AlertConfirm() {
     const alert = await this.alertController.create({
@@ -168,27 +196,36 @@ export class ReportProblemPage implements OnInit {
         }
       ]
     });
-
     await alert.present();
   }
 
-  /*
-  Method to add image
+  /**
+  * Method to add image
   */
   async onFileSelect(event) {
 
-    if (event.target.files[0].size <= 10485760) { // Limit image size to 10 Mb
+    // Limit size image to 10 Mb
+    if (event.target.files[0].size <= 10485760) {
+
+      // Check image length, image cannot empty
       if (event.target.files.length > 0) {
         this.fileImage[this.imageIndex] = event.target.files[0];
 
         var reader = new FileReader();
-        reader.readAsDataURL(event.target.files[0]); // read file as data url
-        reader.onload = (event) => { // called once readAsDataURL is completed
-          this.url[this.imageIndex] = reader.result;
+
+        // Read file as data url
+        reader.readAsDataURL(event.target.files[0]);
+
+        // Called once readAsDataURL is completed
+        reader.onload = (event) => {
+          this.urlImage[this.imageIndex] = reader.result;
           this.imageIndex++;
         }
       }
+
     } else {
+
+      // Send message if data is to big
       const toBig = await this.alertController.create({
         mode: "ios",
         header: 'File Size is to Big',
@@ -206,45 +243,57 @@ export class ReportProblemPage implements OnInit {
     }
   }
 
-  /*
-  Method to rearrange array if user delete the image
-  */
+  /**
+   * @param index is number image uploaded by user 
+   * Method to rearrange array if user delete the image
+   */
   async delete(index) {
+
+    // Change the image array if image is delete by user
     if (index === 0) {
-      this.url[0] = this.url[1];
-      this.url[1] = this.url[2];
-      this.url[2] = null;
+      this.urlImage[0] = this.urlImage[1];
+      this.urlImage[1] = this.urlImage[2];
+      this.urlImage[2] = null;
       this.fileImage[0] = this.fileImage[1];
       this.fileImage[1] = this.fileImage[2];
       this.fileImage[2] = null;
 
     } else if (index === 1) {
-      this.url[1] = this.url[2];
-      this.url[2] = null;
+      this.urlImage[1] = this.urlImage[2];
+      this.urlImage[2] = null;
       this.fileImage[1] = this.fileImage[2];
       this.fileImage[2] = null;
     } else {
-      this.url[2] = null;
-      this.fileImage[2] = null;
 
+      this.urlImage[2] = null;
+      this.fileImage[2] = null;
     }
     this.imageIndex--;
   }
 
-  /*
-  Method to get device ID
+  /**
+  * Method to get Device ID
   */
   async prefDeviceId() {
-    //await this.pref.getData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID).then((value) => {
-    this.selectedDeviceId = 'EE_06_01';
-    //});
+    await this.pref.getData(StaticVariable.KEY__DEVICE_ID).then((value) => {
+      this.selectedDeviceId = value;
+    });
   }
 
-  /*
-  Method to get picture of device
+  /**
+  * Method to get Email
+  */
+  async prefEmail() {
+    await this.pref.getData(StaticVariable.KEY__SESSION_ID).then((value) => {
+      this.Email = value;
+    });
+  }
+
+  /**
+  * Method to get picture of device
   */
   async getPicture(device_id) {
-    let myUrl = await this.api.getDispenserPictureUrlOnly(device_id);
-    return myUrl;
+    let picUrl = await this.api.getDispenserPictureUrlOnly(device_id);
+    return picUrl;
   }
 }
