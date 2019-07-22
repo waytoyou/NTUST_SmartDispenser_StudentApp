@@ -35,6 +35,7 @@ export class MtProgressPage implements OnInit {
 
   items: any = [];
   device_id: string = "";
+  email: string = "";
   backgroundImg: any;
 
   constructor(
@@ -52,8 +53,11 @@ export class MtProgressPage implements OnInit {
    */
   async ngOnInit() {
     
-    // check id from preference
+    // store id from preference
     this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
+
+    // store email from preference
+    this.email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
       
     // check if device id is available
     try {
@@ -115,11 +119,8 @@ export class MtProgressPage implements OnInit {
     // set initial array variable
     let returnValue = [];
 
-    // get the email from session id in preference
-    let myEmail = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
-
     // check if email is present
-    if (myEmail === null || myEmail === "" || myEmail === undefined) {
+    if (this.email === null || this.email === "" || this.email === undefined) {
       
       // if there is no email, can enter without email
       // send Toast messsage (announce) on top of page if device id is incorrect
@@ -142,16 +143,20 @@ export class MtProgressPage implements OnInit {
     } else {
 
       // get data of maintenance progress using email and device id
-      let myData = await this.getData(myEmail, device_id);
+      let myData = await this.getData(this.email, device_id);
 
-      // using 1st data, the newest
-      let myMaintenance = myData[0];
+      // for every report in the data
+      for (let i = 0 ; i < myData.length ; i++) {
 
-      // check the maintenance steps inside the data
-      let myMtResult = await this.getMtResult(myMaintenance);
+        // get the data
+        let myMaintenance = myData[i];
 
-      // set result into returnValue variable
-      returnValue = myMtResult;
+        // set the maintenance steps and process into new object
+        let myMtResult = await this.getMtResult(myMaintenance);
+
+        // store in returnValue
+        returnValue.push(myMtResult);
+      }
     }
 
     return returnValue;
@@ -184,8 +189,23 @@ export class MtProgressPage implements OnInit {
       // filter the data
       if (data[i]['Email'] === email && data[i]['Device_ID'] === device_id) {
 
-        // if data founded, insert to array
-        returnJson.push(data[i]);
+        // if data founded, check if the status is 7 with the Complete time still under 48 hours
+        let completeTime = data[i]['CompleteTime'];
+        let status = data[i]['Status'];
+
+        // create Date object for NOW dan COMPLETE TIME
+        let currentDate = new Date();
+        let completeTimeDate = this.convertApiTimeToDate(completeTime);
+
+        // get different Date using getTime to convert into miliseconds number type
+        let diffDate = currentDate.getTime() - completeTimeDate.getTime();
+
+        if (status !== 7 && diffDate <= 172800000) {
+          
+          // store in returnJson if not meet disposal condition
+          returnJson.push(data[i]);
+
+        }
       }
     }
 
@@ -307,6 +327,70 @@ export class MtProgressPage implements OnInit {
       // save new Date
       this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
     }
+  }
+
+  /**
+   * This function is to convert the time from the API into Date
+   * object in typescript library. The purpose is to create a new
+   * Date object with data from the API. This function will return
+   * Date object
+   * 
+   * @param     time    Value of time from API in "2019-03-08 16:32:00" format
+   * 
+   * @returns   Date    Date object converted result from time
+   */
+  convertApiTimeToDate (time: any) {
+    // time passed is String, construct into Date format
+    // time example from json: "2019-03-08 16:32:00"
+    // format: YEAR-MONTH-DATEOFMONTH HOUR:MINUTE:SECOND
+    
+    // split into DATE form and HOUR form
+    let splitTime = time.split(" ");
+
+      ////////////////////////////////////////////
+     //  DATE PART                             //
+    ////////////////////////////////////////////
+
+    // resultDate = YEAR-MONTH-DATEOFMONTH
+    let resultDate = splitTime[0];
+
+    // split DATE into YEAR, MONTH, and DATEOFMONTH
+    let splitDate = resultDate.split("-");
+
+    let resultYear = splitDate[0];
+    let resultMonth = splitDate[1] - 1;
+    let resultDateOfMonth = splitDate[2];
+
+      ////////////////////////////////////////////
+     //  HOUR PART                             //
+    ////////////////////////////////////////////
+
+    // resultHour = HOUR:MINUTE:SECOND
+    let resultHour = splitTime[1];
+
+    // split HOUR into HOUR, MINUTE, and SECOND
+    let splitHour = resultHour.split(":");
+
+    let resultHourC = splitHour[0];
+    let resultMinute = splitHour[1];
+    let resultSecond = splitHour[2];
+
+      ////////////////////////////////////////////
+     //  CONSTRUCT DATE PART                   //
+    ////////////////////////////////////////////
+
+    // now we get every component to construct date from String
+    let newDate = new Date(
+      resultYear,
+      resultMonth,
+      resultDateOfMonth,
+      resultHourC,
+      resultMinute,
+      resultSecond,
+      0
+    );
+
+    return newDate;
   }
 
 }

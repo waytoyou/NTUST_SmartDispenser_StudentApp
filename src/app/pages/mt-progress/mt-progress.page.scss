@@ -124,3 +124,16 @@ ul li:last-child .fi {
 .float-left {
     float: left;
 }
+
+.swiper-slide {
+    display: block;
+}
+
+ion-slide {
+    text-align: left;
+}
+
+ion-slides {
+    --bullet-background: #3b3b3b;
+    --bullet-background-active: #3880ff;
+}
