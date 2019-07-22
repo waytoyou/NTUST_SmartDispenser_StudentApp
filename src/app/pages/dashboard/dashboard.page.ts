@@ -6,6 +6,7 @@ import { DeviceDetectorService } from 'ngx-device-detector';
 import { PreferenceManagerService } from '../../services/PreferenceManager/preference-manager.service';
 import { NavController, AlertController } from '@ionic/angular';
 import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
+import {ActivatedRoute} from "@angular/router";
 
 @Component({
   selector: 'app-dashboard',
@@ -44,8 +45,9 @@ export class DashboardPage implements OnInit {
     private pref: PreferenceManagerService,
     private navCtrl: NavController,
     private alertCtrl: AlertController,
-    private api: DispenserAPIService) 
-  {  }
+    private api: DispenserAPIService,
+    private actRoute: ActivatedRoute)
+  {}
 
   async ngOnInit() {
     this.detectDevice();
@@ -55,14 +57,11 @@ export class DashboardPage implements OnInit {
     else
       this.adjustDynamicMobileScreen();
 
-    /////////////////////////////////
-    // this is for testing only
-    await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, "MA_05_01");
-    await this.pref.saveData(StaticVariable.KEY__SESSION_ID, "ntust.smartcampus@gmail.com");
-    ////////////////////////////////
+    this.setDeviceIdFromUrl();
 
-    // get the device ID
-    this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
+    // Get the device id from URL
+    this.device_id = this.actRoute.snapshot.paramMap.get('device_id');
+    await this.setPrefs();
 
     // check if preference is not build yet
     await this.checkPrefFirstTime();
@@ -146,11 +145,8 @@ export class DashboardPage implements OnInit {
     // check login first, return true if login is true
     if (await this.checkLogin()) {
 
-      // act the active to 
-      if(!this.trackIsActive)
-        this.trackIsActive = true;
-      else
-        this.trackIsActive = false;
+      // act the active to
+      this.trackIsActive = !this.trackIsActive;
 
       let email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
       await this.api.wantUpdateTrack(this.device_id, email, this.trackIsActive);
@@ -167,7 +163,7 @@ export class DashboardPage implements OnInit {
 
 
   /**
-   * Check First Time Prefference
+   * Check First Time Preference
    */
   async checkPrefFirstTime () {
       
@@ -187,13 +183,21 @@ export class DashboardPage implements OnInit {
   async setAPIsData(){
     this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);   
   }
-  
+
+  async setPrefs(){
+    await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, this.device_id);
+  }
+
   async setLoginPref(){
     // check if user has report something
     let email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
     if (email !== "" || email !== null || email !== undefined) {
       this.hasReportSubmitted = await this.api.checkAnyReportSubmitted(email, this.device_id);
     }
+  }
+
+  setDeviceIdFromUrl (){
+    this.device_id = this.actRoute.snapshot.paramMap.get('device_id');
   }
 
   async checkLogin () {
