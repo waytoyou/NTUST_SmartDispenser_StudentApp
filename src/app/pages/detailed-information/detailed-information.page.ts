@@ -5,6 +5,9 @@ import { Router } from '@angular/router';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { HttpClient } from '@angular/common/http';
+import { NavController } from '@ionic/angular';
+import { LoadingController } from '@ionic/angular';
+
 import {StaticVariable} from "../../classes/StaticVariable/static-variable";
 
 @Component({
@@ -13,6 +16,8 @@ import {StaticVariable} from "../../classes/StaticVariable/static-variable";
   styleUrls: ['./detailed-information.page.scss'],
 })
 export class DetailedInformationPage implements OnInit {
+
+  private loadScreen: any;
 
   public screenHeight: any;
   public screenWidth: any;
@@ -61,7 +66,9 @@ export class DetailedInformationPage implements OnInit {
       private router: Router,
       private deviceDetector: DeviceDetectorService,
       private pref: PreferenceManagerService,
-      private api: DispenserAPIService) {}
+      private api: DispenserAPIService,
+      private navCtrl: NavController,
+      private loadCtrl: LoadingController) {}
 
   async ngOnInit() {
 
@@ -72,6 +79,8 @@ export class DetailedInformationPage implements OnInit {
     else
       this.adjustDynamicMobileScreen();
 
+    await this.showLoadScreen();
+
     await this.getPrefsData();
     await this.setAPIsData();
 
@@ -79,6 +88,8 @@ export class DetailedInformationPage implements OnInit {
     this.setFahrenheitTemperatures();
     this.setDispenserDetail();
     this.setTemperatureDisplay();
+
+    await this.dismissLoadScreen();
   }
 
   private detectDevice() {
@@ -184,10 +195,30 @@ export class DetailedInformationPage implements OnInit {
     }
   }
 
+  // first function
+  async showLoadScreen () {
+
+    // create the loading screen
+    this.loadScreen = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent'
+    })
+
+    // show the loading screen
+    this.loadScreen.present();
+  }
+
+  // second function
+  async dismissLoadScreen () {
+
+    // dismiss/remove the loading screen
+    this.loadScreen.dismiss();
+  }
+
   //--------------------------------------------------
   //Routing part
   //--------------------------------------------------
   goToDashboard(){
-    this.router.navigate(['dashboard']);
+    this.navCtrl.back();
   }
 }

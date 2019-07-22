@@ -50,26 +50,23 @@ export class DashboardPage implements OnInit {
   {}
 
   async ngOnInit() {
+    // check if preference is not build yet
+    await this.setDeviceIdFromUrl();
+    await this.setPrefs();
+
+    await this.checkPrefFirstTime();
+    await this.setAPIsData();
+
     this.detectDevice();
 
     if(this.isDesktopType)
       this.adjustDynamicDesktopScreen();
     else
       this.adjustDynamicMobileScreen();
-
-    this.setDeviceIdFromUrl();
-
-    // Get the device id from URL
-    this.device_id = this.actRoute.snapshot.paramMap.get('device_id');
-    await this.setPrefs();
-
-    // check if preference is not build yet
-    await this.checkPrefFirstTime();
-    await this.setAPIsData();
   }
 
   ionViewDidEnter() {
-    this.setLoginPref();
+    this.checkLoginPref();
   }
 
   private detectDevice() {
@@ -187,7 +184,7 @@ export class DashboardPage implements OnInit {
     await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, this.device_id);
   }
 
-  async setLoginPref(){
+  async checkLoginPref(){
     // check if user has report something
     let email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
     if (email !== "" || email !== null || email !== undefined) {
