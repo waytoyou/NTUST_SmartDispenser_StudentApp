@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ToastController, NavController } from '@ionic/angular';
+import { ToastController, NavController, LoadingController } from '@ionic/angular';
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
@@ -23,6 +23,8 @@ export class NearbyPage implements OnInit {
   private onlyHot : boolean = false;
   private resultDone: boolean = false;
 
+  private makeLoading: any;
+
   backgroundImg: string = "";
   device_id: string = "";
 
@@ -31,7 +33,8 @@ export class NearbyPage implements OnInit {
     public toastCtrl: ToastController,
     private pref: PreferenceManagerService,
     private api: DispenserAPIService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private loadCtrl: LoadingController
   ) {  }
 
   /**
@@ -51,6 +54,9 @@ export class NearbyPage implements OnInit {
    * - Picture      => getPicture(device_id)
    */
   async ngOnInit() {
+
+    // create loading screen
+    this.createLoadCtrl();
     
     // check id from preference
     this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
@@ -61,6 +67,9 @@ export class NearbyPage implements OnInit {
       await this.api.getNearbyDispenser(this.device_id);
 
     } catch (e) {
+
+      // dismiss the loading screen
+      this.dismissLoadCtrl();
 
       // send Toast messsage (announce) on top of page if device id is incorrect
       let myToast = await this.toastCtrl.create({
@@ -73,6 +82,9 @@ export class NearbyPage implements OnInit {
 
       // present toast and break code as if ends here
       myToast.present();
+
+      // set resultDone to true
+      this.resultDone = true;
       return;
     }    
 
@@ -131,6 +143,9 @@ export class NearbyPage implements OnInit {
 
     // call conditionalFilter for push from TEMP to NEARBY array field
     this.conditionalFilter();
+
+    // dismiss the loading screen
+    this.dismissLoadCtrl();
   }
 
   /**
@@ -138,6 +153,25 @@ export class NearbyPage implements OnInit {
    */
   backFunc() {
     this.navCtrl.back();
+  }
+
+  /**
+   * This function is for create the loading controller
+   */
+  async createLoadCtrl () {
+    this.makeLoading = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent'
+    })
+
+    this.makeLoading.present();
+  }
+
+  /**
+   * This function is for dismiss the loading controller
+   */
+  async dismissLoadCtrl () {
+    this.makeLoading.dismiss();
   }
 
   /**
