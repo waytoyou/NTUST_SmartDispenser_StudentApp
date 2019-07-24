@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ToastController, NavController } from '@ionic/angular';
+import { ToastController, NavController, LoadingController } from '@ionic/angular';
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
@@ -37,13 +37,17 @@ export class MtProgressPage implements OnInit {
   device_id: string = "";
   email: string = "";
   backgroundImg: any;
-
+  
+  // loadCtrl var
+  makeLoading: any;
+  
   constructor(
     public http: HttpClient,
     public toastCtrl: ToastController,
     private pref: PreferenceManagerService,
     private navCtrl: NavController,
-    private api: DispenserAPIService
+    private api: DispenserAPIService,
+    private loadCtrl: LoadingController
   ) {  }
 
   /**
@@ -52,6 +56,9 @@ export class MtProgressPage implements OnInit {
    * maintenance progress and display the value in HTML.
    */
   async ngOnInit() {
+
+    // create loading screen
+    await this.createLoadCtrl();
     
     // store id from preference
     this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
@@ -66,6 +73,9 @@ export class MtProgressPage implements OnInit {
       await this.api.getDispenserDetail(this.device_id);
 
     } catch (error) {
+
+      // dismiss the loading screen
+      this.dismissLoadCtrl();
 
       // send Toast messsage (announce) on top of page if device id is incorrect
       let myToast = await this.toastCtrl.create({
@@ -90,6 +100,10 @@ export class MtProgressPage implements OnInit {
 
     // set image
     this.backgroundImg = await this.getPicture(this.device_id);
+
+    // dismiss the loading screen
+    this.dismissLoadCtrl();
+
   }
 
   /**
@@ -106,6 +120,30 @@ export class MtProgressPage implements OnInit {
    */
   backFunc() {
     this.navCtrl.back();
+  }
+
+  /**
+   * This function is for create the loading controller
+   */
+  async createLoadCtrl () {
+
+    // create the loading controller
+    this.makeLoading = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent'
+    })
+
+    // display the loading controller
+    this.makeLoading.present();
+  }
+
+  /**
+   * This function is for dismiss the loading controller
+   */
+  async dismissLoadCtrl () {
+
+    // remove or dismiss the loading controller
+    this.makeLoading.dismiss();
   }
 
   /**
@@ -327,6 +365,17 @@ export class MtProgressPage implements OnInit {
       // save new Date
       this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
     }
+
+    // create toast when session login is ended (above 5 minutes)
+    let myToast = await this.toastCtrl.create({
+      message: "Your session is ended, please re-login to access.",
+      duration: 2000,
+      position: 'top',
+      showCloseButton: true,
+      closeButtonText: 'Close'
+    });
+
+    myToast.present();
   }
 
   /**

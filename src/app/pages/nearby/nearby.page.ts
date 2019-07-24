@@ -12,19 +12,27 @@ import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 })
 export class NearbyPage implements OnInit {
 
-  // field
+  /*
+    field array variables to store the data
+    - nearby variable is the data to display
+    - temp variable is store all data while being copied to nearby when filter is active
+    - same building means in same building, while next building means in different building
+  */
   public nearbySameBuilding = [];
   public nearbyNextBuilding = [];
   private tempSameBuilding = [];
   private tempNextBuilding = [];
 
+  // field variables for identify if filter is ON/OFF and the data is ready to be displayed
   private onlyCold : boolean = false;
   private onlyWarm : boolean = false;
   private onlyHot : boolean = false;
   private resultDone: boolean = false;
 
-  private makeLoading: any;
+  // loadCtrl var
+  makeLoading: any;
 
+  // variable to store device id and background img url
   backgroundImg: string = "";
   device_id: string = "";
 
@@ -56,7 +64,7 @@ export class NearbyPage implements OnInit {
   async ngOnInit() {
 
     // create loading screen
-    this.createLoadCtrl();
+    await this.createLoadCtrl();
     
     // check id from preference
     this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
@@ -159,11 +167,14 @@ export class NearbyPage implements OnInit {
    * This function is for create the loading controller
    */
   async createLoadCtrl () {
+
+    // create the loading controller
     this.makeLoading = await this.loadCtrl.create({
       message: 'Loading data ...',
       spinner: 'crescent'
     })
 
+    // display the loading controller
     this.makeLoading.present();
   }
 
@@ -171,6 +182,8 @@ export class NearbyPage implements OnInit {
    * This function is for dismiss the loading controller
    */
   async dismissLoadCtrl () {
+
+    // remove or dismiss the loading controller
     this.makeLoading.dismiss();
   }
 
