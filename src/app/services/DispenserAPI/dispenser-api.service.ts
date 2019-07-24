@@ -152,6 +152,7 @@ export class DispenserAPIService {
     }  
 
     return returnValue;
+    
   }
 
   /**
@@ -272,7 +273,7 @@ export class DispenserAPIService {
       .catch((e) => {
         console.error("Function error: on getNearbyDispenser => " + e);
         return [{}];
-      });    
+      });
   }
 
   /**
@@ -362,8 +363,8 @@ export class DispenserAPIService {
   /**
    * This function is to get list of dispenser maintenance info 
    * from the target dispenser from the API. This function is used
-   * to get the data about the track of occured problem of a 
-   * dispenser. It returns the json format.
+   * to get the data about any occured problem of a dispenser that
+   * has been done. It returns the json array format.
    * 
    * @param     device_id   The device ID of target dispenser
    * 
@@ -372,20 +373,63 @@ export class DispenserAPIService {
    * @example
    * 
    * [
-   *  {
-   *    "Device_ID": "T4_04_01",
-   *    "ErrorType": 3,
-   *    "Description": "Leaking water",
-   *    "CompleteTime": "2019-01-02 24:00:00"
-   *  },
-   *  {
-   *    "Device_ID": "T4_04_01",
-   *    "ErrorType": 5,
-   *    "Description": "Broken",
-   *    "CompleteTime": "2019-01-09 24:00:00"
-   *  },
-   *  ...
+   *    {
+   *      "Device_ID": "MA_05_01",
+   *      "Email": "ntust.smartcampusgmail.com",
+   *      "ErrorType": 5,
+   *      "Description": "Broken",
+   *      "Status": 7,
+   *      "UploadTime": "2019-01-02 09:36:00",
+   *      "NotifyTime": "2019-01-02 09:36:00",
+   *      "Maintainer": "Mr.Pang",
+   *      "Result": "Someone push powersaving button",
+   *      "CompleteTime": "2019-01-02 24:00:00",
+   *      "Index": 0,
+   *      "Source": null,
+   *      "Source2": null,
+   *      "Source3": null
+   *      "ConfirmTime": "2019-01-03 14:12:43",
+   *      "RepairCallTime": "2019-01-04 10:20:02",
+   *      "RepairDoneTime": "2019-01-06 09:04:51",
+   *      "MaintenanceDoneTime": "2019-01-07 08:05:38"
+   *    },
+   *    {
+   *      "Device_ID": "T4_04_01",
+   *      "Email": "ntust.smartcampusgmail.com",
+   *      "ErrorType": 3,
+   *      "Description": "Leaking water",
+   *      "Status": 7,
+   *      "UploadTime": "2019-01-02 20:16:00",
+   *      "NotifyTime": "2019-01-02 20:16:00",
+   *      "Maintainer": "Mr.Pang",
+   *      "Result": "Fan and Compressor are broken",
+   *      "CompleteTime": "2019-01-02 24:00:00",
+   *      "Index": 0,
+   *      "Source": null,
+   *      "Source2": null,
+   *      "Source3": null
+   *      "ConfirmTime": "2019-01-03 14:12:43",
+   *      "RepairCallTime": "2019-01-04 10:20:02",
+   *      "RepairDoneTime": "2019-01-06 09:04:51",
+   *      "MaintenanceDoneTime": "2019-01-07 08:05:38"
+   *    },
+   *    ...
    * ]
+  //  * [
+  //  *  {
+  //  *    "Device_ID": "T4_04_01",
+  //  *    "ErrorType": 3,
+  //  *    "Description": "Leaking water",
+  //  *    "CompleteTime": "2019-01-02 24:00:00"
+  //  *  },
+  //  *  {
+  //  *    "Device_ID": "T4_04_01",
+  //  *    "ErrorType": 5,
+  //  *    "Description": "Broken",
+  //  *    "CompleteTime": "2019-01-09 24:00:00"
+  //  *  },
+  //  *  ...
+  //  * ]
    */
   async getDispenserMaintenance (device_id:string) {
     
@@ -453,8 +497,8 @@ export class DispenserAPIService {
   /**
    * This function is to get the repair condition of the target
    * dispenser from the API. It contains the problem that still
-   * under maintenance until it being complete. It returns
-   * the json format.
+   * under maintenance where the status is not 7 until it being
+   * complete. It returns the json format.
    * 
    * @param     device_id   The device ID of target dispenser
    * 
@@ -471,7 +515,7 @@ export class DispenserAPIService {
    *      "Email": "ntust.smartcampusgmail.com",
    *      "ErrorType": 5,
    *      "Description": "Broken",
-   *      "Status": 4,
+   *      "Status": 7,
    *      "UploadTime": "2019-01-02 09:36:00",
    *      "NotifyTime": "2019-01-02 09:36:00",
    *      "Maintainer": "Mr.Pang",
@@ -481,13 +525,17 @@ export class DispenserAPIService {
    *      "Source": null,
    *      "Source2": null,
    *      "Source3": null
+   *      "ConfirmTime": "2019-01-03 14:12:43",
+   *      "RepairCallTime": "2019-01-04 10:20:02",
+   *      "RepairDoneTime": "2019-01-06 09:04:51",
+   *      "MaintenanceDoneTime": "2019-01-07 08:05:38"
    *    },
    *    {
-   *      "Device_ID": "MA_05_01",
+   *      "Device_ID": "EE_04_01",
    *      "Email": "ntust.smartcampusgmail.com",
    *      "ErrorType": 3,
    *      "Description": "Leaking water",
-   *      "Status": 4,
+   *      "Status": 3,
    *      "UploadTime": "2019-01-02 20:16:00",
    *      "NotifyTime": "2019-01-02 20:16:00",
    *      "Maintainer": "Mr.Pang",
@@ -497,6 +545,10 @@ export class DispenserAPIService {
    *      "Source": null,
    *      "Source2": null,
    *      "Source3": null
+   *      "ConfirmTime": "",
+   *      "RepairCallTime": "",
+   *      "RepairDoneTime": "",
+   *      "MaintenanceDoneTime": ""
    *    },
    *    ...
    * ]
