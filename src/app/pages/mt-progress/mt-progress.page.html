@@ -1,4 +1,4 @@
-<ion-content>
+<ion-content [scrollEvents]="true" (ionScroll)="updateCurrentSession()">
 
   <!-- header -->
   <div class="header" [style.backgroundImage]="'url(' + backgroundImg + ')'">
