@@ -5,6 +5,9 @@ import { Router } from '@angular/router';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { HttpClient } from '@angular/common/http';
+import { NavController } from '@ionic/angular';
+import { LoadingController } from '@ionic/angular';
+
 import {StaticVariable} from "../../classes/StaticVariable/static-variable";
 
 @Component({
@@ -13,6 +16,8 @@ import {StaticVariable} from "../../classes/StaticVariable/static-variable";
   styleUrls: ['./detailed-information.page.scss'],
 })
 export class DetailedInformationPage implements OnInit {
+
+  private loadScreen: any;
 
   public screenHeight: any;
   public screenWidth: any;
@@ -41,13 +46,13 @@ export class DetailedInformationPage implements OnInit {
   public dispenserPlacedPosition: string;
 
   //Variables for temperature
-  public celsiusHotTemp: number;
-  public celsiusWarmTemp: number;
-  public celsiusColdTemp: number;
+  public celsiusHotTemp: any;
+  public celsiusWarmTemp: any;
+  public celsiusColdTemp: any;
 
-  public fahrenheitHotTemp: number;
-  public fahrenheitWarmTemp: number;
-  public fahrenheitColdTemp: number;
+  public fahrenheitHotTemp: any;
+  public fahrenheitWarmTemp: any;
+  public fahrenheitColdTemp: any;
 
   public displayHotTemp: string;
   public displayWarmTemp: string;
@@ -61,7 +66,9 @@ export class DetailedInformationPage implements OnInit {
       private router: Router,
       private deviceDetector: DeviceDetectorService,
       private pref: PreferenceManagerService,
-      private api: DispenserAPIService) {}
+      private api: DispenserAPIService,
+      private navCtrl: NavController,
+      private loadCtrl: LoadingController) {}
 
   async ngOnInit() {
 
@@ -72,6 +79,8 @@ export class DetailedInformationPage implements OnInit {
     else
       this.adjustDynamicMobileScreen();
 
+    await this.showLoadScreen();
+
     await this.getPrefsData();
     await this.setAPIsData();
 
@@ -79,6 +88,8 @@ export class DetailedInformationPage implements OnInit {
     this.setFahrenheitTemperatures();
     this.setDispenserDetail();
     this.setTemperatureDisplay();
+
+    this.dismissLoadScreen();
   }
 
   private detectDevice() {
@@ -173,21 +184,49 @@ export class DetailedInformationPage implements OnInit {
   }
 
   setTemperatureDisplay(){
-    if(!this.isToggleActive){
-      this.displayHotTemp = this.celsiusHotTemp + "°C";
-      this.displayWarmTemp = this.celsiusWarmTemp + "°C";
-      this.displayColdTemp = this.celsiusColdTemp + "°C";
+    this.displayHotTemp = this.filterTemperature(this.celsiusHotTemp, this.fahrenheitHotTemp);
+    this.displayWarmTemp = this.filterTemperature(this.celsiusWarmTemp, this.fahrenheitWarmTemp);
+    this.displayColdTemp = this.filterTemperature(this.celsiusColdTemp, this.fahrenheitColdTemp);
+  }
+
+  filterTemperature(celsius, fahrenheit){
+    let displayTemp = "";
+
+    if(celsius != null){
+      if(!this.isToggleActive)
+        displayTemp = celsius + "°C";
+      else
+        displayTemp = fahrenheit + "°F";
     }else{
-      this.displayHotTemp = this.fahrenheitHotTemp + "°F";
-      this.displayWarmTemp = this.fahrenheitWarmTemp + "°F";
-      this.displayColdTemp = this.fahrenheitColdTemp + "°F";
+      if(!this.isToggleActive)
+        displayTemp = "...°C";
+      else
+        displayTemp = "...°F";
     }
+
+    return displayTemp;
+  }
+
+  async showLoadScreen () {
+    // create the loading screen
+    this.loadScreen = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent'
+    })
+
+    // show the loading screen
+    this.loadScreen.present();
+  }
+
+  async dismissLoadScreen () {
+  // dismiss/remove the loading screen
+    this.loadScreen.dismiss();
   }
 
   //--------------------------------------------------
   //Routing part
   //--------------------------------------------------
   goToDashboard(){
-    this.router.navigate(['dashboard']);
+    this.navCtrl.back();
   }
 }
