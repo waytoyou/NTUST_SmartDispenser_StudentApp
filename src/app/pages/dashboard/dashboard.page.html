@@ -25,6 +25,10 @@
         </button>
       </span>
 
+      <div class="speech-bubble" [style.top.px]="ballonTextTop" [style.left.px]="ballonTextLeft">
+        <div class="speech-bubble-text">Hi! I am Jellyfish and live on the <b>{{bubbleTextLocation}}</b> of <b>{{bubbleTextBuilding}}</b>!</div>
+      </div>  
+
       <div class="jellyfish-icon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
         <img alt="avatar" src="assets/dashboard/jellyfishIcon.png">
       </div>

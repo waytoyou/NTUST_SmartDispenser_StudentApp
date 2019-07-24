@@ -34,6 +34,10 @@ export class DashboardPage implements OnInit {
   public pageLeft: any;
   public jellyfishIconTop: any;
   public jellyfishIconLeft: any;
+  public ballonTextTop: any;
+  public ballonTextLeft: any;
+  public bubbleTextLocation: string;
+  public bubbleTextBuilding: string;
 
   // user personal settings (login id, track, report)
   public trackIsActive: boolean = false;
@@ -93,6 +97,9 @@ export class DashboardPage implements OnInit {
 
     // get login information and set to field variable
     await this.getLoginEmail();
+
+    // set bubble text information
+    await this.getBubbleTextInfo(this.device_id);
 
     // dismiss the loading screen
     this.dismissLoadCtrl();
@@ -176,8 +183,10 @@ export class DashboardPage implements OnInit {
 
     // set components based on display size
     this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
-    this.jellyfishIconTop = this.headerHeight - 60;
+    this.jellyfishIconTop = this.headerHeight - 120;
     this.jellyfishIconLeft = this.screenWidth/2 - 60;
+    this.ballonTextTop = this.headerHeight - 145;
+    this.ballonTextLeft = this.screenWidth / 2 - 135;
   }
 
   /**
@@ -583,6 +592,18 @@ export class DashboardPage implements OnInit {
     }
 
     return returnValue;
+  }
+
+  async getBubbleTextInfo (device_id: string) {
+
+    let data = await this.api.getDispenserDetail(device_id);
+    let dSplit = device_id.split("_");
+    
+    let position = data['Position'];    
+    let building = dSplit[0];
+
+    this.bubbleTextBuilding = building;
+    this.bubbleTextLocation = position;
   }
 
   /**
