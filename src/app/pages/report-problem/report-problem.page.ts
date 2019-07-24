@@ -1,8 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { AlertController } from '@ionic/angular';
-import { Router } from '@angular/router';
-
+import { AlertController, LoadingController, NavController } from '@ionic/angular';
 import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
@@ -31,6 +28,9 @@ export class ReportProblemPage implements OnInit {
   selectedButton: string;
   type;
 
+  // loadCtrl var
+  makeLoading: any;
+
   // list of problem
   problems = [
     { problem: 'Button does not respond' },
@@ -40,8 +40,13 @@ export class ReportProblemPage implements OnInit {
     { problem: 'Other' }
   ];
 
-  constructor(public alertController: AlertController, private http: HttpClient, private router: Router, private api: DispenserAPIService, private pref: PreferenceManagerService) {
-  }
+  constructor(
+    private alertCtrl: AlertController,
+    private api: DispenserAPIService, 
+    private pref: PreferenceManagerService,
+    private loadCtrl: LoadingController,
+    private navCtrl: NavController
+  ) { }
 
   /**
      * ngOnInit() is the function that called when page being loaded.
@@ -99,11 +104,17 @@ export class ReportProblemPage implements OnInit {
   */
   async submit() {
 
+    // create loading screen
+    await this.createLoadCtrl();
+
+    // create variable to store alertCtrl
+    let alert: any;
+
     // If user not fill the problem  make alert message else do next 
     if (this.ErrorType == 0) {
 
       // Make alert message
-      const error = await this.alertController.create({
+      alert = await this.alertCtrl.create({
         mode: "ios",
         header: 'Dispenser problem is incorret',
         message: 'Please choose one of the problems above!',
@@ -115,8 +126,7 @@ export class ReportProblemPage implements OnInit {
             }
           }
         ]
-      });
-      await error.present();
+      });     
 
     } else {
 
@@ -124,7 +134,7 @@ export class ReportProblemPage implements OnInit {
       if ((this.Description == '') && (this.ErrorType == 5)) {
 
         // Make alert message
-        const error = await this.alertController.create({
+        alert = await this.alertCtrl.create({
           mode: "ios",
           header: 'Dispenser problem is left blank',
           message: 'Please fill the description when choose other option!',
@@ -137,12 +147,11 @@ export class ReportProblemPage implements OnInit {
             }
           ]
         });
-        await error.present();
 
       } else {
 
         // Make thank message
-        const thank = await this.alertController.create({
+        alert = await this.alertCtrl.create({
           mode: "ios",
           header: 'Thank you for your assistance!',
           message: 'We have received a problem report',
@@ -155,20 +164,31 @@ export class ReportProblemPage implements OnInit {
             }
           ]
         });
-        await thank.present();
 
         // Send data from API
-        this.api.reportProblem(this.fileImage, this.selectedDeviceId, this.Email, this.ErrorType, this.Description);
+        this.api.reportProblem(
+          this.fileImage, 
+          this.selectedDeviceId, 
+          this.Email, 
+          this.ErrorType, 
+          this.Description
+        );
 
         // If update track is true
         if (this.updateTrack == true) {
           this.api.wantUpdateTrack(this.selectedDeviceId, this.Email, true);
         }
-
-        // Go back to dashboard 
-        this.router.navigate(['dashboard']);
       }
     }
+
+    // dismiss the loading screen
+    this.dismissLoadCtrl();
+
+    // display the alert
+    alert.present();
+
+    // Go back to dashboard 
+    this.navCtrl.back();
   }
 
 
@@ -176,7 +196,7 @@ export class ReportProblemPage implements OnInit {
   * Method to show alert message if user left the page
   */
   async AlertConfirm() {
-    const alert = await this.alertController.create({
+    const alert = await this.alertCtrl.create({
       mode: "ios",
       header: 'Dicard Editing?',
       message: 'If you go back now, you will lose editing.',
@@ -191,12 +211,16 @@ export class ReportProblemPage implements OnInit {
           cssClass: 'icon-color',
           handler: () => {
             console.log('Confirm Discard');
-            this.router.navigate(['dashboard']);
+            
+            // Go back to dashboard 
+            this.navCtrl.back();
           }
         }
       ]
     });
-    await alert.present();
+
+    // display the alert
+    alert.present();
   }
 
   /**
@@ -226,7 +250,7 @@ export class ReportProblemPage implements OnInit {
     } else {
 
       // Send message if data is to big
-      const toBig = await this.alertController.create({
+      const toBig = await this.alertCtrl.create({
         mode: "ios",
         header: 'File Size is to Big',
         message: 'Please upload file below 10 Mb!',
@@ -295,5 +319,24 @@ export class ReportProblemPage implements OnInit {
   async getPicture(device_id) {
     let picUrl = await this.api.getDispenserPictureUrlOnly(device_id);
     return picUrl;
+  }
+
+  /**
+   * This function is for create the loading controller
+   */
+  async createLoadCtrl () {
+    this.makeLoading = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent'
+    })
+
+    this.makeLoading.present();
+  }
+
+  /**
+   * This function is for dismiss the loading controller
+   */
+  async dismissLoadCtrl () {
+    this.makeLoading.dismiss();
   }
 }

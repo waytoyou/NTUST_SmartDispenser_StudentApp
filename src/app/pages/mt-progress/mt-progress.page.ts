@@ -85,6 +85,9 @@ export class MtProgressPage implements OnInit {
         showCloseButton: true,
         closeButtonText: 'Close'
       });
+
+      // dismiss the loading screen
+      this.dismissLoadCtrl();
       
       myToast.present();
       return;
@@ -171,6 +174,9 @@ export class MtProgressPage implements OnInit {
       });
       
       myToast.present();
+
+      // dismiss the loading screen
+      this.dismissLoadCtrl();
 
       // set current page
       this.pref.saveData(StaticVariable.KEY__LAST_PAGE, true);
@@ -350,6 +356,9 @@ export class MtProgressPage implements OnInit {
       this.navCtrl.navigateForward(['login']);
       
     } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
+
+      // dismiss the loading screen
+      this.dismissLoadCtrl();
       
       // remove the session ID from preference
       this.pref.deleteValueOnly(StaticVariable.KEY__SESSION_ID);
