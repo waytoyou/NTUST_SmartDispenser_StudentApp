@@ -42,6 +42,9 @@ export class DashboardPage implements OnInit {
 
   // loadCtrl var
   private makeLoading: any;
+
+  // identify if ngOnInit is done
+  private ngOnInitDone: boolean;
   
   constructor(
     private deviceDetector: DeviceDetectorService,
@@ -54,6 +57,9 @@ export class DashboardPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+
+    // initial ngOnInitDone
+    this.ngOnInitDone = false;
 
     // create loading screen
     await this.createLoadCtrl();
@@ -93,17 +99,23 @@ export class DashboardPage implements OnInit {
     // dismiss the loading screen
     this.dismissLoadCtrl();
 
+    // make ngOnInitDone to true so data can update
+    this.ngOnInitDone = true;
+
     // call again to make sure that data from ngOnInit will load to ionViewDidEnter
     this.ionViewDidEnter();
   }
 
   async ionViewDidEnter() {   
 
-    // always check if any report submitted from login id
-    await this.setReportCondition(this.emailAddress);
+    if (this.ngOnInitDone) {
 
-    // always check if dispenser is being tracked
-    await this.setTrackCondition(this.emailAddress);
+      // always check if any report submitted from login id
+      await this.setReportCondition(this.emailAddress);
+
+      // always check if dispenser is being tracked
+      await this.setTrackCondition(this.emailAddress);
+    }
   }
 
   /**
@@ -218,8 +230,12 @@ export class DashboardPage implements OnInit {
     this.navCtrl.navigateForward(['nearby']);
   }
 
-  goToMaintenanceProgress() {
-    this.navCtrl.navigateForward(['mt-progress']);
+  async goToMaintenanceProgress() {
+
+    // check login first, return true if login is true
+    if (await this.checkLogin()) {
+      this.navCtrl.navigateForward(['mt-progress']);
+    }
   }
 
   /**
@@ -235,11 +251,14 @@ export class DashboardPage implements OnInit {
     // check login first, return true if login is true
     if (await this.checkLogin()) {
 
-      // send want to track or not to database using API
-      if (await this.api.wantUpdateTrack(this.device_id, this.emailAddress, this.trackIsActive)) {
+      // if clicked then go to the opposite of the store one
+      this.trackIsActive = !this.trackIsActive;
 
-        // if clicked then go to the opposite of the store one
-        this.trackIsActive = !this.trackIsActive;
+      // get returnValue from API service
+      let value = await this.api.wantUpdateTrack(this.device_id, this.emailAddress, this.trackIsActive);
+
+      // send want to track or not to database using API
+      if (value) {
         
         let addString = "";
 
@@ -449,12 +468,8 @@ export class DashboardPage implements OnInit {
       // check with checkTractStatus from service to get from API
       await this.api.checkTrackStatus(this.device_id, email).then((result) => {
 
-        // if result promise is success
-        if (result['Status'] === true) {
-          this.trackIsActive = true;
-        } else {
-          this.trackIsActive = false;
-        }
+        // set trackIsActive based on result
+        this.trackIsActive = result['Status'];
       });
     }
   }
