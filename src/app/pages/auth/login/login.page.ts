@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
-import { NavController, ToastController } from '@ionic/angular'
-
-import { PreferenceManagerService } from '../../../services/PreferenceManager/preference-manager.service';
-import { StaticVariable } from '../../../classes/StaticVariable/static-variable';
-import { DispenserAPIService } from '../../../services/DispenserAPI/dispenser-api.service';
+import { NavController, ToastController, LoadingController } from '@ionic/angular'
+import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
+import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 
 @Component({
   selector: 'app-login',
@@ -12,25 +11,68 @@ import { DispenserAPIService } from '../../../services/DispenserAPI/dispenser-ap
 })
 export class LoginPage {
 
+  // field variable to store input
   email: string = "";
   password: string = "";
+
+  // loadCtrl var
+  makeLoading: any;
 
   constructor(
     private navCtrl: NavController,
     private pref: PreferenceManagerService,
     private api: DispenserAPIService,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private loadCtrl: LoadingController
     ) { }
 
-  ngOnInit() {
+  /**
+   * This function is to going back, or route back, to the previous
+   * opened page.
+   */
+  backFunc() {
+    this.navCtrl.back();
+  }
+
+  /**
+   * This function is for create the loading controller
+   */
+  async createLoadCtrl () {
+
+    // create the loading controller
+    this.makeLoading = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent'
+    })
+
+    // display the loading controller
+    this.makeLoading.present();
+  }
+
+  /**
+   * This function is for dismiss the loading controller
+   */
+  async dismissLoadCtrl () {
+
+    // remove or dismiss the loading controller
+    this.makeLoading.dismiss();
   }
 
   async login() {
+
+    // create loading screen
+    await this.createLoadCtrl();
+
+    // get email and password from ion input
     const { email, password } = this;
 
+    // check using API, return with number value
     let resultData = await this.api.loginUser(email, password);
-    console.log(resultData);
 
+    // initial variable for Toast
+    let myToast: any;
+
+    // if login is success with return value equal to 1
     if (resultData === 1) {
 
       // save the email into session_id
@@ -40,29 +82,37 @@ export class LoginPage {
       let nowDate = new Date();
       await this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
 
-      // get last page if exists
+      // get last page if exists (true)
       let lastPage = await this.pref.getData(StaticVariable.KEY__LAST_PAGE);
 
-      if (lastPage === null) {
+      if (lastPage === false) {
 
-        // if null route to home as default
-        this.navCtrl.navigateForward(['dashboard']);
+        // if no last page, route to dashboard as default
+        this.navCtrl.navigateRoot(['dashboard']);
 
       } else {
 
-        // delete last_page from preference
-        await this.pref.removeData(StaticVariable.KEY__LAST_PAGE);
+        // set last_page to false from preference
+        await this.pref.saveData(StaticVariable.KEY__LAST_PAGE, false);
 
-        // route to going back
-        // this is because when login page called is above the current page
+        // route to going back because when login page called is above the current page
         this.navCtrl.back();
       }
 
-      console.log("Login successed!");
+      // create Toast when login is success
+      myToast = await this.toastCtrl.create({
+        message: "Login success!",
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
 
+    // if login is failed because incorrect param with return value equal to 0
     } else if (resultData === 0) {
       
-      let myToast = await this.toastCtrl.create({
+      // create Toast when email/password is incorrect
+      myToast = await this.toastCtrl.create({
         message: 'Email address or password is incorrect!',
         duration: 2000,
         position: 'top',
@@ -70,11 +120,11 @@ export class LoginPage {
         closeButtonText: 'Close'
       });
 
-      myToast.present();
-
+    // if something error when login process
     } else {
       
-      let myToast = await this.toastCtrl.create({
+      // create Toast when there is an error
+      myToast = await this.toastCtrl.create({
         message: 'There is an unexpected error, please try again later!',
         duration: 2000,
         position: 'top',
@@ -82,14 +132,19 @@ export class LoginPage {
         closeButtonText: 'Close'
       });
 
-      myToast.present();
-
     }
 
+    // display the Toast
+    myToast.present();
+
+    // dismiss the loading screen
+    this.dismissLoadCtrl();
   }
 
+  /**
+   * This function is to route the user go to Register Page
+   */
   registerlink() {
     this.navCtrl.navigateForward(['register']); 
-  }
-  
+  }  
 }

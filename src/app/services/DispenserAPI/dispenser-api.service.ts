@@ -153,12 +153,6 @@ export class DispenserAPIService {
 
     return returnValue;
     
-      // return await this.http.post(url, postDataRegister, httpOption).subscribe(() => {
-      //   return true;
-      // }, () => {
-      //   console.error("Promise rejected: unable to get token!");
-      // });
-
   }
 
   /**
@@ -197,12 +191,6 @@ export class DispenserAPIService {
         console.error("Function error: on loginUser => " + e);
         return -1;
       });
-
-    // if (value['code'] === 200) {
-    //   respond = true;
-    // }
-    
-    // return respond;
   }
 
   /**
@@ -286,14 +274,6 @@ export class DispenserAPIService {
         console.error("Function error: on getNearbyDispenser => " + e);
         return [{}];
       });
-    
-    // try {
-    //   let value = await this.http.get(url).toPromise();
-    //   return value['Data'];
-    // } catch (e) {
-    //   console.error("Error in getNearbyDispenser: " + e);
-    //   return [{}];
-    // }
   }
 
   /**
@@ -311,7 +291,7 @@ export class DispenserAPIService {
 
     return await this.http.get(url).toPromise()
       .then((result) => {
-        return result['Data'];
+        return result;
       }, () => {
         console.error("Promise rejected: unable to get dispenser picture!");
         return null;
@@ -320,14 +300,6 @@ export class DispenserAPIService {
         console.error("Function error: on getDispenserPicture => " + e);
         return null;
       });
-    
-    // try {
-    //   let value = await this.http.get(url).toPromise();
-    //   return value['Data'];
-    // } catch (e) {
-    //   console.error("Error in getDispenserPicture: " + e);
-    //   return null;
-    // }
   }
 
   /**
@@ -386,26 +358,13 @@ export class DispenserAPIService {
       });
 
     return returnValue;
-    
-    // try {
-    //   let value = await this.http.get(url).toPromise();
-    //   return value['Data'];
-    // } catch (e) {
-    //   console.error("Error in getDispenserDetail: " + e);
-    //   return {
-    //     "Device_ID": device_id,
-    //     "Building": "",
-    //     "Position": "",
-    //     "Type": ""
-    //   };
-    // }
   }
 
   /**
    * This function is to get list of dispenser maintenance info 
    * from the target dispenser from the API. This function is used
-   * to get the data about the track of occured problem of a 
-   * dispenser. It returns the json format.
+   * to get the data about any occured problem of a dispenser that
+   * has been done. It returns the json array format.
    * 
    * @param     device_id   The device ID of target dispenser
    * 
@@ -414,20 +373,63 @@ export class DispenserAPIService {
    * @example
    * 
    * [
-   *  {
-   *    "Device_ID": "T4_04_01",
-   *    "ErrorType": 3,
-   *    "Description": "Leaking water",
-   *    "CompleteTime": "2019-01-02 24:00:00"
-   *  },
-   *  {
-   *    "Device_ID": "T4_04_01",
-   *    "ErrorType": 5,
-   *    "Description": "Broken",
-   *    "CompleteTime": "2019-01-09 24:00:00"
-   *  },
-   *  ...
+   *    {
+   *      "Device_ID": "MA_05_01",
+   *      "Email": "ntust.smartcampusgmail.com",
+   *      "ErrorType": 5,
+   *      "Description": "Broken",
+   *      "Status": 7,
+   *      "UploadTime": "2019-01-02 09:36:00",
+   *      "NotifyTime": "2019-01-02 09:36:00",
+   *      "Maintainer": "Mr.Pang",
+   *      "Result": "Someone push powersaving button",
+   *      "CompleteTime": "2019-01-02 24:00:00",
+   *      "Index": 0,
+   *      "Source": null,
+   *      "Source2": null,
+   *      "Source3": null
+   *      "ConfirmTime": "2019-01-03 14:12:43",
+   *      "RepairCallTime": "2019-01-04 10:20:02",
+   *      "RepairDoneTime": "2019-01-06 09:04:51",
+   *      "MaintenanceDoneTime": "2019-01-07 08:05:38"
+   *    },
+   *    {
+   *      "Device_ID": "T4_04_01",
+   *      "Email": "ntust.smartcampusgmail.com",
+   *      "ErrorType": 3,
+   *      "Description": "Leaking water",
+   *      "Status": 7,
+   *      "UploadTime": "2019-01-02 20:16:00",
+   *      "NotifyTime": "2019-01-02 20:16:00",
+   *      "Maintainer": "Mr.Pang",
+   *      "Result": "Fan and Compressor are broken",
+   *      "CompleteTime": "2019-01-02 24:00:00",
+   *      "Index": 0,
+   *      "Source": null,
+   *      "Source2": null,
+   *      "Source3": null
+   *      "ConfirmTime": "2019-01-03 14:12:43",
+   *      "RepairCallTime": "2019-01-04 10:20:02",
+   *      "RepairDoneTime": "2019-01-06 09:04:51",
+   *      "MaintenanceDoneTime": "2019-01-07 08:05:38"
+   *    },
+   *    ...
    * ]
+  //  * [
+  //  *  {
+  //  *    "Device_ID": "T4_04_01",
+  //  *    "ErrorType": 3,
+  //  *    "Description": "Leaking water",
+  //  *    "CompleteTime": "2019-01-02 24:00:00"
+  //  *  },
+  //  *  {
+  //  *    "Device_ID": "T4_04_01",
+  //  *    "ErrorType": 5,
+  //  *    "Description": "Broken",
+  //  *    "CompleteTime": "2019-01-09 24:00:00"
+  //  *  },
+  //  *  ...
+  //  * ]
    */
   async getDispenserMaintenance (device_id:string) {
     
@@ -444,14 +446,6 @@ export class DispenserAPIService {
         console.error("Function error: on getDispenserMaintenance => " + e);
         return [{}];
       });
-    
-    // try {
-    //   let value = await this.http.get(url).toPromise();
-    //   return value['Data'];
-    // } catch (e) {
-    //   console.error("Error in getDispenserMaintenance: " + e);
-    //   return [{}];
-    // }
   }
 
   /**
@@ -481,7 +475,7 @@ export class DispenserAPIService {
     let returnValue = {
       "Device_ID": device_id,
       "UploadTime": "",
-      "Status": -1,
+      "Status": null,
       "HotTemp": null,
       "WarmTemp": null,
       "ColdTemp": null
@@ -498,31 +492,13 @@ export class DispenserAPIService {
       });
 
     return returnValue;
-
-    // let myJson;
-    // await this.http.get(url).toPromise().then((success) => {
-    //   console.log("Success");
-    //   myJson = success['Data'];
-    // }).catch(() => {
-    //   console.error("Error while getting data: " + device_id + ", in getDispenserRawData");
-    //   myJson = {
-    //     "Device_ID": device_id,
-    //     "UploadTime": "",
-    //     "Status": -1,
-    //     "HotTemp": -1,
-    //     "WarmTemp": -1,
-    //     "ColdTemp": -1
-    //   }
-    // });
-
-    // return myJson;
   }
 
   /**
    * This function is to get the repair condition of the target
    * dispenser from the API. It contains the problem that still
-   * under maintenance until it being complete. It returns
-   * the json format.
+   * under maintenance where the status is not 7 until it being
+   * complete. It returns the json format.
    * 
    * @param     device_id   The device ID of target dispenser
    * 
@@ -539,7 +515,7 @@ export class DispenserAPIService {
    *      "Email": "ntust.smartcampusgmail.com",
    *      "ErrorType": 5,
    *      "Description": "Broken",
-   *      "Status": 4,
+   *      "Status": 7,
    *      "UploadTime": "2019-01-02 09:36:00",
    *      "NotifyTime": "2019-01-02 09:36:00",
    *      "Maintainer": "Mr.Pang",
@@ -549,13 +525,17 @@ export class DispenserAPIService {
    *      "Source": null,
    *      "Source2": null,
    *      "Source3": null
+   *      "ConfirmTime": "2019-01-03 14:12:43",
+   *      "RepairCallTime": "2019-01-04 10:20:02",
+   *      "RepairDoneTime": "2019-01-06 09:04:51",
+   *      "MaintenanceDoneTime": "2019-01-07 08:05:38"
    *    },
    *    {
-   *      "Device_ID": "MA_05_01",
+   *      "Device_ID": "EE_04_01",
    *      "Email": "ntust.smartcampusgmail.com",
    *      "ErrorType": 3,
    *      "Description": "Leaking water",
-   *      "Status": 4,
+   *      "Status": 3,
    *      "UploadTime": "2019-01-02 20:16:00",
    *      "NotifyTime": "2019-01-02 20:16:00",
    *      "Maintainer": "Mr.Pang",
@@ -565,6 +545,10 @@ export class DispenserAPIService {
    *      "Source": null,
    *      "Source2": null,
    *      "Source3": null
+   *      "ConfirmTime": "",
+   *      "RepairCallTime": "",
+   *      "RepairDoneTime": "",
+   *      "MaintenanceDoneTime": ""
    *    },
    *    ...
    * ]
@@ -586,20 +570,6 @@ export class DispenserAPIService {
       });
 
     return returnValue;
-    
-    // try {
-    //   let value = await this.http.get(url).toPromise();
-    //   return value['Data'];
-    // } catch (e) {
-    //   console.error("Error in getDispenserRepairCondition: " + e);
-    //   return {
-    //     "Device_ID": device_id,
-    //     "UploadTime": "",
-    //     "Status": -1,
-    //     "ErrorType": -1,
-    //     "Description": ""
-    //   };
-    // }
   }
 
   /**
@@ -675,10 +645,11 @@ export class DispenserAPIService {
 
     return await this.http.post(url, postBody).toPromise()
       .then((result) => {
-        if (result === 200){
+        if (result['code'] === 200){
           return true;
         } else {
           console.error("Error while sending request: " + result['msg']);
+          return false;
         }
       }, () => {
         console.error("Promise rejected: unable to sending request to track!");
@@ -702,11 +673,14 @@ export class DispenserAPIService {
    * @returns   value       The json object of data
    * 
    * @example
+   * 
+   * *noted that the email with "at" because using
+   * symbol will break the comment line
    *
    * {
-   *    "Email": "M10702207@mail.ntust.edu.tw",
+   *    "Email": "M10702207mail.ntust.edu.tw",
    *    "Device_ID": "EE_07_01",
-   *    "Status": 1
+   *    "Status": true
    * }
    */
   async checkTrackStatus (device_id: string, email: string) {

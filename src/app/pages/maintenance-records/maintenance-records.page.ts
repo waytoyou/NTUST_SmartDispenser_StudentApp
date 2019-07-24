@@ -82,6 +82,7 @@ export class MaintenanceRecordsPage implements OnInit {
         'Year': this.getTime(data[i]['CompleteTime'])['yearForTime']
       };
       dayArray.push(dataForMaintenance);
+
     }
 
     // Initiate variabel to store data for parsing

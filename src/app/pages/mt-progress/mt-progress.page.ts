@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ToastController, NavController } from '@ionic/angular';
-
-import { PreferenceManagerService } from '../../services/PreferenceManager/preference-manager.service';
-import { StaticVariable } from '../../classes/StaticVariable/static-variable';
-import { DispenserAPIService } from '../../services/DispenserAPI/dispenser-api.service';
+import { ToastController, NavController, LoadingController } from '@ionic/angular';
+import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
+import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 
 @Component({
   selector: 'app-mt-progress',
@@ -36,56 +35,60 @@ export class MtProgressPage implements OnInit {
 
   items: any = [];
   device_id: string = "";
+  email: string = "";
   backgroundImg: any;
-
+  
+  // loadCtrl var
+  makeLoading: any;
+  
   constructor(
     public http: HttpClient,
     public toastCtrl: ToastController,
     private pref: PreferenceManagerService,
     private navCtrl: NavController,
-    private api: DispenserAPIService
+    private api: DispenserAPIService,
+    private loadCtrl: LoadingController
   ) {  }
 
-  ngOnInit() {
-    this.main();
-  }
-
   /**
-   * 
+   * This function being called in the first time page
+   * being accessed. It run several code to get dispenser
+   * maintenance progress and display the value in HTML.
    */
-  ionViewDidEnter() {
-    // this.checkSession();
-  }
+  async ngOnInit() {
 
-  /**
-   * Go Back
-   */
-  backFunc() {
-    this.navCtrl.back();
-  }
-
-  async main () {
+    // create loading screen
+    await this.createLoadCtrl();
     
-   // check id from preference
-   this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
-    
-   // check if device id is available
-   try {
-     await this.api.getDispenserDetail(this.device_id);
-   } catch (error) {
+    // store id from preference
+    this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
 
-     // send Toast messsage (announce) on top of page if device id is incorrect
-     let myToast = await this.toastCtrl.create({
-       message: 'Dispenser is not found or ID is incorrect!',
-       duration: 2000,
-       position: 'top',
-       showCloseButton: true,
-       closeButtonText: 'Close'
-     });
-     
-     myToast.present();
-     return;
-   }   
+    // store email from preference
+    this.email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+      
+    // check if device id is available
+    try {
+
+      // if the api get HttpErrorResponse it will automatically call CATCH
+      await this.api.getDispenserDetail(this.device_id);
+
+    } catch (error) {
+
+      // dismiss the loading screen
+      this.dismissLoadCtrl();
+
+      // send Toast messsage (announce) on top of page if device id is incorrect
+      let myToast = await this.toastCtrl.create({
+        message: 'Dispenser is incorrect, please scan the QR Code once again!',
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+      
+      myToast.present();
+      return;
+    }   
 
     // choose which report still in maintenance
     let chosenMaintenance = await this.getRepairCondition(this.device_id);
@@ -98,29 +101,64 @@ export class MtProgressPage implements OnInit {
     // set image
     this.backgroundImg = await this.getPicture(this.device_id);
 
-    // sort items array from the latest
-    // await this.sortFunction(this.items);
+    // dismiss the loading screen
+    this.dismissLoadCtrl();
+
   }
 
-  async sortFunction (myArray) {
-    await myArray.sort((a, b) => {
-      let dateA = new Date(a['UploadTime']), dateB = new Date(b['UploadTime']);
-  
-      if (dateB > dateA)
-        return 1;
-      if (dateB < dateA)
-        return -1;
-
-      return 0;
-    });
+  /**
+   * This function is ionic lifecycle which is triggered whenever 
+   * routed or open the page.
+   */
+  ionViewDidEnter() {
+    this.checkSession();
   }
 
+  /**
+   * This function is to going back, or route back, to the previous
+   * opened page.
+   */
+  backFunc() {
+    this.navCtrl.back();
+  }
+
+  /**
+   * This function is for create the loading controller
+   */
+  async createLoadCtrl () {
+
+    // create the loading controller
+    this.makeLoading = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent'
+    })
+
+    // display the loading controller
+    this.makeLoading.present();
+  }
+
+  /**
+   * This function is for dismiss the loading controller
+   */
+  async dismissLoadCtrl () {
+
+    // remove or dismiss the loading controller
+    this.makeLoading.dismiss();
+  }
+
+  /**
+   * This function is to get dispenser maintenance progress from
+   * the API with returning JSON value.
+   * 
+   * @param   device_id   Dispenser ID need for API
+   */
   async getRepairCondition (device_id: string) {
 
+    // set initial array variable
     let returnValue = [];
-    let myEmail = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
 
-    if (myEmail === null || myEmail === "" || myEmail === undefined) {
+    // check if email is present
+    if (this.email === null || this.email === "" || this.email === undefined) {
       
       // if there is no email, can enter without email
       // send Toast messsage (announce) on top of page if device id is incorrect
@@ -135,120 +173,108 @@ export class MtProgressPage implements OnInit {
       myToast.present();
 
       // set current page
-      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, "mt-progress");
+      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, true);
       
       // go to login page
       this.navCtrl.navigateForward(['login']);
 
     } else {
 
-      // get data
-      let myData = await this.getData(myEmail, device_id);
+      // get data of maintenance progress using email and device id
+      let myData = await this.getData(this.email, device_id);
 
-      // using 1st data
-      let myMaintenance = myData[0];
+      // for every report in the data
+      for (let i = 0 ; i < myData.length ; i++) {
 
-      // check the maintenance steps inside the data
-      let myMtResult = await this.getMtResult(myMaintenance);
+        // get the data
+        let myMaintenance = myData[i];
 
-      returnValue = myMtResult;
+        // set the maintenance steps and process into new object
+        let myMtResult = await this.getMtResult(myMaintenance);
+
+        // store in returnValue
+        returnValue.push(myMtResult);
+      }
     }
-
-    // let myData = await this.api.getDispenserRepairCondition(device_id);
-    // let returnJson: any = [];
-    // let alreadyGetData = false;
-    // let i = 0;
-
-    // for (let i = 0 ; i < myData.length ; i++) {
-    //   if (myData[i]['Status'] !== 4 && !alreadyGetData) {
-    //     returnJson = myData[i];
-    //     alreadyGetData = true;
-    //   }
-    // }
-
-    // while (i < myData.length && !alreadyGetData) {
-    //   if (myData[i]['Status'] !== 4) {
-    //     returnJson = myData[i];
-    //     alreadyGetData = true;
-    //     i++;
-    //     console.log(i);
-        
-    //   }
-    // }
-
-    // for (let i = 0 ; i < myData.length ; i++) {
-    //   let status: number = myData[i]['Status'];
-    //   let statusString: string = this.arrayStatus[status - 1];
-
-    //   let errorType: number = myData[i]['ErrorType'];
-    //   let errorTypeString: string;
-    //   if (errorType == 5) {
-    //     errorTypeString = myData[i]['Description'];
-    //   } else {
-    //     errorTypeString = this.arrayErrorType[errorType - 1];
-    //   }
-
-    //   let uploadTime = await this.getTime(myData[i]['UploadTime']);
-
-    //   let result = {
-    //     'UploadTime': uploadTime,
-    //     'UploadTimeString': myData[i]['UploadTime'],
-    //     'StatusNum': status,
-    //     'Status': statusString,
-    //     'ErrorTypeNum': errorType,
-    //     'ErrorType': errorTypeString
-    //   };
-
-    //   returnJson.push(result);
-    // }
 
     return returnValue;
   }
 
+  /**
+   * This function is to get the data from dispenser repair condition
+   * API. It need email address to verify the reporter and device id
+   * to get the data. It will return JSON array, list of dispenser in
+   * repair condition.
+   * 
+   * @param email       User's email address
+   * @param device_id   Dispenser ID
+   */
   async getData (email: string, device_id: string) {
 
+    // get the data from API
     let data = await this.api.getDispenserRepairCondition(device_id);
+
+    // set initial array value
     let returnJson = [];
 
+    /*
+      for every object from API will only get data with:
+      - correct email address
+      - correct device id
+    */
     for (let i = 0 ; i < data.length ; i++) {
+
+      // filter the data
       if (data[i]['Email'] === email && data[i]['Device_ID'] === device_id) {
-        returnJson.push(data[i]);
+
+        // if data founded, check if the status is 7 with the Complete time still under 48 hours
+        let completeTime = data[i]['CompleteTime'];
+        let status = data[i]['Status'];
+
+        // create Date object for NOW dan COMPLETE TIME
+        let currentDate = new Date();
+        let completeTimeDate = this.convertApiTimeToDate(completeTime);
+
+        // get different Date using getTime to convert into miliseconds number type
+        let diffDate = currentDate.getTime() - completeTimeDate.getTime();
+
+        if (status !== 7 && diffDate <= 172800000) {
+          
+          // store in returnJson if not meet disposal condition
+          returnJson.push(data[i]);
+
+        }
       }
     }
 
     return returnJson;
   }
 
+  /**
+   * This function is to get the detail dispenser maintenance progress
+   * information. It will return the JSON object with correct parameter
+   * which will be used in HTML to display the data.
+   * 
+   * @param myJson JSON object of raw data from API
+   */
   async getMtResult (myJson: any) {
 
     // initial empty array
     let returnValue = [];
 
-    // 7 time stored
-    // let timeStored = [
-    //   myJson['UploadTime'],
-    //   myJson['NotifyTime'],
-    //   myJson['Time3'],
-    //   myJson['Time4'],
-    //   myJson['Time5'],
-    //   myJson['Time6'],
-    //   myJson['CompleteTime']
-    // ];
-
-    //////////////////
-    // TESTING ONLY //
+    // array to store 7 different time
     let timeStored = [
-      "2019-01-02 09:36:44",
-      "2019-01-03 08:22:31",
-      "2019-01-03 14:12:43",
-      "2019-01-04 10:20:02",
-      "2019-01-06 09:04:51",
-      "2019-01-07 08:05:38",
-      "2019-01-07 10:07:49"
+      myJson['UploadTime'],
+      myJson['NotifyTime'],
+      myJson['ConfirmTime'],
+      myJson['RepairCallTime'],
+      myJson['RepairDoneTime'],
+      myJson['MaintenanceDoneTime'],
+      myJson['CompleteTime']
     ];
-    //////////////////
 
-    // 7 more information stored
+    // array to store 7 more information stored
+    // *note: it store null so nothing to be displayed
     let infoStored = [
       null,
       "(Person in charge: " + myJson['Maintainer'] + ")",
@@ -259,16 +285,19 @@ export class MtProgressPage implements OnInit {
       null
     ];
 
-    // check how many steps
-    // let steps = myJson['Status'];
+    /*
+      check how many steps will be display
+      
+      *note: there will be condition where status equal to 4
+      where the RepairDoneTime is filled, this because company
+      assign the deadline time for Repairman App.
+    */
+    let steps = myJson['Status'];
 
-    //////////////////
-    // TESTING ONLY //
-    let steps = 7;
-    //////////////////
- 
+    // for every steps must be displayed, from backward
     for (let i = steps ; i > 0 ; i--) {
       
+      // set JSON object to input into array
       let tempJson = {
         'Time': timeStored[i-1],
         'Status': this.arrayStatus[i-1],
@@ -278,111 +307,88 @@ export class MtProgressPage implements OnInit {
       returnValue.push(tempJson);
     }
 
-    // switch (steps) {
-    //   case 1: {
-
-    //     tempJson = {
-    //       'Time': myJson['UploadTime'],
-    //       'Status': this.arrayStatus[0],
-    //       'Information': ""
-    //     }
-    //     returnValue.push(tempJson);
-
-    //     break;
-    //   }
-
-    //   case 2: {
-
-    //     tempJson = {
-    //       'Time': myJson['NotifyTime'],
-    //       'Status': this.arrayStatus[1],
-    //       'Information': "(Person in charge: " + myJson['Maintainer'] + ")"
-    //     }
-
-    //     returnValue.push(tempJson);
-
-    //     tempJson = {
-    //       'Time': myJson['UploadTime'],
-    //       'Status': this.arrayStatus[0],
-    //       'Information': ""
-    //     }
-
-    //     returnValue.push(tempJson);
-
-    //     break;
-    //   }
-
-    //   case 3: {
-
-    //     tempJson = {
-    //       'Time': myJson['CompleteTime'],
-    //       'Status': this.arrayStatus[2],
-    //       'Information': ""
-    //     }
-
-    //     returnValue.push(tempJson);
-
-    //     tempJson = {
-    //       'Time': myJson['NotifyTime'],
-    //       'Status': this.arrayStatus[1],
-    //       'Information': "(Person in charge: " + myJson['Maintainer'] + ")"
-    //     }
-
-    //     returnValue.push(tempJson);
-
-    //     tempJson = {
-    //       'Time': myJson['UploadTime'],
-    //       'Status': this.arrayStatus[0],
-    //       'Information': ""
-    //     }
-
-    //     returnValue.push(tempJson);
-
-    //     break;
-    //   }
-      
-    //   case 4: {
-
-    //     tempJson = {
-    //       'Time': myJson['CompleteTime'],
-    //       'Status': this.arrayStatus[3],
-    //       'Information': "(Result: " + myJson['Result'] + ")"
-    //     }
-
-    //     returnValue.push(tempJson);
-
-    //     tempJson = {
-    //       'Time': myJson['CompleteTime'],
-    //       'Status': this.arrayStatus[2],
-    //       'Information': ""
-    //     }
-
-    //     returnValue.push(tempJson);
-
-    //     tempJson = {
-    //       'Time': myJson['NotifyTime'],
-    //       'Status': this.arrayStatus[1],
-    //       'Information': "(Person in charge: " + myJson['Maintainer'] + ")"
-    //     }
-
-    //     returnValue.push(tempJson);
-
-    //     tempJson = {
-    //       'Time': myJson['UploadTime'],
-    //       'Status': this.arrayStatus[0],
-    //       'Information': ""
-    //     }
-
-    //     returnValue.push(tempJson);
-
-    //     break;
-    //   }
-    // }
-
     return returnValue;
   }
 
-  getTime (time) {
+  /**
+   * this method is for getting the picture of the dispenser
+   * 
+   * @param   device_id id of the dispenser
+   */
+  async getPicture (device_id: string) {
+    let myUrl = await this.api.getDispenserPictureUrlOnly(device_id);
+    return myUrl;
+  }
+
+  /**
+   * This function is to get device ID from preference to field variable
+   */
+  async prefDeviceId () {
+    await this.pref.getData(StaticVariable.KEY__DEVICE_ID).then((value) => {
+      this.device_id = value;
+    });
+  }
+
+  /**
+   * This function is to check if session login of the user has already
+   * timed out or not. If session login is valid then user can access
+   * the page, otherwise user should re-login.
+   */
+  async checkSession() {
+    
+    // check session ID and date
+    let nowDate = new Date();
+    let lastDate = await this.pref.getData(StaticVariable.KEY__LAST_DATE)
+    let difDate = nowDate.getTime() - lastDate.getTime();
+
+    // check if there any session ID
+    let checkData = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+
+    if (checkData === "" || checkData === null) {
+
+      // direct the user to login page
+      this.navCtrl.navigateForward(['login']);
+      
+    } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
+      
+      // remove the session ID from preference
+      this.pref.deleteValueOnly(StaticVariable.KEY__SESSION_ID);
+
+      // save the name of page
+      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, true);
+
+      // direct the user to login page
+      this.navCtrl.navigateForward(['login']);
+
+    } else if (difDate <= StaticVariable.SESSION_TIMEOUT) {
+
+      // save new Date
+      this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+    }
+
+    // create toast when session login is ended (above 5 minutes)
+    let myToast = await this.toastCtrl.create({
+      message: "Your session is ended, please re-login to access.",
+      duration: 2000,
+      position: 'top',
+      showCloseButton: true,
+      closeButtonText: 'Close'
+    });
+
+    myToast.present();
+  }
+
+  /**
+   * This function is to convert the time from the API into Date
+   * object in typescript library. The purpose is to create a new
+   * Date object with data from the API. This function will return
+   * Date object
+   * 
+   * @param     time    Value of time from API in "2019-03-08 16:32:00" format
+   * 
+   * @returns   Date    Date object converted result from time
+   */
+  convertApiTimeToDate (time: any) {
     // time passed is String, construct into Date format
     // time example from json: "2019-03-08 16:32:00"
     // format: YEAR-MONTH-DATEOFMONTH HOUR:MINUTE:SECOND
@@ -390,8 +396,12 @@ export class MtProgressPage implements OnInit {
     // split into DATE form and HOUR form
     let splitTime = time.split(" ");
 
+      ////////////////////////////////////////////
+     //  DATE PART                             //
+    ////////////////////////////////////////////
+
+    // resultDate = YEAR-MONTH-DATEOFMONTH
     let resultDate = splitTime[0];
-    let resultHour = splitTime[1];
 
     // split DATE into YEAR, MONTH, and DATEOFMONTH
     let splitDate = resultDate.split("-");
@@ -400,12 +410,23 @@ export class MtProgressPage implements OnInit {
     let resultMonth = splitDate[1] - 1;
     let resultDateOfMonth = splitDate[2];
 
+      ////////////////////////////////////////////
+     //  HOUR PART                             //
+    ////////////////////////////////////////////
+
+    // resultHour = HOUR:MINUTE:SECOND
+    let resultHour = splitTime[1];
+
     // split HOUR into HOUR, MINUTE, and SECOND
     let splitHour = resultHour.split(":");
 
     let resultHourC = splitHour[0];
     let resultMinute = splitHour[1];
     let resultSecond = splitHour[2];
+
+      ////////////////////////////////////////////
+     //  CONSTRUCT DATE PART                   //
+    ////////////////////////////////////////////
 
     // now we get every component to construct date from String
     let newDate = new Date(
@@ -419,61 +440,6 @@ export class MtProgressPage implements OnInit {
     );
 
     return newDate;
-  }
-
-  /**
-   * this method is for getting the picture of the dispenser
-   * 
-   * @param   device_id id of the dispenser
-   */
-  async getPicture (device_id) {
-    let myUrl = await this.api.getDispenserPictureUrlOnly(device_id);
-    return myUrl;
-  }
-
-  async prefDeviceId () {
-    await this.pref.getData(StaticVariable.KEY__DEVICE_ID).then((value) => {
-      this.device_id = value;
-    });
-  }
-
-  async checkSession() {
-    
-    // check session ID and date
-    let nowDate = new Date();
-    let lastDate = await this.pref.getData(StaticVariable.KEY__LAST_DATE)
-    let difDate = nowDate.getTime() - lastDate.getTime();
-
-    // check if there any session ID
-    let checkData = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
-    let currentPage = "mt-progress";
-
-    // check in console
-      console.log(nowDate);
-      console.log(lastDate);
-      console.log(difDate);
-      console.log(await this.pref.getData(StaticVariable.KEY__SESSION_ID));
-
-    if (checkData === "" || checkData === null) {
-
-      // direct the user to login page
-      this.navCtrl.navigateForward(['login']);
-      
-    } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
-
-      // direct the user to login page
-      this.navCtrl.navigateForward(['login']);
-      
-      // remove the session ID from preference
-      this.pref.removeData(StaticVariable.KEY__SESSION_ID);
-
-      // save the name of page
-      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, currentPage);
-    } else if (!checkData && difDate <= StaticVariable.SESSION_TIMEOUT) {
-
-      // save new Date
-      this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
-    }
   }
 
 }
