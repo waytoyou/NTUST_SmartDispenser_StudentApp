@@ -46,13 +46,13 @@ export class DetailedInformationPage implements OnInit {
   public dispenserPlacedPosition: string;
 
   //Variables for temperature
-  public celsiusHotTemp: number;
-  public celsiusWarmTemp: number;
-  public celsiusColdTemp: number;
+  public celsiusHotTemp: any;
+  public celsiusWarmTemp: any;
+  public celsiusColdTemp: any;
 
-  public fahrenheitHotTemp: number;
-  public fahrenheitWarmTemp: number;
-  public fahrenheitColdTemp: number;
+  public fahrenheitHotTemp: any;
+  public fahrenheitWarmTemp: any;
+  public fahrenheitColdTemp: any;
 
   public displayHotTemp: string;
   public displayWarmTemp: string;
@@ -89,7 +89,7 @@ export class DetailedInformationPage implements OnInit {
     this.setDispenserDetail();
     this.setTemperatureDisplay();
 
-    await this.dismissLoadScreen();
+    this.dismissLoadScreen();
   }
 
   private detectDevice() {
@@ -184,20 +184,30 @@ export class DetailedInformationPage implements OnInit {
   }
 
   setTemperatureDisplay(){
-    if(!this.isToggleActive){
-      this.displayHotTemp = this.celsiusHotTemp + "°C";
-      this.displayWarmTemp = this.celsiusWarmTemp + "°C";
-      this.displayColdTemp = this.celsiusColdTemp + "°C";
-    }else{
-      this.displayHotTemp = this.fahrenheitHotTemp + "°F";
-      this.displayWarmTemp = this.fahrenheitWarmTemp + "°F";
-      this.displayColdTemp = this.fahrenheitColdTemp + "°F";
-    }
+    this.displayHotTemp = this.filterTemperature(this.celsiusHotTemp, this.fahrenheitHotTemp);
+    this.displayWarmTemp = this.filterTemperature(this.celsiusWarmTemp, this.fahrenheitWarmTemp);
+    this.displayColdTemp = this.filterTemperature(this.celsiusColdTemp, this.fahrenheitColdTemp);
   }
 
-  // first function
-  async showLoadScreen () {
+  filterTemperature(celsius, fahrenheit){
+    let displayTemp = "";
 
+    if(celsius != null){
+      if(!this.isToggleActive)
+        displayTemp = celsius + "°C";
+      else
+        displayTemp = fahrenheit + "°F";
+    }else{
+      if(!this.isToggleActive)
+        displayTemp = "...°C";
+      else
+        displayTemp = "...°F";
+    }
+
+    return displayTemp;
+  }
+
+  async showLoadScreen () {
     // create the loading screen
     this.loadScreen = await this.loadCtrl.create({
       message: 'Loading data ...',
@@ -208,10 +218,8 @@ export class DetailedInformationPage implements OnInit {
     this.loadScreen.present();
   }
 
-  // second function
   async dismissLoadScreen () {
-
-    // dismiss/remove the loading screen
+  // dismiss/remove the loading screen
     this.loadScreen.dismiss();
   }
 

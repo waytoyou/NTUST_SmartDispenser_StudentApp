@@ -482,9 +482,9 @@ export class DispenserAPIService {
       "Device_ID": device_id,
       "UploadTime": "",
       "Status": -1,
-      "HotTemp": -1,
-      "WarmTemp": -1,
-      "ColdTemp": -1
+      "HotTemp": null,
+      "WarmTemp": null,
+      "ColdTemp": null
     }
 
     await this.http.get(url).toPromise()
