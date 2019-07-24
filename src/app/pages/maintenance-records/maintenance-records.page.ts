@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
-
 import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
+import { LoadingController, NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-maintenance-records',
@@ -15,11 +13,25 @@ export class MaintenanceRecordsPage implements OnInit {
 
   // Initiate data
   maintenanceData: any;
-  selectedDeviceId: string = "";
-  backgroundImg: any;
 
-  constructor(public http: HttpClient, private router: Router, private api: DispenserAPIService, private pref: PreferenceManagerService) {
-  }
+  // device id variable
+  selectedDeviceId: string = "";
+
+  // background image variable
+  backgroundImg: any;
+  
+  // loadCtrl var
+  makeLoading: any;
+
+  // initial getAPi
+  getAPI: any;
+
+  constructor(
+    private api: DispenserAPIService,
+    private pref: PreferenceManagerService,
+    private navCtrl: NavController,
+    private loadCtrl: LoadingController
+  ) { }
 
   /**
      * ngOnInit() is the function that called when page being loaded.
@@ -30,17 +42,50 @@ export class MaintenanceRecordsPage implements OnInit {
      * - call in here with "this.myFunctionName();"
      */
   async ngOnInit() {
-    //  get Device_ID to change the background
+
+    // create loading screen
+    await this.createLoadCtrl();
+    
+    // get Device_ID to change the background
     await this.prefDeviceId();
 
-    console.log("device id: " + this.selectedDeviceId);
+    // console.log("device id: " + this.selectedDeviceId);
+
+    await this.setAllData();
+
+    // dismiss the loading screen
+    this.dismissLoadCtrl();
+  }
+
+   /**
+   * This function is for create the loading controller
+   */
+  async createLoadCtrl () {
+    this.makeLoading = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent'
+    })
+
+    this.makeLoading.present();
+  }
+
+  /**
+   * This function is for dismiss the loading controller
+   */
+  async dismissLoadCtrl () {
+    this.makeLoading.dismiss();
+  }
+
+  async setAllData () {
+
+    // set background image
     this.backgroundImg = await this.getPicture(this.selectedDeviceId);
 
     // get data from API and save to getAPI
-    let getAPI = await this.api.getDispenserMaintenance(this.selectedDeviceId);
+    this.getAPI = await this.api.getDispenserMaintenance(this.selectedDeviceId);
 
     // Change format to make easier to display
-    this.maintenanceData = this.changeFormat(getAPI);
+    this.maintenanceData = this.changeFormat(this.getAPI);
   }
 
   /**
@@ -50,7 +95,7 @@ export class MaintenanceRecordsPage implements OnInit {
    *  monthMaintenance :{
    *                      Month: January,
    *                      dayMaintenance: [Data from API]
-   *  }
+   *                    }
    * }
    * 
    * Parameter needed to run this function
@@ -61,10 +106,16 @@ export class MaintenanceRecordsPage implements OnInit {
    * - ErrorMeaning
    */
 
-  changeFormat(data) {
+  changeFormat(data: any) {
 
     // Initiate error meaning to translate from error type
-    let errorMeaning = ["Button does not respond", "Unable to water", "Leaking water", "Screen not shown", "Other"];
+    let errorMeaning = [
+      "Button does not respond", 
+      "Unable to water", 
+      "Leaking water", 
+      "Screen not shown", 
+      "Other"
+    ];
 
     // iniatiate array for day
     let dayArray = [];
@@ -189,7 +240,7 @@ export class MaintenanceRecordsPage implements OnInit {
    * Methods for go back
    */
   goToDashboard() {
-    this.router.navigate(['dashboard']);
+    this.navCtrl.back();
   }
 
   /**

@@ -92,6 +92,9 @@ export class DashboardPage implements OnInit {
 
     // dismiss the loading screen
     this.dismissLoadCtrl();
+
+    // call again to make sure that data from ngOnInit will load to ionViewDidEnter
+    this.ionViewDidEnter();
   }
 
   async ionViewDidEnter() {   
