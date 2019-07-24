@@ -475,10 +475,10 @@ export class DispenserAPIService {
     let returnValue = {
       "Device_ID": device_id,
       "UploadTime": "",
-      "Status": -1,
-      "HotTemp": -1,
-      "WarmTemp": -1,
-      "ColdTemp": -1
+      "Status": null,
+      "HotTemp": null,
+      "WarmTemp": null,
+      "ColdTemp": null
     }
 
     await this.http.get(url).toPromise()
@@ -673,11 +673,14 @@ export class DispenserAPIService {
    * @returns   value       The json object of data
    * 
    * @example
+   * 
+   * *noted that the email with "at" because using
+   * symbol will break the comment line
    *
    * {
-   *    "Email": "M10702207@mail.ntust.edu.tw",
+   *    "Email": "M10702207mail.ntust.edu.tw",
    *    "Device_ID": "EE_07_01",
-   *    "Status": 1
+   *    "Status": true
    * }
    */
   async checkTrackStatus (device_id: string, email: string) {
