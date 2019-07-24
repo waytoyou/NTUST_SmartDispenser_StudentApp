@@ -47,7 +47,7 @@
         <div class="estimate-subtitle">
           Estimated completion time:
           <br>
-          XX hours later
+          {{reports.estimateTime}} hours later
         </div>
       </div>
 
@@ -60,7 +60,7 @@
             
         <!-- make a list -->
         <ul>
-          <li *ngFor="let item of reports">
+          <li *ngFor="let item of reports.data">
     
             <!-- left side the dot -->
             <div class="fa"></div>
