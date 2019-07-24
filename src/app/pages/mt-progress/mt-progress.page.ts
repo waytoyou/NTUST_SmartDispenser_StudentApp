@@ -85,9 +85,6 @@ export class MtProgressPage implements OnInit {
         showCloseButton: true,
         closeButtonText: 'Close'
       });
-
-      // dismiss the loading screen
-      this.dismissLoadCtrl();
       
       myToast.present();
       return;
@@ -192,14 +189,16 @@ export class MtProgressPage implements OnInit {
       // for every report in the data
       for (let i = 0 ; i < myData.length ; i++) {
 
-        // get the data
         let myMaintenance = myData[i];
 
-        // set the maintenance steps and process into new object
         let myMtResult = await this.getMtResult(myMaintenance);
+        let myEstimateTime = await this.getEstimateTime(myMaintenance);
 
         // store in returnValue
-        returnValue.push(myMtResult);
+        returnValue.push({
+          'data': myMtResult,
+          'estimateTime': myEstimateTime
+        });
       }
     }
 
@@ -233,22 +232,31 @@ export class MtProgressPage implements OnInit {
       // filter the data
       if (data[i]['Email'] === email && data[i]['Device_ID'] === device_id) {
 
-        // if data founded, check if the status is 7 with the Complete time still under 48 hours
         let completeTime = data[i]['CompleteTime'];
         let status = data[i]['Status'];
 
-        // create Date object for NOW dan COMPLETE TIME
-        let currentDate = new Date();
-        let completeTimeDate = this.convertApiTimeToDate(completeTime);
+        // check if status is 7 (complete) and handling that completeTime is not empty
+        if (status === 7 && completeTime !== "") {
 
-        // get different Date using getTime to convert into miliseconds number type
-        let diffDate = currentDate.getTime() - completeTimeDate.getTime();
+          // create Date object for NOW dan COMPLETE TIME
+          let currentDate = new Date();
+          let completeTimeDate = await this.convertApiTimeToDate(completeTime);
 
-        if (status !== 7 && diffDate <= 172800000) {
-          
-          // store in returnJson if not meet disposal condition
+          // get different Date using getTime to convert into miliseconds number type
+          let diffDate = currentDate.getTime() - completeTimeDate.getTime();
+
+          // if data founded, check if the status is 7 with the Complete time still under 48 hours
+          if (diffDate <= 172800000) {
+            
+            // store in returnJson if not meet disposal condition
+            returnJson.push(data[i]);
+
+          }
+
+        } else {
+
+          // store in returnJson if other than status = 7
           returnJson.push(data[i]);
-
         }
       }
     }
@@ -352,17 +360,38 @@ export class MtProgressPage implements OnInit {
 
     if (checkData === "" || checkData === null) {
 
+      // create toast when session login is ended (above 5 minutes)
+      let myToast = await this.toastCtrl.create({
+        message: "Session ID is invalid, please login first!",
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+
+      // present the Toast
+      myToast.present();
+
       // direct the user to login page
       this.navCtrl.navigateForward(['login']);
       
     } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
 
+      // create toast when session login is ended (above 5 minutes)
+      let myToast = await this.toastCtrl.create({
+        message: "Your session is ended, please re-login to grant access!",
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+
+      // present the Toast
+      myToast.present();
+
       // dismiss the loading screen
       this.dismissLoadCtrl();
       
-      // remove the session ID from preference
-      this.pref.deleteValueOnly(StaticVariable.KEY__SESSION_ID);
-
       // save the name of page
       this.pref.saveData(StaticVariable.KEY__LAST_PAGE, true);
 
@@ -374,17 +403,6 @@ export class MtProgressPage implements OnInit {
       // save new Date
       this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
     }
-
-    // create toast when session login is ended (above 5 minutes)
-    let myToast = await this.toastCtrl.create({
-      message: "Your session is ended, please re-login to access.",
-      duration: 2000,
-      position: 'top',
-      showCloseButton: true,
-      closeButtonText: 'Close'
-    });
-
-    myToast.present();
   }
 
   /**
@@ -449,6 +467,39 @@ export class MtProgressPage implements OnInit {
     );
 
     return newDate;
+  }
+
+  /**
+   * This function is to get the estimate time by 3 days after the report is
+   * sent. It will return array value of each estimate time has been calculated.
+   * 
+   * @param data JSON Object of data
+   * 
+   * @returns diffDate  Number of different between current date and deadline date
+   */
+  async getEstimateTime (data: any) {
+
+    let uploadTime = await this.convertApiTimeToDate(data['UploadTime']);
+    
+    // create Date object for NOW dan COMPLETE TIME (by currentTime + 72 hours or 259200000 milisecs.)
+    let currentDate = new Date().getTime();
+    let deadlineDate = uploadTime.getTime() + 259200000;
+
+    // get different Date using getTime to convert into miliseconds number type
+    let diffDate = deadlineDate - currentDate;
+
+    // convert back to hours by divide with 3600000
+    diffDate = diffDate / 3600000
+
+    return diffDate.toFixed(0);
+  }
+
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
+    let nowDate = new Date();
+    this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
   }
 
 }

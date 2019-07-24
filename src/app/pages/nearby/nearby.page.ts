@@ -160,6 +160,7 @@ export class NearbyPage implements OnInit {
    * Go Back
    */
   backFunc() {
+    this.updateCurrentSession();
     this.navCtrl.back();
   }
 
@@ -303,6 +304,8 @@ export class NearbyPage implements OnInit {
    */
   conditionalFilter () {
 
+    this.updateCurrentSession();
+
     // set resultDone to false
     this.resultDone = false;
 
@@ -345,5 +348,13 @@ export class NearbyPage implements OnInit {
 
     // set resultDone to true
     this.resultDone = true;
+  }
+
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
+    let nowDate = new Date();
+    this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
   }
 }

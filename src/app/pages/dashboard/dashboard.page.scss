@@ -163,3 +163,30 @@ button{
 .dropdown:hover .dropdown-content {
     display: block;
 }
+
+.speech-bubble {
+    position: relative;
+    background: white;
+    border-radius: 15px;
+    width: 270px;
+    opacity: 0.6;
+}
+
+.speech-bubble-text {
+    padding: 10px 20px;
+    font-size: 15px;
+}
+
+.speech-bubble:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+    border-top-color: white;
+    border-bottom: 0;
+    margin-left: -10px;
+    margin-bottom: -10px;
+}

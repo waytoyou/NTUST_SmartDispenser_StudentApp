@@ -1,4 +1,4 @@
-<ion-content>
+<ion-content [scrollEvents]="true" (ionScroll)="updateCurrentSession()">
 
   <!-- header -->
   <div class="header" [style.backgroundImage]="'url(' + backgroundImg + ')'">
@@ -33,7 +33,10 @@
     </div>
   </div>
 
-  <ion-slides mode="ios" pager="true" scrollbar="true">
+  <ion-slides mode="ios" pager="true" scrollbar="true"
+    (ionSlideTap)="updateCurrentSession()"
+    (ionSlideDrag)="updateCurrentSession()"
+  >
     <ion-slide *ngFor="let reports of items">
 
       <!-- estimate -->
@@ -47,7 +50,7 @@
         <div class="estimate-subtitle">
           Estimated completion time:
           <br>
-          XX hours later
+          {{reports.estimateTime}} hours later
         </div>
       </div>
 
@@ -60,7 +63,7 @@
             
         <!-- make a list -->
         <ul>
-          <li *ngFor="let item of reports">
+          <li *ngFor="let item of reports.data">
     
             <!-- left side the dot -->
             <div class="fa"></div>

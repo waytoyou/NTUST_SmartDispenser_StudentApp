@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, LoadingController, NavController, ToastController } from '@ionic/angular';
 import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
@@ -45,7 +45,8 @@ export class ReportProblemPage implements OnInit {
     private api: DispenserAPIService, 
     private pref: PreferenceManagerService,
     private loadCtrl: LoadingController,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private toastCtrl: ToastController
   ) { }
 
   /**
@@ -60,16 +61,28 @@ export class ReportProblemPage implements OnInit {
 
     // get Device_ID
     await this.prefDeviceId();
+
     // get Email
     await this.prefEmail();
+
     // Get background
     this.backgroundImg = await this.getPicture(this.selectedDeviceId);
+
+    // set update track from database, this handling when user already track the dispenser
+    await this.setTrackCondition(this.Email);
+  }
+
+  ionViewDidEnter () {
+    this.checkSession();
   }
 
   /**
   * Method to make check button like radio button
   */
   async toggle(selectedButton, type) {
+
+    this.updateCurrentSession();
+
     this.ErrorType = type + 1;
 
     // If not 'Other' option
@@ -91,6 +104,8 @@ export class ReportProblemPage implements OnInit {
   */
   async checkOther() {
 
+    this.updateCurrentSession();
+
     for (let index = 0; index < this.problems.length; index++) {
       this.problems[index]['isChecked'] = null;
     }
@@ -103,6 +118,8 @@ export class ReportProblemPage implements OnInit {
   * Method if user submit the report problem  
   */
   async submit() {
+
+    this.updateCurrentSession();
 
     // create loading screen
     await this.createLoadCtrl();
@@ -121,9 +138,7 @@ export class ReportProblemPage implements OnInit {
         buttons: [
           {
             text: 'OK',
-            handler: () => {
-              console.log('Confirm Cancel: Ok');
-            }
+            handler: () => {  }
           }
         ]
       });     
@@ -141,9 +156,7 @@ export class ReportProblemPage implements OnInit {
           buttons: [
             {
               text: 'OK',
-              handler: () => {
-                console.log('Confirm Cancel: Ok');
-              }
+              handler: () => {  }
             }
           ]
         });
@@ -158,9 +171,7 @@ export class ReportProblemPage implements OnInit {
           buttons: [
             {
               text: 'OK',
-              handler: () => {
-                console.log('Confirm Cancel: Ok');
-              }
+              handler: () => {  }
             }
           ]
         });
@@ -196,9 +207,12 @@ export class ReportProblemPage implements OnInit {
   * Method to show alert message if user left the page
   */
   async AlertConfirm() {
+
+    this.updateCurrentSession();
+
     const alert = await this.alertCtrl.create({
       mode: "ios",
-      header: 'Dicard Editing?',
+      header: 'Discard Editing?',
       message: 'If you go back now, you will lose editing.',
       buttons: [
         {
@@ -226,7 +240,9 @@ export class ReportProblemPage implements OnInit {
   /**
   * Method to add image
   */
-  async onFileSelect(event) {
+  async onFileSelect(event: any) {
+
+    this.updateCurrentSession();
 
     // Limit size image to 10 Mb
     if (event.target.files[0].size <= 10485760) {
@@ -272,6 +288,8 @@ export class ReportProblemPage implements OnInit {
    * Method to rearrange array if user delete the image
    */
   async delete(index) {
+
+    this.updateCurrentSession();
 
     // Change the image array if image is delete by user
     if (index === 0) {
@@ -322,6 +340,68 @@ export class ReportProblemPage implements OnInit {
   }
 
   /**
+   * This function is to check if session login of the user has already
+   * timed out or not. If session login is valid then user can access
+   * the page, otherwise user should re-login.
+   */
+  async checkSession() {
+    
+    // check session ID and date
+    let nowDate = new Date();
+    let lastDate = await this.pref.getData(StaticVariable.KEY__LAST_DATE)
+    let difDate = nowDate.getTime() - lastDate.getTime();
+
+    // check if there any session ID
+    let checkData = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+
+    if (checkData === "" || checkData === null) {
+
+      // create toast when session login is ended (above 5 minutes)
+      let myToast = await this.toastCtrl.create({
+        message: "Session ID is invalid, please login first!",
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+
+      // present the Toast
+      myToast.present();
+
+      // direct the user to login page
+      this.navCtrl.navigateForward(['login']);
+      
+    } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
+
+      // create toast when session login is ended (above 5 minutes)
+      let myToast = await this.toastCtrl.create({
+        message: "Your session is ended, please re-login to grant access!",
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+
+      // present the Toast
+      myToast.present();
+
+      // dismiss the loading screen
+      this.dismissLoadCtrl();
+      
+      // save the name of page
+      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, true);
+
+      // direct the user to login page
+      this.navCtrl.navigateForward(['login']);
+
+    } else if (difDate <= StaticVariable.SESSION_TIMEOUT) {
+
+      // save new Date
+      this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+    }
+  }
+
+  /**
    * This function is for create the loading controller
    */
   async createLoadCtrl () {
@@ -338,5 +418,35 @@ export class ReportProblemPage implements OnInit {
    */
   async dismissLoadCtrl () {
     this.makeLoading.dismiss();
+  }
+
+  /**
+   * This function is to check if the email is present and user has check the
+   * dispenser as being tracked or not. If it being tracked after user logged
+   * in then the star will filled and vice versa. Star displayed as filled or
+   * not based on trackIsActive variable.
+   * 
+   * @param email User's email address
+   */
+  async setTrackCondition (email: string) {
+
+    // if email is found from preference
+    if (email !== "" || email !== null || email !== undefined) {
+
+      // check with checkTractStatus from service to get from API
+      await this.api.checkTrackStatus(this.selectedDeviceId, email).then((result) => {
+
+        // set trackIsActive based on result
+        this.updateTrack = result['Status'];
+      });
+    }
+  }
+
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
+    let nowDate = new Date();
+    this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
   }
 }
