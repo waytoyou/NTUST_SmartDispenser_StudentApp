@@ -190,6 +190,9 @@ export class DetailedInformationPage implements OnInit {
   }
 
   filterTemperature(celsius, fahrenheit){
+
+    this.updateCurrentSession();
+    
     let displayTemp = "";
 
     if(celsius != null){
@@ -227,6 +230,15 @@ export class DetailedInformationPage implements OnInit {
   //Routing part
   //--------------------------------------------------
   goToDashboard(){
+    this.updateCurrentSession();
     this.navCtrl.back();
+  }
+
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
+    let nowDate = new Date();
+    this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
   }
 }

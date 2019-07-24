@@ -493,4 +493,13 @@ export class MtProgressPage implements OnInit {
 
     return diffDate.toFixed(0);
   }
+
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
+    let nowDate = new Date();
+    this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+  }
+
 }

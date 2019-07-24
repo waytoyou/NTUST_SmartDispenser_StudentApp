@@ -73,7 +73,6 @@ export class ReportProblemPage implements OnInit {
   }
 
   ionViewDidEnter () {
-
     this.checkSession();
   }
 
@@ -81,6 +80,9 @@ export class ReportProblemPage implements OnInit {
   * Method to make check button like radio button
   */
   async toggle(selectedButton, type) {
+
+    this.updateCurrentSession();
+
     this.ErrorType = type + 1;
 
     // If not 'Other' option
@@ -102,6 +104,8 @@ export class ReportProblemPage implements OnInit {
   */
   async checkOther() {
 
+    this.updateCurrentSession();
+
     for (let index = 0; index < this.problems.length; index++) {
       this.problems[index]['isChecked'] = null;
     }
@@ -114,6 +118,8 @@ export class ReportProblemPage implements OnInit {
   * Method if user submit the report problem  
   */
   async submit() {
+
+    this.updateCurrentSession();
 
     // create loading screen
     await this.createLoadCtrl();
@@ -201,6 +207,9 @@ export class ReportProblemPage implements OnInit {
   * Method to show alert message if user left the page
   */
   async AlertConfirm() {
+
+    this.updateCurrentSession();
+
     const alert = await this.alertCtrl.create({
       mode: "ios",
       header: 'Discard Editing?',
@@ -232,6 +241,8 @@ export class ReportProblemPage implements OnInit {
   * Method to add image
   */
   async onFileSelect(event: any) {
+
+    this.updateCurrentSession();
 
     // Limit size image to 10 Mb
     if (event.target.files[0].size <= 10485760) {
@@ -277,6 +288,8 @@ export class ReportProblemPage implements OnInit {
    * Method to rearrange array if user delete the image
    */
   async delete(index) {
+
+    this.updateCurrentSession();
 
     // Change the image array if image is delete by user
     if (index === 0) {
@@ -427,5 +440,13 @@ export class ReportProblemPage implements OnInit {
         this.updateTrack = result['Status'];
       });
     }
+  }
+
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
+    let nowDate = new Date();
+    this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
   }
 }

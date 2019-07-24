@@ -76,12 +76,10 @@ export class DashboardPage implements OnInit {
       //if desktop
       this.adjustDynamicDesktopScreen();
 
-    }
-    else {
+    } else {
 
       // if mobile device
       this.adjustDynamicMobileScreen();
-
     }
 
     // get the device id from URL or pref and set to field variable
@@ -219,14 +217,17 @@ export class DashboardPage implements OnInit {
    * - to Maintenance Progress page
    */
   goToDetailedInformation(){
+    this.updateCurrentSession();
     this.navCtrl.navigateForward(['detailed-information']);
   }
 
   goToMaintenanceRecords(){
+    this.updateCurrentSession();
     this.navCtrl.navigateForward(['maintenance-records']);
   }
 
   goToNearbyDispenser () {
+    this.updateCurrentSession();
     this.navCtrl.navigateForward(['nearby']);
   }
 
@@ -234,6 +235,7 @@ export class DashboardPage implements OnInit {
 
     // check login first, return true if login is true
     if (await this.checkLogin()) {
+      this.updateCurrentSession();
       this.navCtrl.navigateForward(['mt-progress']);
     }
   }
@@ -250,6 +252,8 @@ export class DashboardPage implements OnInit {
 
     // check login first, return true if login is true
     if (await this.checkLogin()) {
+
+      this.updateCurrentSession();
 
       // if clicked then go to the opposite of the store one
       this.trackIsActive = !this.trackIsActive;
@@ -316,6 +320,8 @@ export class DashboardPage implements OnInit {
 
     // check login first, return true if login is true
     if (await this.checkLogin()) {
+
+      this.updateCurrentSession();
 
       // if true then go to report problem
       this.navCtrl.navigateForward(['report-problem']);
@@ -577,5 +583,13 @@ export class DashboardPage implements OnInit {
     }
 
     return returnValue;
-  }  
+  }
+
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
+    let nowDate = new Date();
+    this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+  }
 }

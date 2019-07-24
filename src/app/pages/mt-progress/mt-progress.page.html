@@ -33,7 +33,10 @@
     </div>
   </div>
 
-  <ion-slides mode="ios" pager="true" scrollbar="true">
+  <ion-slides mode="ios" pager="true" scrollbar="true"
+    (ionSlideTap)="updateCurrentSession()"
+    (ionSlideDrag)="updateCurrentSession()"
+  >
     <ion-slide *ngFor="let reports of items">
 
       <!-- estimate -->
