@@ -18,9 +18,13 @@ export class DashboardPage implements OnInit {
   // variable for store device id
   private device_id: string = "";
   
-  // variable for dispenser picture
+  // variable for dispenser data
   public url_dispenser_picture: string = "";
-  
+  private dispenser_detail: any;
+
+  public dispenser_building_location: string = "";
+  public dispenser_floor_location: string = "";
+
   // variable for device detector
   private isDesktopType: boolean = false;
 
@@ -30,14 +34,7 @@ export class DashboardPage implements OnInit {
   public headerHeight: any;
   public contentHeight: any;
 
-  // variables for components in the dashboard page
   public pageLeft: any;
-  public jellyfishIconTop: any;
-  public jellyfishIconLeft: any;
-  public ballonTextTop: any;
-  public ballonTextLeft: any;
-  public bubbleTextLocation: string;
-  public bubbleTextBuilding: string;
 
   // user personal settings (login id, track, report)
   public trackIsActive: boolean = false;
@@ -48,8 +45,8 @@ export class DashboardPage implements OnInit {
   private makeLoading: any;
 
   // identify if ngOnInit is done
-  private ngOnInitDone: boolean;
-  
+  private ngOnInitDone: boolean = false;
+
   constructor(
     private deviceDetector: DeviceDetectorService,
     private pref: PreferenceManagerService,
@@ -63,53 +60,35 @@ export class DashboardPage implements OnInit {
 
   async ngOnInit() {
 
-    // initial ngOnInitDone
-    this.ngOnInitDone = false;
+    this.detectDevice();
+
+    if (this.isDesktopType)
+      this.adjustDynamicDesktopScreen();
+    else
+      this.adjustDynamicMobileScreen();
 
     // create loading screen
-    await this.createLoadCtrl();
+    await this.showLoadScreen();
+
+    await this.setDeviceIdFromUrl();
+    await this.setAPIsData();
+    await this.setLocationText();
 
     // check if preference is not build yet
     await this.checkPrefFirstTime();
-
-    // this call the function to detect if the device is desktop or mobile device
-    this.detectDevice();
-
-    // if it is desktop there will be adjustment for the screen
-    if (this.isDesktopType) {
-
-      //if desktop
-      this.adjustDynamicDesktopScreen();
-
-    } else {
-
-      // if mobile device
-      this.adjustDynamicMobileScreen();
-    }
-
-    // get the device id from URL or pref and set to field variable
-    await this.setDeviceIdFromUrl();
-
-    // set the device id to preference
     await this.setPrefs();
-
-    // set background picture based on dispenser picture
-    await this.setAPIsData();
-
-    // get login information and set to field variable
     await this.getLoginEmail();
 
-    // set bubble text information
-    await this.getBubbleTextInfo(this.device_id);
-
-    // dismiss the loading screen
-    this.dismissLoadCtrl();
+    await this.dismissLoadScreen();
 
     // make ngOnInitDone to true so data can update
     this.ngOnInitDone = true;
 
     // call again to make sure that data from ngOnInit will load to ionViewDidEnter
-    this.ionViewDidEnter();
+    await this.ionViewDidEnter();
+
+    // make ngOnInitDone to true so data can update
+    this.ngOnInitDone = true;
   }
 
   async ionViewDidEnter() {
@@ -117,13 +96,12 @@ export class DashboardPage implements OnInit {
     await this.getLoginEmail();
 
     if (this.ngOnInitDone) {
-
       // always check if any report submitted from login id
-      this.setReportCondition(this.emailAddress);
+      await this.setReportCondition(this.emailAddress);
 
       // always check if dispenser is being tracked
-      this.setTrackCondition(this.emailAddress);
-    }    
+      await this.setTrackCondition(this.emailAddress);
+    }
   }
 
 
@@ -131,11 +109,11 @@ export class DashboardPage implements OnInit {
   /**
    * This function is for create the loading controller
    */
-  async createLoadCtrl () {
+  async showLoadScreen () {
     this.makeLoading = await this.loadCtrl.create({
       message: 'Loading data ...',
       spinner: 'crescent'
-    })
+    });
 
     this.makeLoading.present();
   }
@@ -143,7 +121,7 @@ export class DashboardPage implements OnInit {
   /**
    * This function is for dismiss the loading controller
    */
-  async dismissLoadCtrl () {
+  async dismissLoadScreen () {
     this.makeLoading.dismiss();
   }
 
@@ -188,10 +166,6 @@ export class DashboardPage implements OnInit {
 
     // set components based on display size
     this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
-    this.jellyfishIconTop = this.headerHeight - 120;
-    this.jellyfishIconLeft = this.screenWidth/2 - 60;
-    this.ballonTextTop = this.headerHeight - 145;
-    this.ballonTextLeft = this.screenWidth / 2 - 135;
   }
 
   /**
@@ -262,7 +236,7 @@ export class DashboardPage implements OnInit {
   async trackButton () {
 
     // create loading screen
-    await this.createLoadCtrl();
+    await this.showLoadScreen();
 
     // check login first, return true if login is true
     if (await this.checkLogin()) {
@@ -323,7 +297,7 @@ export class DashboardPage implements OnInit {
     }
 
     // dismiss the loading screen
-    this.dismissLoadCtrl();
+    await this.dismissLoadScreen();
   }
 
   /**
@@ -338,7 +312,7 @@ export class DashboardPage implements OnInit {
       this.updateCurrentSession();
 
       // if true then go to report problem
-      this.navCtrl.navigateForward(['report-problem']);
+      await this.navCtrl.navigateForward(['report-problem']);
     }
   }
 
@@ -435,8 +409,6 @@ export class DashboardPage implements OnInit {
    * This function is for set device id to preference
    */
   async setPrefs () {
-
-    // save device id to preference
     await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, this.device_id);
   }
 
@@ -444,7 +416,8 @@ export class DashboardPage implements OnInit {
    * This function is for set the url for background picture from API
    */
   async setAPIsData () {
-    this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);   
+    this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);
+    this.dispenser_detail = await this.api.getDispenserDetail(this.device_id);
   }
 
   /**
@@ -454,6 +427,12 @@ export class DashboardPage implements OnInit {
 
     // check if user has report something
     this.emailAddress = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+  }
+
+  setLocationText(){
+    this.dispenser_building_location = "Hi! I am Jellyfish and lives in the \n" + this.dispenser_detail['Building'] + ",";
+    this.dispenser_floor_location = this.dispenser_detail['Position'] + "!";
+    this.dispenser_floor_location.toLowerCase();
   }
 
   /**
@@ -502,22 +481,20 @@ export class DashboardPage implements OnInit {
     
     // check if there any session ID
     let checkData = await this.checkSession();
-    console.log(checkData);
-    
+
     let returnValue = false;
 
     // if the data is not present or empty
     if (checkData < 1) {
-
       // initialize addString
       let addString = "";
 
       // set addString based on condition (note: 1 doesn't perform alert)
-      if (checkData === -1) {
+      if (checkData === -1)
         addString = "You need to login first in order to report a problem or track dispenser status, please click the Log In button below!";
-      } else if (checkData === 0) {
+      else if (checkData === 0)
         addString = "Your session login has timed out, please re login to grant the access!";
-      }
+
 
       // create alert to choose login or not
       let loginAlert = await this.alertCtrl.create({
@@ -547,7 +524,6 @@ export class DashboardPage implements OnInit {
       loginAlert.present();
       
     } else {
-
       // return true if login process has done before
       returnValue = true;
     }
@@ -572,28 +548,18 @@ export class DashboardPage implements OnInit {
 
     // save the name of page
     let currentPage = "dashboard";
-    this.pref.saveData(StaticVariable.KEY__LAST_PAGE, currentPage);
+    await this.pref.saveData(StaticVariable.KEY__LAST_PAGE, currentPage);
 
     // initialize return value
     let returnValue = 0;
 
-    if (checkData === "" || checkData === null) {
-
-      // -1 means that user hasn't login yet
-      returnValue = -1;
-      
-    } else if (difDate > StaticVariable.SESSION_TIMEOUT) {      
-
-      // 0 means that user has session timed out
-      returnValue = 0;
-
-    } else if (difDate <= StaticVariable.SESSION_TIMEOUT) {
-
-      // save new Date to preference
-      this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
-
-      // 1 means that user is valid to access
-      returnValue = 1;
+    if (checkData === "" || checkData === null)
+      returnValue = -1; // -1 means that user hasn't login yet
+    else if (difDate > StaticVariable.SESSION_TIMEOUT)
+      returnValue = 0; // 0 means that user has session timed out
+    else if (difDate <= StaticVariable.SESSION_TIMEOUT){
+      await this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate); // save new Date to preference
+      returnValue = 1; // 1 means that user is valid to access
     }
 
     return returnValue;
