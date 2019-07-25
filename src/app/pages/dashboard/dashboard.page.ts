@@ -565,18 +565,6 @@ export class DashboardPage implements OnInit {
     return returnValue;
   }
 
-  async getBubbleTextInfo (device_id: string) {
-
-    let data = await this.api.getDispenserDetail(device_id);
-    let dSplit = device_id.split("_");
-    
-    let position = data['Position'];    
-    let building = dSplit[0];
-
-    this.bubbleTextBuilding = building;
-    this.bubbleTextLocation = position;
-  }
-
   /**
    * This function is to update session login time whenever action is need
    */
