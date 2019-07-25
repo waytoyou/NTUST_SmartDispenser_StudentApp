@@ -690,7 +690,7 @@ export class DispenserAPIService {
     let returnValue = {
       "Email": email,
       "Device_ID": device_id,
-      "Status": false
+      "Status": null
     }
 
     await this.http.get(url).toPromise()

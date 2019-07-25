@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { HostListener } from "@angular/core";
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { NavController, AlertController, LoadingController } from '@ionic/angular';
@@ -39,7 +39,7 @@ export class DashboardPage implements OnInit {
   // user personal settings (login id, track, report)
   public trackIsActive: boolean = false;
   public hasReportSubmitted: boolean = false;
-  private emailAddress: string = "";
+  private emailAddress: string = null;
 
   // loadCtrl var
   private makeLoading: any;
@@ -54,7 +54,8 @@ export class DashboardPage implements OnInit {
     private alertCtrl: AlertController,
     private api: DispenserAPIService,
     private actRoute: ActivatedRoute,
-    private loadCtrl: LoadingController
+    private loadCtrl: LoadingController,
+    private zone: NgZone
   ) { }
 
   async ngOnInit() {
@@ -80,6 +81,9 @@ export class DashboardPage implements OnInit {
 
     await this.dismissLoadScreen();
 
+    // make ngOnInitDone to true so data can update
+    this.ngOnInitDone = true;
+
     // call again to make sure that data from ngOnInit will load to ionViewDidEnter
     await this.ionViewDidEnter();
 
@@ -99,6 +103,8 @@ export class DashboardPage implements OnInit {
       await this.setTrackCondition(this.emailAddress);
     }
   }
+
+
 
   /**
    * This function is for create the loading controller
@@ -198,20 +204,28 @@ export class DashboardPage implements OnInit {
    * - to Nearby Dispenser page
    * - to Maintenance Progress page
    */
-  async goToDetailedInformation(){
-    await this.navCtrl.navigateForward(['detailed-information']);
+  goToDetailedInformation(){
+    this.updateCurrentSession();
+    this.navCtrl.navigateForward(['detailed-information']);
   }
 
-  async goToMaintenanceRecords(){
-    await this.navCtrl.navigateForward(['maintenance-records']);
+  goToMaintenanceRecords(){
+    this.updateCurrentSession();
+    this.navCtrl.navigateForward(['maintenance-records']);
   }
 
-  async goToNearbyDispenser () {
-    await this.navCtrl.navigateForward(['nearby']);
+  goToNearbyDispenser () {
+    this.updateCurrentSession();
+    this.navCtrl.navigateForward(['nearby']);
   }
 
   async goToMaintenanceProgress() {
-    await this.navCtrl.navigateForward(['mt-progress']);
+
+    // check login first, return true if login is true
+    if (await this.checkLogin()) {
+      this.updateCurrentSession();
+      this.navCtrl.navigateForward(['mt-progress']);
+    }
   }
 
   /**
@@ -227,11 +241,16 @@ export class DashboardPage implements OnInit {
     // check login first, return true if login is true
     if (await this.checkLogin()) {
 
-      // send want to track or not to database using API
-      if (await this.api.wantUpdateTrack(this.device_id, this.emailAddress, this.trackIsActive)) {
+      this.updateCurrentSession();
 
-        // if clicked then go to the opposite of the store one
-        this.trackIsActive = !this.trackIsActive;
+      // if clicked then go to the opposite of the store one
+      this.trackIsActive = !this.trackIsActive;
+
+      // get returnValue from API service
+      let value = await this.api.wantUpdateTrack(this.device_id, this.emailAddress, this.trackIsActive);
+
+      // send want to track or not to database using API
+      if (value) {
         
         let addString = "";
 
@@ -289,6 +308,8 @@ export class DashboardPage implements OnInit {
 
     // check login first, return true if login is true
     if (await this.checkLogin()) {
+
+      this.updateCurrentSession();
 
       // if true then go to report problem
       await this.navCtrl.navigateForward(['report-problem']);
@@ -423,7 +444,7 @@ export class DashboardPage implements OnInit {
   async setReportCondition (email: string) {
     
     // if email is found from preference
-    if (email !== "" || email !== null || email !== undefined) {
+    if (email !== "") {
 
       // true if found any report submitted
       this.hasReportSubmitted = await this.api.checkAnyReportSubmitted(email, this.device_id);
@@ -441,13 +462,13 @@ export class DashboardPage implements OnInit {
   async setTrackCondition (email: string) {
 
     // if email is found from preference
-    if (email !== "" || email !== null || email !== undefined) {
+    if (email !== "") {
 
       // check with checkTractStatus from service to get from API
       await this.api.checkTrackStatus(this.device_id, email).then((result) => {
-
-        // if result promise is success
-        this.trackIsActive = result['Status'] === true;
+        
+        // set trackIsActive based on result
+        this.trackIsActive = result['Status'];
       });
     }
   }
@@ -542,5 +563,25 @@ export class DashboardPage implements OnInit {
     }
 
     return returnValue;
-  }  
+  }
+
+  async getBubbleTextInfo (device_id: string) {
+
+    let data = await this.api.getDispenserDetail(device_id);
+    let dSplit = device_id.split("_");
+    
+    let position = data['Position'];    
+    let building = dSplit[0];
+
+    this.bubbleTextBuilding = building;
+    this.bubbleTextLocation = position;
+  }
+
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
+    let nowDate = new Date();
+    this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+  }
 }
