@@ -240,6 +240,7 @@ export class MaintenanceRecordsPage implements OnInit {
    * Methods for go back
    */
   goToDashboard() {
+    this.updateCurrentSession();
     this.navCtrl.back();
   }
 
@@ -256,5 +257,13 @@ export class MaintenanceRecordsPage implements OnInit {
   async getPicture(device_id) {
     let picUrl = await this.api.getDispenserPictureUrlOnly(device_id);
     return picUrl;
+  }
+
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
+    let nowDate = new Date();
+    this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
   }
 }

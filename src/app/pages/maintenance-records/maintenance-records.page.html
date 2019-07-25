@@ -1,4 +1,4 @@
-<ion-content>
+<ion-content [scrollEvents]="true" (ionScroll)="updateCurrentSession()">
   <div class="header"  [style.backgroundImage]="'url(' + backgroundImg + ')'">
     <div class="overlay header-inside">
 
