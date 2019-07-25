@@ -1,4 +1,4 @@
-import { DispenserAPIService } from './../../services/DispenserAPI/dispenser-api.service';
+import { DispenserAPIService } from '../../services/DispenserAPI/dispenser-api.service';
 import { Component, OnInit } from '@angular/core';
 import { HostListener } from "@angular/core";
 import { Router } from '@angular/router';
@@ -89,7 +89,7 @@ export class DetailedInformationPage implements OnInit {
     this.setDispenserDetail();
     this.setTemperatureDisplay();
 
-    this.dismissLoadScreen();
+    await this.dismissLoadScreen();
   }
 
   private detectDevice() {
@@ -212,7 +212,7 @@ export class DetailedInformationPage implements OnInit {
     this.loadScreen = await this.loadCtrl.create({
       message: 'Loading data ...',
       spinner: 'crescent'
-    })
+    });
 
     // show the loading screen
     this.loadScreen.present();

@@ -1,4 +1,5 @@
-<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft" position="absolute">
+<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft"
+            position="absolute">
   <div class="background-image" [ngStyle]="{'background-image': 'url(' + url_dispenser_picture + ')'}">
 
     <div class="overlay">
@@ -25,6 +26,13 @@
         </button>
       </span>
 
+      <div class="speech-bubble" [style.top.px]="balloonTextTop" [style.left.px]="balloonTextLeft">
+        <div class="speech-bubble-text">
+          {{dispenser_building_location}}
+          <br>{{dispenser_floor_location}}!
+        </div>
+      </div>
+
       <div class="jellyfish-icon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
         <img alt="avatar" src="assets/dashboard/jellyfishIcon.png">
       </div>
@@ -33,7 +41,8 @@
   </div>
 </ion-header>
 
-<ion-content [style.height.px]="contentHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft" position="absolute" scrollY=false>
+<ion-content [style.height.px]="contentHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft"
+             position="absolute">
   <div class="content-button-space">
 
     <!--Report Dispenser button-->
