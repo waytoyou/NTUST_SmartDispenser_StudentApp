@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { HostListener } from "@angular/core";
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { NavController, AlertController, LoadingController } from '@ionic/angular';
@@ -42,7 +42,7 @@ export class DashboardPage implements OnInit {
   // user personal settings (login id, track, report)
   public trackIsActive: boolean = false;
   public hasReportSubmitted: boolean = false;
-  private emailAddress: string = "";
+  private emailAddress: string = null;
 
   // loadCtrl var
   private makeLoading: any;
@@ -57,7 +57,8 @@ export class DashboardPage implements OnInit {
     private alertCtrl: AlertController,
     private api: DispenserAPIService,
     private actRoute: ActivatedRoute,
-    private loadCtrl: LoadingController
+    private loadCtrl: LoadingController,
+    private zone: NgZone
   ) { }
 
   async ngOnInit() {
@@ -111,17 +112,21 @@ export class DashboardPage implements OnInit {
     this.ionViewDidEnter();
   }
 
-  async ionViewDidEnter() {   
+  async ionViewDidEnter() {
+
+    await this.getLoginEmail();
 
     if (this.ngOnInitDone) {
 
       // always check if any report submitted from login id
-      await this.setReportCondition(this.emailAddress);
+      this.setReportCondition(this.emailAddress);
 
       // always check if dispenser is being tracked
-      await this.setTrackCondition(this.emailAddress);
-    }
+      this.setTrackCondition(this.emailAddress);
+    }    
   }
+
+
 
   /**
    * This function is for create the loading controller
@@ -460,7 +465,7 @@ export class DashboardPage implements OnInit {
   async setReportCondition (email: string) {
     
     // if email is found from preference
-    if (email !== "" || email !== null || email !== undefined) {
+    if (email !== "") {
 
       // true if found any report submitted
       this.hasReportSubmitted = await this.api.checkAnyReportSubmitted(email, this.device_id);
@@ -478,11 +483,11 @@ export class DashboardPage implements OnInit {
   async setTrackCondition (email: string) {
 
     // if email is found from preference
-    if (email !== "" || email !== null || email !== undefined) {
+    if (email !== "") {
 
       // check with checkTractStatus from service to get from API
       await this.api.checkTrackStatus(this.device_id, email).then((result) => {
-
+        
         // set trackIsActive based on result
         this.trackIsActive = result['Status'];
       });
