@@ -26,18 +26,19 @@
         </button>
       </span>
 
-      <div class="speech-bubble" [style.top.px]="balloonTextTop" [style.left.px]="balloonTextLeft">
+      <div class="speech-bubble">
         <div class="speech-bubble-text">
           {{dispenser_building_location}}
-          <br>{{dispenser_floor_location}}!
+          <br>
+          {{dispenser_floor_location}}
         </div>
       </div>
 
-      <div class="jellyfish-icon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
+      <div class="jellyfish-icon">
         <img alt="avatar" src="assets/dashboard/jellyfishIcon.png">
       </div>
-    </div>
 
+    </div>
   </div>
 </ion-header>
 

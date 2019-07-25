@@ -1,6 +1,7 @@
 //=======================
 // Header Part CSS 
 //=======================
+
 .background-image,
 .overlay {
     height: 100%;
@@ -15,20 +16,15 @@
 }
 
 .overlay {
-    z-index: 1;
     background-color: rgba($color: #000000, $alpha: 0.5);
-}
-
-.jellyfish-icon {
-    position: absolute;
-    height: 120px;
-    width: 120px;
-    border-radius: 50px;
 }
 
 .logo {
     position: absolute;
     top: 20px;
+    height: 50px;
+    width: 90px;
+    left: 33px;
 }
 
 .header-button {
@@ -42,10 +38,45 @@
     color: white;
 }
 
-.logo {
-    height: 50px;
-    width: 90px;
-    left: 33px;
+.jellyfish-icon {
+    position: absolute;
+    height: 120px;
+    width: 120px;
+    border-radius: 50px;
+    left: 50%;
+    margin-left: -60px;
+    bottom: -60px;
+}
+
+.speech-bubble {
+    position: absolute;
+    background: white;
+    border-radius: 18px;
+    width: 270px;
+    opacity: 0.8;
+    text-align: center;
+    bottom: 80px;
+    left: 50%;
+    margin-left: -135px;
+}
+
+.speech-bubble-text {
+    padding: 10px 20px;
+    font-size: 15px;
+}
+
+.speech-bubble:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+    border-top-color: white;
+    border-bottom: 0;
+    margin-left: -10px;
+    margin-bottom: -10px;
 }
 
 //=======================
@@ -168,30 +199,3 @@ button {
     display: block;
 }
 
-.speech-bubble {
-    position: relative;
-    background: white;
-    border-radius: 15px;
-    width: 270px;
-    opacity: 0.8;
-    text-align: center;
-}
-
-.speech-bubble-text {
-    padding: 10px 20px;
-    font-size: 15px;
-}
-
-.speech-bubble:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border: 10px solid transparent;
-    border-top-color: white;
-    border-bottom: 0;
-    margin-left: -10px;
-    margin-bottom: -10px;
-}

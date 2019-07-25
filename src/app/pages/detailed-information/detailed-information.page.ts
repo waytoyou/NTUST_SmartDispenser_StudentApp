@@ -19,6 +19,7 @@ export class DetailedInformationPage implements OnInit {
 
   private loadScreen: any;
 
+  //variables for screen & item resolution
   public screenHeight: any;
   public screenWidth: any;
 
@@ -27,12 +28,8 @@ export class DetailedInformationPage implements OnInit {
 
   public pageLeft: any;
 
-  public jellyfishIconTop: any;
-  public jellyfishIconLeft: any;
-  public detailedInformationTop: any;
-
   //variables for dispenser APIs
-  private device_id;
+  private device_id: string="";
   public url_dispenser_picture: string;
   public dispenser_rawdata: any;
   public dispenser_detail: any;
@@ -82,12 +79,13 @@ export class DetailedInformationPage implements OnInit {
     await this.showLoadScreen();
 
     await this.getPrefsData();
+
     await this.setAPIsData();
 
-    this.setCelsiusTemperatures();
-    this.setFahrenheitTemperatures();
-    this.setDispenserDetail();
-    this.setTemperatureDisplay();
+    await this.setCelsiusTemperatures();
+    await this.setDispenserDetail();
+    await this.setFahrenheitTemperatures();
+    await this.setTemperatureDisplay();
 
     await this.dismissLoadScreen();
   }
@@ -119,9 +117,6 @@ export class DetailedInformationPage implements OnInit {
     this.contentHeight = this.screenHeight - this.headerHeight;
 
     this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
-    this.jellyfishIconTop = this.headerHeight/2 - 35;
-    this.jellyfishIconLeft = this.screenWidth/2 - 35;
-    this.detailedInformationTop = this.headerHeight/2 + 45;
   }
 
   private adjustDynamicDesktopScreen(){

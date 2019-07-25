@@ -34,13 +34,7 @@ export class DashboardPage implements OnInit {
   public headerHeight: any;
   public contentHeight: any;
 
-  // variables for components in the dashboard page
   public pageLeft: any;
-  public jellyfishIconTop: any;
-  public jellyfishIconLeft: any;
-
-  public balloonTextTop: any;
-  public balloonTextLeft: any;
 
   // user personal settings (login id, track, report)
   public trackIsActive: boolean = false;
@@ -49,6 +43,9 @@ export class DashboardPage implements OnInit {
 
   // loadCtrl var
   private makeLoading: any;
+
+  // identify if ngOnInit is done
+  private ngOnInitDone: boolean = false;
 
   constructor(
     private deviceDetector: DeviceDetectorService,
@@ -70,7 +67,7 @@ export class DashboardPage implements OnInit {
       this.adjustDynamicMobileScreen();
 
     // create loading screen
-    await this.showLoadCtrl();
+    await this.showLoadScreen();
 
     await this.setDeviceIdFromUrl();
     await this.setAPIsData();
@@ -81,25 +78,32 @@ export class DashboardPage implements OnInit {
     await this.setPrefs();
     await this.getLoginEmail();
 
-    await this.dismissLoadCtrl();
+    await this.dismissLoadScreen();
 
     // call again to make sure that data from ngOnInit will load to ionViewDidEnter
     await this.ionViewDidEnter();
+
+    // make ngOnInitDone to true so data can update
+    this.ngOnInitDone = true;
   }
 
   async ionViewDidEnter() {
 
-    // always check if any report submitted from login id
-    await this.setReportCondition(this.emailAddress);
+    await this.getLoginEmail();
 
-    // always check if dispenser is being tracked
-    await this.setTrackCondition(this.emailAddress);
+    if (this.ngOnInitDone) {
+      // always check if any report submitted from login id
+      await this.setReportCondition(this.emailAddress);
+
+      // always check if dispenser is being tracked
+      await this.setTrackCondition(this.emailAddress);
+    }
   }
 
   /**
    * This function is for create the loading controller
    */
-  async showLoadCtrl () {
+  async showLoadScreen () {
     this.makeLoading = await this.loadCtrl.create({
       message: 'Loading data ...',
       spinner: 'crescent'
@@ -111,7 +115,7 @@ export class DashboardPage implements OnInit {
   /**
    * This function is for dismiss the loading controller
    */
-  async dismissLoadCtrl () {
+  async dismissLoadScreen () {
     this.makeLoading.dismiss();
   }
 
@@ -156,11 +160,6 @@ export class DashboardPage implements OnInit {
 
     // set components based on display size
     this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
-    this.jellyfishIconTop = this.headerHeight - 60;
-    this.jellyfishIconLeft = this.screenWidth/2 - 60;
-
-    this.balloonTextTop = this.headerHeight - 150;
-    this.balloonTextLeft = this.screenWidth / 2 - 135;
   }
 
   /**
@@ -223,7 +222,7 @@ export class DashboardPage implements OnInit {
   async trackButton () {
 
     // create loading screen
-    await this.showLoadCtrl();
+    await this.showLoadScreen();
 
     // check login first, return true if login is true
     if (await this.checkLogin()) {
@@ -279,7 +278,7 @@ export class DashboardPage implements OnInit {
     }
 
     // dismiss the loading screen
-    await this.dismissLoadCtrl();
+    await this.dismissLoadScreen();
   }
 
   /**
@@ -389,8 +388,6 @@ export class DashboardPage implements OnInit {
    * This function is for set device id to preference
    */
   async setPrefs () {
-
-    // save device id to preference
     await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, this.device_id);
   }
 
@@ -398,10 +395,7 @@ export class DashboardPage implements OnInit {
    * This function is for set the url for background picture from API
    */
   async setAPIsData () {
-    // get URL of dispenser picture
     this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);
-
-    // get dispenser detail location and type
     this.dispenser_detail = await this.api.getDispenserDetail(this.device_id);
   }
 
@@ -416,9 +410,10 @@ export class DashboardPage implements OnInit {
 
   setLocationText(){
     this.dispenser_building_location = "Hi! I am Jellyfish and lives in the \n" + this.dispenser_detail['Building'] + ",";
-    this.dispenser_floor_location = this.dispenser_detail['Position'];
+    this.dispenser_floor_location = this.dispenser_detail['Position'] + "!";
     this.dispenser_floor_location.toLowerCase();
   }
+
   /**
    * This function is to check if the email is present and user report
    * is present then user can check his report.
@@ -470,16 +465,15 @@ export class DashboardPage implements OnInit {
 
     // if the data is not present or empty
     if (checkData < 1) {
-
       // initialize addString
       let addString = "";
 
       // set addString based on condition (note: 1 doesn't perform alert)
-      if (checkData === -1) {
+      if (checkData === -1)
         addString = "You need to login first in order to report a problem or track dispenser status, please click the Log In button below!";
-      } else if (checkData === 0) {
+      else if (checkData === 0)
         addString = "Your session login has timed out, please re login to grant the access!";
-      }
+
 
       // create alert to choose login or not
       let loginAlert = await this.alertCtrl.create({
@@ -509,7 +503,6 @@ export class DashboardPage implements OnInit {
       loginAlert.present();
       
     } else {
-
       // return true if login process has done before
       returnValue = true;
     }
@@ -539,23 +532,13 @@ export class DashboardPage implements OnInit {
     // initialize return value
     let returnValue = 0;
 
-    if (checkData === "" || checkData === null) {
-
-      // -1 means that user hasn't login yet
-      returnValue = -1;
-
-    } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
-
-      // 0 means that user has session timed out
-      returnValue = 0;
-
-    } else if (difDate <= StaticVariable.SESSION_TIMEOUT) {
-
-      // save new Date to preference
-      await this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
-
-      // 1 means that user is valid to access
-      returnValue = 1;
+    if (checkData === "" || checkData === null)
+      returnValue = -1; // -1 means that user hasn't login yet
+    else if (difDate > StaticVariable.SESSION_TIMEOUT)
+      returnValue = 0; // 0 means that user has session timed out
+    else if (difDate <= StaticVariable.SESSION_TIMEOUT){
+      await this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate); // save new Date to preference
+      returnValue = 1; // 1 means that user is valid to access
     }
 
     return returnValue;
