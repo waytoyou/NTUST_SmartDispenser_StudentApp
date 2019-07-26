@@ -25,7 +25,15 @@
         </button>
       </span>
 
-      <div class="jellyfish-icon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
+      <div class="speech-bubble">
+        <div class="speech-bubble-text">
+          <p>{{bubble_text_location}}
+            <b>{{dispenser_building_location}}</b>{{dispenser_floor_location | lowercase}}
+          </p>
+        </div>
+      </div>
+
+      <div class="jellyfish-icon">
         <img alt="avatar" src="assets/dashboard/jellyfishIcon.png">
       </div>
     </div>
@@ -56,6 +64,10 @@
 
   <div class="report-status">
     No Report Problem
+  </div>
+
+  <div class="report-status" *ngIf="hasReportSubmitted" (click)="goToMaintenanceProgress()">
+    View maintenance progress >
   </div>
 
 </ion-content>
