@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { AlertController } from '@ionic/angular';
-import { Router } from '@angular/router';
-
+import { AlertController, LoadingController, NavController, ToastController } from '@ionic/angular';
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
+import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
+import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 
 @Component({
   selector: 'app-report-problem',
@@ -11,17 +11,27 @@ import { Router } from '@angular/router';
 })
 export class ReportProblemPage implements OnInit {
 
-  constructor(public alertController: AlertController, private http: HttpClient, private router: Router) { }
+  // Initiate data get from previous page
+  selectedDeviceId: string = "";
+  Email: string = "";
+  backgroundImg: any;
 
-  ngOnInit() {
-  }
-
-  File: any = [];
-  Device_ID: string = "MA_B1_01";
-  Email: string = "johnny258147@gmail.com";
+  // Initial data for report problem
   ErrorType = 0;
   Description: string = '';
+  urlImage: any = [];
+  fileImage: any = [];
+  imageIndex = 0;
+  updateTrack: boolean = false;
 
+  // Initial data for toggle(make check button as radio button)
+  selectedButton: string;
+  type;
+
+  // loadCtrl var
+  makeLoading: any;
+
+  // list of problem
   problems = [
     { problem: 'Button does not respond' },
     { problem: 'Unable to water' },
@@ -29,125 +39,180 @@ export class ReportProblemPage implements OnInit {
     { problem: 'Screen not shown' },
     { problem: 'Other' }
   ];
-  url: any = [];
-  fileImage: any = [];
-  imageIndex = 0;
 
-  updateTrack: boolean = false;
+  constructor(
+    private alertCtrl: AlertController,
+    private api: DispenserAPIService, 
+    private pref: PreferenceManagerService,
+    private loadCtrl: LoadingController,
+    private navCtrl: NavController,
+    private toastCtrl: ToastController
+  ) { }
 
-  public selected: string;
-  public type;
+  /**
+     * ngOnInit() is the function that called when page being loaded.
+     * Like in many programming, it's like main function.
+     * 
+     * If want to use async function:
+     * - create new function with async (ex: async myFunctionName() { } )
+     * - call in here with "this.myFunctionName();"
+     */
+  async ngOnInit() {
 
-  public toggle(selected, type) {
+    // get Device_ID
+    await this.prefDeviceId();
+
+    // get Email
+    await this.prefEmail();
+
+    // Get background
+    this.backgroundImg = await this.getPicture(this.selectedDeviceId);
+
+    // set update track from database, this handling when user already track the dispenser
+    await this.setTrackCondition(this.Email);
+  }
+
+  ionViewDidEnter () {
+    this.checkSession();
+  }
+
+  /**
+  * Method to make check button like radio button
+  */
+  async toggle(selectedButton, type) {
+
+    this.updateCurrentSession();
+
     this.ErrorType = type + 1;
+
+    // If not 'Other' option
     if (type != 4) {
       this.Description = '';
     }
+
+    // Make other option null
     for (let index = 0; index < this.problems.length; index++) {
-      if (this.problems['problem'] != selected['problem']) {
+
+      if (this.problems['problem'] != selectedButton['problem']) {
         this.problems[index]['isChecked'] = null;
       }
     }
   }
 
+  /**
+  * Method to clear all check problem and check other if other description is filled
+  */
+  async checkOther() {
+
+    this.updateCurrentSession();
+
+    for (let index = 0; index < this.problems.length; index++) {
+      this.problems[index]['isChecked'] = null;
+    }
+
+    this.problems[4]['isChecked'] = 1;
+    this.ErrorType = 5;
+  }
+
+  /**
+  * Method if user submit the report problem  
+  */
   async submit() {
+
+    this.updateCurrentSession();
+
+    // create loading screen
+    await this.createLoadCtrl();
+
+    // create variable to store alertCtrl
+    let alert: any;
+
+    // If user not fill the problem  make alert message else do next 
     if (this.ErrorType == 0) {
-      const error = await this.alertController.create({
+
+      // Make alert message
+      alert = await this.alertCtrl.create({
         mode: "ios",
         header: 'Dispenser problem is incorret',
         message: 'Please choose one of the problems above!',
         buttons: [
           {
             text: 'OK',
-            handler: () => {
-              console.log('Confirm Cancel: Ok');
-            }
+            handler: () => {  }
           }
         ]
-      });
-      await error.present();
-
+      });     
 
     } else {
 
+      // If user not fill 'Other' problem  make alert message else do thank message
       if ((this.Description == '') && (this.ErrorType == 5)) {
-        const error = await this.alertController.create({
+
+        // Make alert message
+        alert = await this.alertCtrl.create({
           mode: "ios",
           header: 'Dispenser problem is left blank',
           message: 'Please fill the description when choose other option!',
           buttons: [
             {
               text: 'OK',
-              handler: () => {
-                console.log('Confirm Cancel: Ok');
-              }
+              handler: () => {  }
             }
           ]
         });
-        await error.present();
 
       } else {
 
-        const reportProblems = new FormData();
-        for (let i = 0; i < this.imageIndex; i++) {
-          reportProblems.append('File', this.fileImage[i]);
-        }
-
-        reportProblems.append('Device_ID', String(this.Device_ID));
-        reportProblems.append('Email', String(this.Email));
-        reportProblems.append('ErrorType', String(this.ErrorType));
-        reportProblems.append('Description', String(this.Description));
-
-        const thank = await this.alertController.create({
+        // Make thank message
+        alert = await this.alertCtrl.create({
           mode: "ios",
           header: 'Thank you for your assistance!',
           message: 'We have received a problem report',
           buttons: [
             {
               text: 'OK',
-              handler: () => {
-                console.log('Confirm Cancel: Ok');
-              }
+              handler: () => {  }
             }
           ]
         });
-        await thank.present();
 
-        this.http.post<any>("https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Report", reportProblems)
-          .subscribe(data => {
-            console.log(data);
-          }, error => {
-            console.log(error);
-          });
+        // Send data from API
+        this.api.reportProblem(
+          this.fileImage, 
+          this.selectedDeviceId, 
+          this.Email, 
+          this.ErrorType, 
+          this.Description
+        );
+
+        // If update track is true
         if (this.updateTrack == true) {
-          let updateData = {
-            'Email': this.Email,
-            'Device_ID': this.Device_ID,
-            'Status': 1
-          }
-          this.http.post<any>("https://smartcampus.et.ntust.edu.tw:5425/Dispenser/Track", updateData)
-            .subscribe(data => {
-              console.log(data);
-            }, error => {
-              console.log(error);
-            });
+          this.api.wantUpdateTrack(this.selectedDeviceId, this.Email, true);
         }
-        this.router.navigate(['dashboard']);
       }
     }
-  }
-  onKey(event: any) {
-    for (let index = 0; index < this.problems.length; index++) {
-      this.problems[index]['isChecked'] = null;
-    }
-    this.problems[4]['isChecked'] = 1;
-    this.ErrorType = 5;
+
+    // dismiss the loading screen
+    this.dismissLoadCtrl();
+
+    // display the alert
+    alert.present();
+
+    // Go back to dashboard 
+    this.navCtrl.back();
   }
 
+
+  /**
+  * Method to show alert message if user left the page
+  */
   async AlertConfirm() {
-    const alert = await this.alertController.create({
+
+    this.updateCurrentSession();
+
+    const alert = await this.alertCtrl.create({
       mode: "ios",
-      header: 'Dicard Editing?',
+      header: 'Discard Editing?',
       message: 'If you go back now, you will lose editing.',
       buttons: [
         {
@@ -160,51 +225,227 @@ export class ReportProblemPage implements OnInit {
           cssClass: 'icon-color',
           handler: () => {
             console.log('Confirm Discard');
-            this.router.navigate(['dashboard']);
+            
+            // Go back to dashboard 
+            this.navCtrl.back();
           }
         }
       ]
     });
 
-    await alert.present();
+    // display the alert
+    alert.present();
   }
 
-  async onFileSelect(event) {
+  /**
+  * Method to add image
+  */
+  async onFileSelect(event: any) {
 
-    if (event.target.files.length > 0) {
-      this.fileImage[this.imageIndex] = event.target.files[0];
+    this.updateCurrentSession();
 
+    // Limit size image to 10 Mb
+    if (event.target.files[0].size <= 10485760) {
 
+      // Check image length, image cannot empty
+      if (event.target.files.length > 0) {
+        this.fileImage[this.imageIndex] = event.target.files[0];
 
-      var reader = new FileReader();
-      reader.readAsDataURL(event.target.files[0]); // read file as data url
-      reader.onload = (event) => { // called once readAsDataURL is completed
-        this.url[this.imageIndex] = reader.result;
-        this.imageIndex++;
+        var reader = new FileReader();
+
+        // Read file as data url
+        reader.readAsDataURL(event.target.files[0]);
+
+        // Called once readAsDataURL is completed
+        reader.onload = (event) => {
+          this.urlImage[this.imageIndex] = reader.result;
+          this.imageIndex++;
+        }
       }
 
+    } else {
+
+      // Send message if data is to big
+      const toBig = await this.alertCtrl.create({
+        mode: "ios",
+        header: 'File Size is to Big',
+        message: 'Please upload file below 10 Mb!',
+        buttons: [
+          {
+            text: 'OK',
+            handler: () => {
+              console.log('Confirm Cancel: Ok');
+            }
+          }
+        ]
+      });
+      await toBig.present();
     }
   }
 
+  /**
+   * @param index is number image uploaded by user 
+   * Method to rearrange array if user delete the image
+   */
   async delete(index) {
+
+    this.updateCurrentSession();
+
+    // Change the image array if image is delete by user
     if (index === 0) {
-      this.url[0] = this.url[1];
-      this.url[1] = this.url[2];
-      this.url[2] = null;
+      this.urlImage[0] = this.urlImage[1];
+      this.urlImage[1] = this.urlImage[2];
+      this.urlImage[2] = null;
       this.fileImage[0] = this.fileImage[1];
       this.fileImage[1] = this.fileImage[2];
       this.fileImage[2] = null;
 
     } else if (index === 1) {
-      this.url[1] = this.url[2];
-      this.url[2] = null;
+      this.urlImage[1] = this.urlImage[2];
+      this.urlImage[2] = null;
       this.fileImage[1] = this.fileImage[2];
       this.fileImage[2] = null;
     } else {
-      this.url[2] = null;
-      this.fileImage[2] = null;
 
+      this.urlImage[2] = null;
+      this.fileImage[2] = null;
     }
     this.imageIndex--;
+  }
+
+  /**
+  * Method to get Device ID
+  */
+  async prefDeviceId() {
+    await this.pref.getData(StaticVariable.KEY__DEVICE_ID).then((value) => {
+      this.selectedDeviceId = value;
+    });
+  }
+
+  /**
+  * Method to get Email
+  */
+  async prefEmail() {
+    await this.pref.getData(StaticVariable.KEY__SESSION_ID).then((value) => {
+      this.Email = value;
+    });
+  }
+
+  /**
+  * Method to get picture of device
+  */
+  async getPicture(device_id) {
+    let picUrl = await this.api.getDispenserPictureUrlOnly(device_id);
+    return picUrl;
+  }
+
+  /**
+   * This function is to check if session login of the user has already
+   * timed out or not. If session login is valid then user can access
+   * the page, otherwise user should re-login.
+   */
+  async checkSession() {
+    
+    // check session ID and date
+    let nowDate = new Date();
+    let lastDate = await this.pref.getData(StaticVariable.KEY__LAST_DATE)
+    let difDate = nowDate.getTime() - lastDate.getTime();
+
+    // check if there any session ID
+    let checkData = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+
+    if (checkData === "" || checkData === null) {
+
+      // create toast when session login is ended (above 5 minutes)
+      let myToast = await this.toastCtrl.create({
+        message: "Session ID is invalid, please login first!",
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+
+      // present the Toast
+      myToast.present();
+
+      // direct the user to login page
+      this.navCtrl.navigateForward(['login']);
+      
+    } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
+
+      // create toast when session login is ended (above 5 minutes)
+      let myToast = await this.toastCtrl.create({
+        message: "Your session is ended, please re-login to grant access!",
+        duration: 2000,
+        position: 'top',
+        showCloseButton: true,
+        closeButtonText: 'Close'
+      });
+
+      // present the Toast
+      myToast.present();
+
+      // dismiss the loading screen
+      this.dismissLoadCtrl();
+      
+      // save the name of page
+      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, true);
+
+      // direct the user to login page
+      this.navCtrl.navigateForward(['login']);
+
+    } else if (difDate <= StaticVariable.SESSION_TIMEOUT) {
+
+      // save new Date
+      this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+    }
+  }
+
+  /**
+   * This function is for create the loading controller
+   */
+  async createLoadCtrl () {
+    this.makeLoading = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent'
+    })
+
+    this.makeLoading.present();
+  }
+
+  /**
+   * This function is for dismiss the loading controller
+   */
+  async dismissLoadCtrl () {
+    this.makeLoading.dismiss();
+  }
+
+  /**
+   * This function is to check if the email is present and user has check the
+   * dispenser as being tracked or not. If it being tracked after user logged
+   * in then the star will filled and vice versa. Star displayed as filled or
+   * not based on trackIsActive variable.
+   * 
+   * @param email User's email address
+   */
+  async setTrackCondition (email: string) {
+
+    // if email is found from preference
+    if (email !== "" || email !== null || email !== undefined) {
+
+      // check with checkTractStatus from service to get from API
+      await this.api.checkTrackStatus(this.selectedDeviceId, email).then((result) => {
+
+        // set trackIsActive based on result
+        this.updateTrack = result['Status'];
+      });
+    }
+  }
+
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
+    this.checkSession();
   }
 }

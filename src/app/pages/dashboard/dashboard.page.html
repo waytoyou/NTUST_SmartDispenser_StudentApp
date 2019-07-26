@@ -1,4 +1,5 @@
-<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft" position="absolute">
+<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft"
+            position="absolute">
   <div class="background-image" [ngStyle]="{'background-image': 'url(' + url_dispenser_picture + ')'}">
 
     <div class="overlay">
@@ -36,12 +37,13 @@
       <div class="jellyfish-icon">
         <img alt="avatar" src="assets/dashboard/jellyfishIcon.png">
       </div>
-    </div>
 
+    </div>
   </div>
 </ion-header>
 
-<ion-content [style.height.px]="contentHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft" position="absolute">
+<ion-content [style.height.px]="contentHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft"
+             position="absolute">
   <div class="content-button-space">
 
     <!--Report Dispenser button-->
@@ -54,7 +56,7 @@
 
     <!--Nearby Dispenser button-->
     <span class="content-button">
-      <button class="ripple full-button">
+      <button class="ripple full-button" (click)="goToNearbyDispenser()">
         <ion-icon name="pin" size="large"></ion-icon>
         <p>Nearby dispenser</p>
       </button>
@@ -62,7 +64,7 @@
 
   </div>
 
-  <div class="report-status">
+  <div class="report-status transparent" *ngIf="!hasReportSubmitted">
     No Report Problem
   </div>
 

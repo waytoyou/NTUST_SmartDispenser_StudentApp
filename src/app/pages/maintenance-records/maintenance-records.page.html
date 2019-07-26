@@ -1,5 +1,5 @@
-<ion-content>
-  <div class="header">
+<ion-content [scrollEvents]="true" (ionScroll)="updateCurrentSession()">
+  <div class="header"  [style.backgroundImage]="'url(' + backgroundImg + ')'">
     <div class="overlay header-inside">
 
       <div class="header-inside--icon-left float-left">
@@ -32,7 +32,6 @@
             <div>{{data.ErrorMeaning}}</div>
             <div>{{data.Description}}</div>
           </ion-label>
-          <ion-icon mode="ios" name="arrow-forward"></ion-icon>
         </ion-item>
         <div *ngIf="!j" class="divider">
         </div>

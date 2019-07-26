@@ -1,4 +1,4 @@
-<ion-content>
+<ion-content [scrollEvents]="true" (ionScroll)="updateCurrentSession()">
 
   <!-- header -->
   <div class="header" [style.backgroundImage]="'url(' + backgroundImg + ')'">
@@ -33,49 +33,58 @@
     </div>
   </div>
 
-  <!-- estimate -->
-  <div class="estimate">
-    <div>
-      <!-- <img
-        class="estimate-icon"
-        src="assets\_ionicons_svg_md-alert.svg"
-        alt="alert image"> -->
-      <ion-icon name="alert" color="warning" size="large"></ion-icon>
-    </div>
-    <div class="estimate-title">
-      <b>Report submitted</b>
-    </div>
-    <div class="estimate-subtitle">
-      Estimated completion time: XX hours later
-    </div>
-  </div>
+  <ion-slides mode="ios" pager="true" scrollbar="true"
+    (ionSlideTap)="updateCurrentSession()"
+    (ionSlideDrag)="updateCurrentSession()"
+  >
+    <ion-slide *ngFor="let reports of items">
 
-  <!-- progress -->
-  <div class="progress">
-
-    <!-- make a list -->
-    <ul>
-      <li *ngFor="let item of items">
-
-        <!-- left side the dot -->
-        <div class="fa"></div>
-
-        <!-- right side the content with left border -->
-        <div class="fi">
-          {{item.UploadTimeString}}
-          <br>
-          Issue occured: {{item.ErrorType}}
-          <br>
-          Current status: {{item.Status}}
-          <br>
-          <!-- .. more details ..
-          <br>
-          .. more details .. -->
+      <!-- estimate -->
+      <div class="estimate">
+        <div>
+          <ion-icon name="alert" color="warning" size="large"></ion-icon>
         </div>
+        <div class="estimate-title">
+          <b>Report submitted</b>
+        </div>
+        <div class="estimate-subtitle">
+          Estimated completion time:
+          <br>
+          {{reports.estimateTime}} hours later
+        </div>
+      </div>
 
-      </li>
-    </ul>
+      <div class="progress" style="text-align: center" *ngIf="items.length === 0">
+        <b>No progress is available</b>
+      </div>
 
-  </div>
+      <!-- progress -->
+      <div class="progress">
+            
+        <!-- make a list -->
+        <ul>
+          <li *ngFor="let item of reports.data">
+    
+            <!-- left side the dot -->
+            <div class="fa"></div>
+    
+            <!-- right side the content with left border -->
+            <div class="fi">
+              {{item.Time}}
+              <br>
+              {{item.Status}}
+              <br>
+              <span *ngIf="item.Information !== null">
+                {{item.Information}}
+                <br>
+              </span>
+            </div>
+    
+          </li>
+        </ul>     
+      </div>
+
+    </ion-slide>
+  </ion-slides>
 
 </ion-content>

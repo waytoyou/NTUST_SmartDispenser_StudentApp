@@ -17,7 +17,6 @@ export class DashboardPage implements OnInit {
 
   // variable for store device id
   private device_id: string = "";
-
   // variable for dispenser data
   public url_dispenser_picture: string = "";
   private dispenser_detail: any;
@@ -132,7 +131,6 @@ export class DashboardPage implements OnInit {
   private detectDevice() {
     this.isDesktopType = this.deviceDetector.isDesktop();
   }
-
   /**
    * This function is to get the desktop size if desktop is use
    * and store the result to field variable for display.
@@ -141,7 +139,6 @@ export class DashboardPage implements OnInit {
     this.screenHeight = window.innerHeight;
     this.screenWidth = this.screenHeight/16 * 9;
   }
-
   /**
    * This function is to get the desktop size if mobile device is use
    * and store the result to field variable for display.
@@ -251,7 +248,6 @@ export class DashboardPage implements OnInit {
 
       // send want to track or not to database using API
       if (value) {
-
         let addString = "";
 
         // check whether the user add or remove
@@ -289,7 +285,6 @@ export class DashboardPage implements OnInit {
             }
           ]
         });
-
         // display the alert controller
         alert.present();
 
@@ -466,7 +461,6 @@ export class DashboardPage implements OnInit {
 
       // check with checkTractStatus from service to get from API
       await this.api.checkTrackStatus(this.device_id, email).then((result) => {
-
         // set trackIsActive based on result
         this.trackIsActive = result['Status'];
       });
@@ -478,7 +472,6 @@ export class DashboardPage implements OnInit {
    * if the user is checked has not logged in.
    */
   async checkLogin () {
-
     // check if there any session ID
     let checkData = await this.checkSession();
 
@@ -512,7 +505,6 @@ export class DashboardPage implements OnInit {
           {
             text: 'Log In',
             handler: () => {
-
               // direct the user to login page
               this.navCtrl.navigateForward(['login']);
             }
@@ -522,7 +514,6 @@ export class DashboardPage implements OnInit {
 
       // display the alert controller
       loginAlert.present();
-
     } else {
       // return true if login process has done before
       returnValue = true;

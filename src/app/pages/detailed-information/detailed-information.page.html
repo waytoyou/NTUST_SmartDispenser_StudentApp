@@ -1,5 +1,4 @@
-<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft"
-  position="absolute">
+<ion-header no-border [style.height.px]="headerHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft" position="absolute">
   <div class="background-image" [ngStyle]="{'background-image': 'url(' + url_dispenser_picture + ')'}">
 
     <div class="overlay">
@@ -10,17 +9,17 @@
       </div>
 
       <!--Close Button to go back to Dashboard-->
-      <button class="close-button">
+      <button class="close-button" (click)="goToDashboard()">
         <ion-icon name="close" size="large"></ion-icon>
       </button>
 
       <!--Jellyfish icon-->
-      <div class="jellyfish-icon" [style.top.px]="jellyfishIconTop" [style.left.px]="jellyfishIconLeft">
+      <div class="jellyfish-icon">
         <img alt="avatar" src="assets/dashboard/jellyfishIcon.png">
       </div>
 
-      <!--Detail Information text-->
-      <div class="detailed-information-text" [style.top.px]="detailedInformationTop">
+      <!--Detailed Information text-->
+      <div class="detailed-information-text">
         Detailed Information
       </div>
 
@@ -30,5 +29,64 @@
 </ion-header>
 
 <ion-content [style.height.px]="contentHeight" [style.width.px]="screenWidth" [style.left.px]="pageLeft" position="absolute">
+
+  <div class="temperature-display-content">
+    <div class="temperature-switch">
+
+      <span class="immediate-temperature-text">Immediate temperature</span>
+
+      <span class="degree-letter">°F</span>
+
+      <span class="toggle-button">
+        <ion-toggle (click)="setTemperatureToggle()" mode="ios"></ion-toggle>
+      </span>
+
+      <span class="degree-letter">°C</span>
+
+    </div>
+
+    <div class="temperature-display-space">
+
+      <span class="temperature-display-block">
+        <div class="temperature-display">
+          <img class="temperature-logo" src="assets/detailed-information/cold.png" alt="colt logo">
+
+          <span class="temperature-text cold-text">{{displayColdTemp}}</span>
+        </div>
+      </span>
+
+      <span class="temperature-display-block" color="#36a1ce">
+        <div class="temperature-display">
+          <img class="temperature-logo" src="assets/detailed-information/warm.png" alt="colt logo">
+
+          <span class="temperature-text warm-color">{{displayWarmTemp}}</span>
+        </div>
+      </span>
+
+      <span class="temperature-display-block" color="#36a1ce">
+        <div class="temperature-display">
+          <img class="temperature-logo" src="assets/detailed-information/hot.png" alt="colt logo">
+
+          <span class="temperature-text hot-color">{{displayHotTemp}}</span>
+        </div>
+      </span>
+    </div>
+
+  </div>
+
+  <div class="dispenser-position-content">
+    <span class="information-text">Position</span>
+
+    <span class="position-display">
+      {{dispenserBuildingPosition}}<br>
+      {{dispenserPlacedPosition}}
+    </span>
+  </div>
+
+  <div class="dispenser-type-content">
+    <span class="information-text">Type</span>
+
+    <span class="type-display">{{dispenser_type}}</span>
+  </div>
 
 </ion-content>

@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ToastController, NavController } from '@ionic/angular';
-
-import { PreferenceManagerService } from '../../services/PreferenceManager/preference-manager.service';
-import { StaticVariable } from '../../classes/StaticVariable/static-variable';
-import { DispenserAPIService } from '../../services/DispenserAPI/dispenser-api.service';
+import { ToastController, NavController, LoadingController } from '@ionic/angular';
+import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
+import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 
 @Component({
   selector: 'app-nearby',
@@ -13,111 +12,44 @@ import { DispenserAPIService } from '../../services/DispenserAPI/dispenser-api.s
 })
 export class NearbyPage implements OnInit {
 
-  // field
+  /*
+    field array variables to store the data
+    - nearby variable is the data to display
+    - temp variable is store all data while being copied to nearby when filter is active
+    - same building means in same building, while next building means in different building
+  */
   public nearbySameBuilding = [];
   public nearbyNextBuilding = [];
   private tempSameBuilding = [];
   private tempNextBuilding = [];
 
+  // field variables for identify if filter is ON/OFF and the data is ready to be displayed
   private onlyCold : boolean = false;
   private onlyWarm : boolean = false;
   private onlyHot : boolean = false;
   private resultDone: boolean = false;
 
-  backgroundImg: any;
+  // loadCtrl var
+  makeLoading: any;
 
-  // get deviceId from entering page
-  selectedDeviceId: string = "";
+  // variable to store device id and background img url
+  backgroundImg: string = "";
+  device_id: string = "";
 
   constructor(
     public http: HttpClient,
     public toastCtrl: ToastController,
     private pref: PreferenceManagerService,
     private api: DispenserAPIService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private loadCtrl: LoadingController
   ) {  }
 
   /**
-   * ngOnInit() is the function that called when page being loaded.
-   * Like in many programming, it's like main function.
+   * This function being called in the first time page
+   * being accessed. It run several code to get dispenser
+   * maintenance progress and display the value in HTML.
    * 
-   * If want to use async function:
-   * - create new function with async (ex: async myFunctionName() { } )
-   * - call in here with "this.myFunctionName();"
-   */
-  ngOnInit() {
-    this.main();
-  }
-
-  /**
-   * 
-   */
-  ionViewDidEnter() {
-    this.checkSession();
-  }
-
-  /**
-   * Go Back
-   */
-  backFunc() {
-    this.navCtrl.back();
-  }
-
-  /**
-   * coldFilter() method is called when COLD button is pressed
-   * - it will change boolean parameter for onlyCold
-   * - it will adjust the conditionalFilter() method
-   */
-  coldFilter () {
-    this.checkSession();
-
-    if (this.resultDone) {
-      if (!this.onlyCold)
-        this.onlyCold = true;
-      else
-        this.onlyCold = false;
-      
-      this.conditionalFilter();
-    }
-  }
-  
-  /**
-   * warmFilter() method is called when WARM button is pressed
-   * - it will change boolean parameter for onlyWarm
-   * - it will adjust the conditionalFilter() method
-   */
-  warmFilter () {
-    this.checkSession();
-
-    if (this.resultDone) {
-      if (!this.onlyWarm)
-        this.onlyWarm = true;
-      else
-        this.onlyWarm = false;
-
-      this.conditionalFilter();
-    }
-  }
-  
-  /**
-   * hotFilter() method is called when HOT button is pressed
-   * - it will change boolean parameter for onlyHot
-   * - it will adjust the conditionalFilter() method
-   */
-  hotFilter () {
-    this.checkSession();
-    
-    if (this.resultDone) {
-      if (!this.onlyHot)
-        this.onlyHot = true;
-      else
-        this.onlyHot = false;
-
-      this.conditionalFilter();
-    }
-  }
-
-  /**
    * Parameter needed to be mapped into page:
    * - Device_ID    => getNearby(device_id), urlDetails(device_id)
    * - Status       => getNearby(device_id)
@@ -129,41 +61,52 @@ export class NearbyPage implements OnInit {
    * - Position     => getDetails(device_id)
    * - Picture      => getPicture(device_id)
    */
-  async main () {
+  async ngOnInit() {
 
-    // check id from preference
-    await this.prefDeviceId();
+    // create loading screen
+    await this.createLoadCtrl();
     
-    // check if device id is available
+    // check id from preference
+    this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
+    
     try {
-      this.selectedDeviceId = await this.pref.getData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID);
-      await this.api.getNearbyDispenser(this.selectedDeviceId);
       
-    } catch (error) {
+      // check if device id is available
+      await this.api.getNearbyDispenser(this.device_id);
+
+    } catch (e) {
+
+      // dismiss the loading screen
+      this.dismissLoadCtrl();
 
       // send Toast messsage (announce) on top of page if device id is incorrect
       let myToast = await this.toastCtrl.create({
-        message: 'Dispenser is not found or ID is incorrect!',
+        message: 'Dispenser is incorrect, please scan the QR Code once again!',
         duration: 2000,
         position: 'top',
         showCloseButton: true,
         closeButtonText: 'Close'
       });
+
+      // present toast and break code as if ends here
       myToast.present();
+
+      // set resultDone to true
+      this.resultDone = true;
       return;
     }    
 
     // get the details of selected dispenser
-    let currentDispenserDetails = await this.getDetails(this.selectedDeviceId);
+    let currentDispenserDetails = await this.getDetails(this.device_id);
 
     // set img background
-    this.backgroundImg = await this.getPicture(this.selectedDeviceId);
+    this.backgroundImg = await this.getPicture(this.device_id);
 
     // get the location of selected dispensed
     let currentBuildingLocation = await this.getBuildingLocation(currentDispenserDetails);  
 
     // get nearby dispensers from selected dispenser
-    let getNearbyDispenserJson = await this.getNearby(this.selectedDeviceId);
+    let getNearbyDispenserJson = await this.getNearby(this.device_id);
     
     // for every dispenser in array
     for (let i = 0 ; i < getNearbyDispenserJson.length ; i++) {
@@ -194,14 +137,103 @@ export class NearbyPage implements OnInit {
 
       // conditional if this dispenser is in same location with the selected dispenser
       if (dispenserBuildingLoc == currentBuildingLocation) {
+
+        // group for same building
         this.tempSameBuilding.push(tempAllDetails);
+
       } else {
+
+        // group for different building
         this.tempNextBuilding.push(tempAllDetails);
+
       }
     } // end FOR
 
     // call conditionalFilter for push from TEMP to NEARBY array field
     this.conditionalFilter();
+
+    // dismiss the loading screen
+    this.dismissLoadCtrl();
+  }
+
+  /**
+   * Go Back
+   */
+  backFunc() {
+    this.updateCurrentSession();
+    this.navCtrl.back();
+  }
+
+  /**
+   * This function is for create the loading controller
+   */
+  async createLoadCtrl () {
+
+    // create the loading controller
+    this.makeLoading = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent'
+    })
+
+    // display the loading controller
+    this.makeLoading.present();
+  }
+
+  /**
+   * This function is for dismiss the loading controller
+   */
+  async dismissLoadCtrl () {
+
+    // remove or dismiss the loading controller
+    this.makeLoading.dismiss();
+  }
+
+  /**
+   * coldFilter() method is called when COLD button is pressed
+   * - it will change boolean parameter for onlyCold
+   * - it will adjust the conditionalFilter() method
+   */
+  coldFilter () {
+    if (this.resultDone) {
+      if (!this.onlyCold)
+        this.onlyCold = true;
+      else
+        this.onlyCold = false;
+      
+      this.conditionalFilter();
+    }
+  }
+  
+  /**
+   * warmFilter() method is called when WARM button is pressed
+   * - it will change boolean parameter for onlyWarm
+   * - it will adjust the conditionalFilter() method
+   */
+  warmFilter () {
+    if (this.resultDone) {
+      if (!this.onlyWarm)
+        this.onlyWarm = true;
+      else
+        this.onlyWarm = false;
+
+      this.conditionalFilter();
+    }
+  }
+  
+  /**
+   * hotFilter() method is called when HOT button is pressed
+   * - it will change boolean parameter for onlyHot
+   * - it will adjust the conditionalFilter() method
+   */
+  hotFilter () { 
+    if (this.resultDone) {
+      if (!this.onlyHot)
+        this.onlyHot = true;
+      else
+        this.onlyHot = false;
+
+      this.conditionalFilter();
+    }
   }
 
   /**
@@ -210,7 +242,7 @@ export class NearbyPage implements OnInit {
    * @param   device_id id of the dispenser
    * @returns myJson    json of the nearby dispenser
    */
-  async getNearby (device_id) {    
+  async getNearby (device_id: string) {    
     let myJson = await this.api.getNearbyDispenser(device_id);
     return myJson;
   }
@@ -221,7 +253,7 @@ export class NearbyPage implements OnInit {
    * @param   device_id id of the dispenser
    * @returns myJson    json of dispenser's details
    */
-  async getDetails (device_id) {
+  async getDetails (device_id: string) {
     let myJson = await this.api.getDispenserDetail(device_id);
     return myJson;
   }
@@ -231,7 +263,7 @@ export class NearbyPage implements OnInit {
    * 
    * @param   device_id id of the dispenser
    */
-  async getPicture (device_id) {
+  async getPicture (device_id: string) {
     let myUrl = await this.api.getDispenserPictureUrlOnly(device_id);
     return myUrl;
   }
@@ -244,7 +276,7 @@ export class NearbyPage implements OnInit {
    * @param   device_id   id of the dispenser
    * @returns mbSplit[0]  location ID from device ID, explained in above
    */
-  async getBuildingLocation (detailsJson) {
+  async getBuildingLocation (detailsJson: any) {
     let myBuilding = detailsJson['Device_ID'];
     let mbSplit = myBuilding.split("_");
 
@@ -271,6 +303,8 @@ export class NearbyPage implements OnInit {
    * - vice versa for false value
    */
   conditionalFilter () {
+
+    this.updateCurrentSession();
 
     // set resultDone to false
     this.resultDone = false;
@@ -316,49 +350,11 @@ export class NearbyPage implements OnInit {
     this.resultDone = true;
   }
 
-  async prefDeviceId () {
-    await this.pref.getData(StaticVariable.KEY__NEARBY_DISPENSER__DEVICE_ID).then((value) => {
-      this.selectedDeviceId = value;
-    });
-  }
-
-  async checkSession() {
-    
-    // check session ID and date
+  /**
+   * This function is to update session login time whenever action is need
+   */
+  updateCurrentSession () {
     let nowDate = new Date();
-    let lastDate = await this.pref.getData(StaticVariable.KEY__LAST_DATE)
-    let difDate = nowDate.getTime() - lastDate.getTime();
-
-    // check if there any session ID
-    let checkData = await this.pref.checkData(StaticVariable.KEY__SESSION_ID, null);
-
-    let currentPage = "nearby";
-
-    // check in console
-      console.log(nowDate);
-      console.log(lastDate);
-      console.log(difDate);
-      console.log(await this.pref.getData(StaticVariable.KEY__SESSION_ID));
-
-    if (checkData) {
-
-      // direct the user to login page
-      this.navCtrl.navigateForward(['login']);
-      
-    } else if (difDate > StaticVariable.SESSION_TIMEOUT) {
-
-      // direct the user to login page
-      this.navCtrl.navigateForward(['login']);
-      
-      // remove the session ID from preference
-      this.pref.removeData(StaticVariable.KEY__SESSION_ID);
-
-      // save the name of page
-      this.pref.saveData(StaticVariable.KEY__LAST_PAGE, currentPage);
-    } else if (!checkData && difDate <= StaticVariable.SESSION_TIMEOUT) {
-
-      // save new Date
-      this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
-    }
+    this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
   }
 }

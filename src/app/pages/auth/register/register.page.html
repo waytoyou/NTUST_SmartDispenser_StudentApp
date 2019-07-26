@@ -4,6 +4,11 @@
 </head>
 
 <ion-content class="i-theme1">
+
+  <div class="icon-cancel">
+    <img src="assets/cancel/rectangle-black@3x.png" alt="cancel" (click)="backFunc()">
+  </div>
+
   <div class="header">
     <img 
       class="img-header"
@@ -22,12 +27,14 @@
   
       <ion-item>
         <ion-label position="floating">Email Address</ion-label>
-        <ion-input type="email" [(ngModel)]="email"></ion-input>
+        <ion-input type="email" [(ngModel)]="email" (change)=checkEmail(email)></ion-input>
+        <p *ngIf="emailFalse" class="falseInput">Email is invalid!</p>
       </ion-item>
   
       <ion-item>
         <ion-label position="floating">Password</ion-label>
-        <ion-input type="password" [(ngModel)]="password"></ion-input>
+        <ion-input type="password" [(ngModel)]="password" (change)=checkPassword(password)></ion-input>
+        <p *ngIf="passwordFalse" class="falseInput">Password must minimum 6 character with at least contains 1 alphabet and 1 number!</p>
       </ion-item>
   
       <ion-item>
@@ -36,8 +43,8 @@
       </ion-item>
     </div>
 
-    <p style="text-align: center">
-      By clicking Sign Up, you agree to our Terms, Data Policy and Cookie Policy.
+    <p class="confirm-text">
+      By clicking <b>Sign Up</b>, you agree to our Terms, Data Policy and Cookie Policy.
       You will receieve verification email in you mailbox in order to verify your account.
     </p>
 
