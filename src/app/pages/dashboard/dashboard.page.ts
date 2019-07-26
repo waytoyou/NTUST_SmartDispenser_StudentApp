@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HostListener } from "@angular/core";
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { NavController, AlertController, LoadingController } from '@ionic/angular';
@@ -17,11 +17,11 @@ export class DashboardPage implements OnInit {
 
   // variable for store device id
   private device_id: string = "";
-  
   // variable for dispenser data
   public url_dispenser_picture: string = "";
   private dispenser_detail: any;
 
+  public bubble_text_location: string;
   public dispenser_building_location: string = "";
   public dispenser_floor_location: string = "";
 
@@ -48,14 +48,13 @@ export class DashboardPage implements OnInit {
   private ngOnInitDone: boolean = false;
 
   constructor(
-    private deviceDetector: DeviceDetectorService,
-    private pref: PreferenceManagerService,
-    private navCtrl: NavController,
-    private alertCtrl: AlertController,
-    private api: DispenserAPIService,
-    private actRoute: ActivatedRoute,
-    private loadCtrl: LoadingController,
-    private zone: NgZone
+      private deviceDetector: DeviceDetectorService,
+      private pref: PreferenceManagerService,
+      private navCtrl: NavController,
+      private alertCtrl: AlertController,
+      private api: DispenserAPIService,
+      private actRoute: ActivatedRoute,
+      private loadCtrl: LoadingController
   ) { }
 
   async ngOnInit() {
@@ -132,7 +131,6 @@ export class DashboardPage implements OnInit {
   private detectDevice() {
     this.isDesktopType = this.deviceDetector.isDesktop();
   }
-  
   /**
    * This function is to get the desktop size if desktop is use
    * and store the result to field variable for display.
@@ -141,7 +139,6 @@ export class DashboardPage implements OnInit {
     this.screenHeight = window.innerHeight;
     this.screenWidth = this.screenHeight/16 * 9;
   }
-    
   /**
    * This function is to get the desktop size if mobile device is use
    * and store the result to field variable for display.
@@ -172,7 +169,7 @@ export class DashboardPage implements OnInit {
    * This function is for call adjustment if desktop is use.
    */
   private adjustDynamicDesktopScreen(){
-    this.getDesktopScreenSize();    
+    this.getDesktopScreenSize();
     this.adjustScreen();
   }
 
@@ -251,7 +248,6 @@ export class DashboardPage implements OnInit {
 
       // send want to track or not to database using API
       if (value) {
-        
         let addString = "";
 
         // check whether the user add or remove
@@ -272,10 +268,10 @@ export class DashboardPage implements OnInit {
             }
           ]
         });
-  
+
         // display the alert controller
         alert.present();
-        
+
       } else {
 
         // gives alert that track is failed
@@ -289,7 +285,6 @@ export class DashboardPage implements OnInit {
             }
           ]
         });
-  
         // display the alert controller
         alert.present();
 
@@ -322,7 +317,7 @@ export class DashboardPage implements OnInit {
    * not build first.
    */
   async checkPrefFirstTime () {
-      
+
     // in here check the first time when app opened
     let a = await this.pref.getData(StaticVariable.KEY__CHECK_PREF_CREATED);
 
@@ -339,7 +334,7 @@ export class DashboardPage implements OnInit {
   }
 
   /**
-   * This function is for set device_id from URL also handling when URL 
+   * This function is for set device_id from URL also handling when URL
    * doesn't has device id. It will get the device id from preference. When
    * both ways doesn't has device id, it will alert error message.
    */
@@ -354,7 +349,7 @@ export class DashboardPage implements OnInit {
       // get device id from preference
       getId = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
 
-    } else {     
+    } else {
 
       // if found from URL then store to field variable
       this.device_id = getId;
@@ -430,19 +425,19 @@ export class DashboardPage implements OnInit {
   }
 
   setLocationText(){
-    this.dispenser_building_location = "Hi! I am Jellyfish and lives in the \n" + this.dispenser_detail['Building'] + ",";
-    this.dispenser_floor_location = this.dispenser_detail['Position'] + "!";
-    this.dispenser_floor_location.toLowerCase();
+    this.bubble_text_location = "Hi! I am Jellyfish and lives in the ";
+    this.dispenser_building_location = this.dispenser_detail['Building'];
+    this.dispenser_floor_location = "," + "\n" + this.dispenser_detail['Position'] + "!";
   }
 
   /**
    * This function is to check if the email is present and user report
    * is present then user can check his report.
-   * 
+   *
    * @param email User's email address
    */
   async setReportCondition (email: string) {
-    
+
     // if email is found from preference
     if (email !== "") {
 
@@ -456,7 +451,7 @@ export class DashboardPage implements OnInit {
    * dispenser as being tracked or not. If it being tracked after user logged
    * in then the star will filled and vice versa. Star displayed as filled or
    * not based on trackIsActive variable.
-   * 
+   *
    * @param email User's email address
    */
   async setTrackCondition (email: string) {
@@ -466,7 +461,6 @@ export class DashboardPage implements OnInit {
 
       // check with checkTractStatus from service to get from API
       await this.api.checkTrackStatus(this.device_id, email).then((result) => {
-        
         // set trackIsActive based on result
         this.trackIsActive = result['Status'];
       });
@@ -478,7 +472,6 @@ export class DashboardPage implements OnInit {
    * if the user is checked has not logged in.
    */
   async checkLogin () {
-    
     // check if there any session ID
     let checkData = await this.checkSession();
 
@@ -512,7 +505,6 @@ export class DashboardPage implements OnInit {
           {
             text: 'Log In',
             handler: () => {
-              
               // direct the user to login page
               this.navCtrl.navigateForward(['login']);
             }
@@ -522,7 +514,6 @@ export class DashboardPage implements OnInit {
 
       // display the alert controller
       loginAlert.present();
-      
     } else {
       // return true if login process has done before
       returnValue = true;
@@ -533,11 +524,11 @@ export class DashboardPage implements OnInit {
 
   /**
    * This function is to check whether the session login of the user. If
-   * the user still logged in under the session timeout limit then access 
+   * the user still logged in under the session timeout limit then access
    * is granted, and not if above the time limit or no session id is present.
    */
   async checkSession() {
-    
+
     // check session ID and date
     let nowDate = new Date();
     let lastDate = new Date(await this.pref.getData(StaticVariable.KEY__LAST_DATE));
@@ -563,18 +554,6 @@ export class DashboardPage implements OnInit {
     }
 
     return returnValue;
-  }
-
-  async getBubbleTextInfo (device_id: string) {
-
-    let data = await this.api.getDispenserDetail(device_id);
-    let dSplit = device_id.split("_");
-    
-    let position = data['Position'];    
-    let building = dSplit[0];
-
-    this.bubbleTextBuilding = building;
-    this.bubbleTextLocation = position;
   }
 
   /**
