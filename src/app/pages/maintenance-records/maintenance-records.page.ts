@@ -3,6 +3,7 @@ import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 import { LoadingController, NavController } from '@ionic/angular';
+import { NavigationExtras } from '@angular/router';
 
 @Component({
   selector: 'app-maintenance-records',
@@ -265,5 +266,17 @@ export class MaintenanceRecordsPage implements OnInit {
   updateCurrentSession () {
     let nowDate = new Date();
     this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+  }
+
+  getProgress (completeTime: string) {
+
+    // set parameter of passed data
+    let navigationExtras: NavigationExtras = {
+      queryParams: {
+        CompleteTime: completeTime
+      }
+    };
+
+    this.navCtrl.navigateForward(['mt-progress'], navigationExtras);
   }
 }
