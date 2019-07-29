@@ -4,6 +4,7 @@ import { ToastController, NavController, LoadingController } from '@ionic/angula
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
+import { NavigationExtras } from '@angular/router';
 
 @Component({
   selector: 'app-nearby',
@@ -356,5 +357,17 @@ export class NearbyPage implements OnInit {
   updateCurrentSession () {
     let nowDate = new Date();
     this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+  }
+
+  getDetailInformation (device_id: string) {
+
+    // set parameter of passed data
+    let navigationExtras: NavigationExtras = {
+      queryParams: {
+        Device_ID: device_id
+      }
+    };
+
+    this.navCtrl.navigateForward(['detailed-information'], navigationExtras);
   }
 }

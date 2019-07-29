@@ -1,14 +1,13 @@
-import { DispenserAPIService } from '../../services/DispenserAPI/dispenser-api.service';
 import { Component, OnInit } from '@angular/core';
 import { HostListener } from "@angular/core";
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { HttpClient } from '@angular/common/http';
 import { NavController } from '@ionic/angular';
 import { LoadingController } from '@ionic/angular';
-
-import {StaticVariable} from "../../classes/StaticVariable/static-variable";
+import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
+import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 
 @Component({
   selector: 'app-detailed-information',
@@ -65,7 +64,9 @@ export class DetailedInformationPage implements OnInit {
       private pref: PreferenceManagerService,
       private api: DispenserAPIService,
       private navCtrl: NavController,
-      private loadCtrl: LoadingController) {}
+      private loadCtrl: LoadingController,
+      private route: ActivatedRoute
+    ) {}
 
   async ngOnInit() {
 
@@ -137,9 +138,20 @@ export class DetailedInformationPage implements OnInit {
       this.adjustDynamicMobileScreen();
   }
 
-  async getPrefsData(){
+async getPrefsData(){
+  
+  // get from nearby dispenser page if exists
+  let tempDeviceId: string;
+  await this.route.queryParams.subscribe(params => {
+    tempDeviceId = params["Device_ID"];
+  });
+
+  if (tempDeviceId !== undefined) {
+    this.device_id = tempDeviceId;
+  } else {
     this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
   }
+}
 
   //--------------------------------------------------
   //APIs part
