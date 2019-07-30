@@ -213,7 +213,7 @@ export class MaintenanceRecordsPage implements OnInit {
     // time example from json: "2019-03-08 16:32:00"
     // format: YEAR-MONTH-DATEOFMONTH HOUR:MINUTE:SECOND
 
-    let monthName = ["January", "February", "March", "April", "June", "July", "August", "September", "Oktober", "Desember"]
+    let monthName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "Desember"];
 
     // split into DATE form and HOUR form
     let splitTime = time.split(" ");
