@@ -50,7 +50,8 @@
         <div class="estimate-subtitle">
           Estimated completion time:
           <br>
-          {{reports.estimateTime}} hours later
+          <div *ngIf="!isFromRecords">{{reports.estimateTime}} hours later</div>
+          <div *ngIf="isFromRecords"><b>Done!</b></div>
         </div>
       </div>
 

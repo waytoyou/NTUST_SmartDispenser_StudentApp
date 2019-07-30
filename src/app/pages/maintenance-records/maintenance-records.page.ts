@@ -3,6 +3,7 @@ import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
 import { LoadingController, NavController } from '@ionic/angular';
+import { NavigationExtras } from '@angular/router';
 
 @Component({
   selector: 'app-maintenance-records',
@@ -212,7 +213,7 @@ export class MaintenanceRecordsPage implements OnInit {
     // time example from json: "2019-03-08 16:32:00"
     // format: YEAR-MONTH-DATEOFMONTH HOUR:MINUTE:SECOND
 
-    let monthName = ["January", "February", "March", "April", "June", "July", "August", "September", "Oktober", "Desember"]
+    let monthName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "Desember"];
 
     // split into DATE form and HOUR form
     let splitTime = time.split(" ");
@@ -265,5 +266,17 @@ export class MaintenanceRecordsPage implements OnInit {
   updateCurrentSession () {
     let nowDate = new Date();
     this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
+  }
+
+  getProgress (completeTime: string) {
+
+    // set parameter of passed data
+    let navigationExtras: NavigationExtras = {
+      queryParams: {
+        CompleteTime: completeTime
+      }
+    };
+
+    this.navCtrl.navigateForward(['mt-progress'], navigationExtras);
   }
 }

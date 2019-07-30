@@ -4,6 +4,7 @@ import { ToastController, NavController, LoadingController } from '@ionic/angula
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-mt-progress',
@@ -37,9 +38,8 @@ export class MtProgressPage implements OnInit {
   device_id: string = "";
   email: string = "";
   backgroundImg: any;
-  
-  // loadCtrl var
   makeLoading: any;
+  isFromRecords: boolean = false;
   
   constructor(
     public http: HttpClient,
@@ -47,7 +47,8 @@ export class MtProgressPage implements OnInit {
     private pref: PreferenceManagerService,
     private navCtrl: NavController,
     private api: DispenserAPIService,
-    private loadCtrl: LoadingController
+    private loadCtrl: LoadingController,
+    private route: ActivatedRoute
   ) {  }
 
   /**
@@ -59,43 +60,69 @@ export class MtProgressPage implements OnInit {
 
     // create loading screen
     await this.createLoadCtrl();
-    
+
     // store id from preference
     this.device_id = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
 
-    // store email from preference
-    this.email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
-      
-    // check if device id is available
-    try {
+    // if data get from record page
+    let tempCompleteTime: string;
+    
+    await this.route.queryParams.subscribe(params => {
+      tempCompleteTime = params['CompleteTime'];
 
-      // if the api get HttpErrorResponse it will automatically call CATCH
-      await this.api.getDispenserDetail(this.device_id);
+      if (tempCompleteTime !== undefined) {
+        this.isFromRecords = true;
+      } else {
+        this.isFromRecords = false;
+      }
+    });
+    
+    if (this.isFromRecords) {
 
-    } catch (error) {
+      let myMaintenance = await this.getDataForRecord(tempCompleteTime);
+      let myMtResult = await this.getMtResult(myMaintenance[0]);
 
-      // dismiss the loading screen
-      this.dismissLoadCtrl();
-
-      // send Toast messsage (announce) on top of page if device id is incorrect
-      let myToast = await this.toastCtrl.create({
-        message: 'Dispenser is incorrect, please scan the QR Code once again!',
-        duration: 2000,
-        position: 'top',
-        showCloseButton: true,
-        closeButtonText: 'Close'
+      this.items.push({
+        'data': myMtResult,
+        'estimateTime': 0
       });
-      
-      myToast.present();
-      return;
-    }   
 
-    // choose which report still in maintenance
-    let chosenMaintenance = await this.getRepairCondition(this.device_id);
+    } else {
 
-    // get data for maintenance
-    if (chosenMaintenance !== []) {
-      this.items = chosenMaintenance;
+      // store email from preference
+      this.email = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
+        
+      // check if device id is available
+      try {
+
+        // if the api get HttpErrorResponse it will automatically call CATCH
+        await this.api.getDispenserDetail(this.device_id);
+
+      } catch (error) {
+
+        // dismiss the loading screen
+        this.dismissLoadCtrl();
+
+        // send Toast messsage (announce) on top of page if device id is incorrect
+        let myToast = await this.toastCtrl.create({
+          message: 'Dispenser is incorrect, please scan the QR Code once again!',
+          duration: 2000,
+          position: 'top',
+          showCloseButton: true,
+          closeButtonText: 'Close'
+        });
+        
+        myToast.present();
+        return;
+      }   
+
+      // choose which report still in maintenance
+      let chosenMaintenance = await this.getRepairCondition(this.device_id);
+
+      // get data for maintenance
+      if (chosenMaintenance !== []) {
+        this.items = chosenMaintenance;
+      }
     }
 
     // set image
@@ -111,7 +138,9 @@ export class MtProgressPage implements OnInit {
    * routed or open the page.
    */
   ionViewDidEnter() {
-    this.checkSession();
+
+    if (!this.isFromRecords)
+      this.checkSession();
   }
 
   /**
@@ -203,6 +232,20 @@ export class MtProgressPage implements OnInit {
     }
 
     return returnValue;
+  }
+
+  async getDataForRecord (completeTime: string) {
+
+    let data = await this.api.getDispenserRepairCondition(this.device_id);
+    let returnData = [];
+    
+    for (let i = 0 ; i < data.length ; i++) {
+      if (data[i]['CompleteTime'] === completeTime) {
+        returnData.push(data[i]);
+      }
+    }
+
+    return returnData;
   }
 
   /**
@@ -498,7 +541,9 @@ export class MtProgressPage implements OnInit {
    * This function is to update session login time whenever action is need
    */
   updateCurrentSession () {
-    this.checkSession();
+
+    if (!this.isFromRecords)
+      this.checkSession();
   }
 
 }

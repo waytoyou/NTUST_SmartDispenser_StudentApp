@@ -1,4 +1,5 @@
 <ion-content [scrollEvents]="true" (ionScroll)="updateCurrentSession()">
+  
   <div class="header"  [style.backgroundImage]="'url(' + backgroundImg + ')'">
     <div class="overlay header-inside">
 
@@ -17,12 +18,13 @@
 
     </div>
   </div>
+
   <ion-list *ngFor="let yearData of maintenanceData">
     <div *ngFor="let monthData of yearData.MonthMaintenance; let i = last">
       <div class="headerList">
-        <span *ngIf="i">{{yearData.year}} </span>{{monthData.month}}
+        <span *ngIf="i">{{yearData.year}}, </span>{{monthData.month}}
       </div>
-      <div *ngFor="let data of monthData.DayMaintenance; let j = last">
+      <div *ngFor="let data of monthData.DayMaintenance; let j = last" (click)="getProgress(data.CompleteTime)">
         <ion-item lines="none">
           <ion-label fixed class="fixedLabel listAvatar">
             <div>{{data.Day}}</div>
@@ -36,13 +38,10 @@
         <div *ngIf="!j" class="divider">
         </div>
       </div>
+      <br>
+
     </div>
-
-
+    <br>
 
   </ion-list>
-
-
-
-
 </ion-content>

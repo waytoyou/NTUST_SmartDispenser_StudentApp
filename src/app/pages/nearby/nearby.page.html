@@ -85,7 +85,7 @@
       </div>
 
       <div *ngIf="resultDone == true">
-        <ion-card *ngFor="let item of nearbySameBuilding" >
+        <ion-card *ngFor="let item of nearbySameBuilding" (click)="getDetailInformation(item.Device_ID)" >
 
           <div class="body-content--card" [style.backgroundImage]="'url(' + item.Picture + ')'">
             <div class="overlay body-content--card-inside">
@@ -141,7 +141,7 @@
       </div>
 
       <div *ngIf="resultDone == true">
-        <ion-card *ngFor="let item of nearbyNextBuilding" >
+        <ion-card *ngFor="let item of nearbyNextBuilding" (click)="getDetailInformation(item.Device_ID)" >
 
           <div class="body-content--card" [style.backgroundImage]="'url(' + item.Picture + ')'">
             <div class="overlay body-content--card-inside">
