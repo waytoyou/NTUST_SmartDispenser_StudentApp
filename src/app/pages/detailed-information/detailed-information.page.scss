@@ -1,10 +1,13 @@
 //=======================
 // Header Part CSS 
 //=======================
-.background-image, .overlay{
+
+.background-image,
+.overlay{
     height: 100%;
     width: 100%;
 }
+
 .background-image{
     position: relative;
     background-repeat: no-repeat;
@@ -65,7 +68,9 @@
 //=======================
 // Content Part CSS
 //=======================
-.temperature-display-content, .dispenser-position-content, .dispenser-type-content{
+.temperature-display-content,
+.dispenser-position-content,
+.dispenser-type-content{
     position: relative;
     width: 90%;
     top: 20px;
@@ -76,7 +81,15 @@
 /*------------------------------------------------
 Dispenser Temperature Display
 ------------------------------------------------*/
-.temperature-display-content, .temperature-switch, .immediate-temperature-text, .toggle-button, .degree-letter, .temperature-display-space, .temperature-display, .temperature-logo, .temperature-text{
+.temperature-display-content,
+.temperature-switch,
+.immediate-temperature-text,
+.toggle-button,
+.degree-letter,
+.temperature-display-space,
+.temperature-display,
+.temperature-logo,
+.temperature-text{
     position: relative;
 }
 
@@ -91,7 +104,9 @@ Dispenser Temperature Display
     width: 100%;
 }
 
-.immediate-temperature-text, .toggle-button, .degree-letter{
+.immediate-temperature-text,
+.toggle-button,
+.degree-letter{
     top: 5px;
 }
 
@@ -101,7 +116,8 @@ Dispenser Temperature Display
     color: #666666;
 }
 
-.toggle-button, .degree-letter{
+.toggle-button,
+.degree-letter{
     float: right;
 }
 
@@ -174,7 +190,9 @@ Dispenser Position Display
     border-bottom: 1px solid #e2e2e2;
 }
 
-.information-text, .position-display, .type-display{
+.information-text,
+.position-display,
+.type-display{
     position: relative;
     font-size: 17px;
     top: 25%;
@@ -187,7 +205,8 @@ Dispenser Position Display
     color: #666666;
 }
 
-.position-display, .type-display{
+.position-display,
+.type-display{
     float: right;
     right: 10px;
     font-family: PingFangTC;
