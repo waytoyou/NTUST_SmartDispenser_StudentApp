@@ -14,6 +14,8 @@
           <div class="dropdown-content">
             <button class="more-button" (click)="goToMaintenanceRecords()">Maintenance records</button>
             <button class="more-button" (click)="goToDetailedInformation()">Detailed information</button>
+            <!--If user is logged in, show Log out button-->
+            <button class="more-button" *ngIf="getLogoutButton()" (click)="logout()" color="red">Log out</button>
           </div>
         </button>
       </span>
@@ -21,8 +23,8 @@
       <!--Star button for tracking feature-->
       <span>
         <button class="ripple header-button" (click)="trackButton()">
-          <ion-icon name="star" size="large" *ngIf="trackIsActive == true"></ion-icon>
-          <ion-icon name="star-outline" size="large" *ngIf="trackIsActive == false"></ion-icon>
+          <ion-icon name="star" size="large" *ngIf="trackIsActive"></ion-icon>
+          <ion-icon name="star-outline" size="large" *ngIf="!trackIsActive"></ion-icon>
         </button>
       </span>
 
