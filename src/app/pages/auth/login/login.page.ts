@@ -151,4 +151,11 @@ export class LoginPage {
   registerlink() {
     this.navCtrl.navigateForward(['register']); 
   }  
+
+  /**
+   * This function is to route the user go to Forgot Password Page
+   */
+  recovery() {
+    this.navCtrl.navigateForward(['forgot-password']); 
+  }  
 }

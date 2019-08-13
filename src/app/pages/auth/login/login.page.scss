@@ -1,11 +1,11 @@
 
 .i-theme1 {
-    --background: #dbdbdb;
+    --background: #bdbdbd;
     --color: #000000;
 }
 
 .btn-yes {
-    margin-top: 20px;
+    margin: 30px 0px;
 }
 
 .i-btn-yes {
@@ -36,6 +36,22 @@
     border-radius: 10px;
     margin: 50px 25px 75px;
     padding: 10px;
-    // max-width: 600px;
-    // position: relative;
+}
+
+.title {
+    text-align: center; 
+    margin-bottom: 24px; 
+    border-bottom: solid #00000055 1px
+}
+
+.forgot-link {
+    text-align: right; 
+    color: rgba(0, 0, 0, 0.75);
+    margin-top: 30px
+}
+
+p {
+    text-align: center;
+    line-height: 1.4;
+    padding: 0px 5px;
 }
