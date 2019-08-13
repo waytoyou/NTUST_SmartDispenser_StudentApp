@@ -2,18 +2,23 @@
   <div class="header" [style.backgroundImage]="'url(' + backgroundImg + ')'">
     <div class="overlay header-inside">
 
-      <div class="header-inside--icon-left float-left">
-        <img class=" icon" src="assets/acuo-icons/rectangle_2@3x.png" alt="acuo-icons1">
+      <div>
+        <div class="header-inside--icon-left float-left">
+          <img class=" icon" src="assets/acuo-icons/rectangle_2@3x.png" alt="acuo-icons1">
+        </div>
+  
+        <div class="header-inside--title-center float-left">
+          <img class="icon avatar" src="assets\acuo-avatar\group-6@3x.png" alt="acuo-avatar1">
+        </div>
+  
+  
+        <div class="header-inside--icon-right float-left">
+          <img class="icon" src="assets\cancel\rectangle@3x.png" alt="acuo-cancel1" (click)="AlertConfirm()">
+        </div>
       </div>
 
-      <div class="header-inside--title-center float-left">
-        <img class="icon avatar" src="assets\acuo-avatar\group-6@3x.png" alt="acuo-avatar1">
-        <h5>Report problems</h5>
-      </div>
-
-
-      <div class="header-inside--icon-right float-left">
-        <img class="icon" src="assets\cancel\rectangle@3x.png" alt="acuo-cancel1" (click)="AlertConfirm()">
+      <div class="header-inside--title">
+        <h5>Report Problem</h5>
       </div>
 
     </div>
@@ -21,19 +26,45 @@
 
   <ion-list padding>
 
-    <ion-item lines="none" *ngFor="let problemName of problems; let i = index; let j = last;">
-      <ion-label>{{problemName['problem']}}</ion-label>
-      <ion-checkbox slot="start" color="medium" [(ngModel)]="problemName['isChecked']" (click)="toggle(problemName, i)">
-      </ion-checkbox>
+    <ion-item lines="none" class="content-title">
+      <ion-label>What's the problem?</ion-label>
+    </ion-item>
 
-      <ion-input style="border-bottom: 1px solid grey" *ngIf="j" [(ngModel)]="Description" (keyup)="checkOther()">
-      </ion-input>
+    <div class="content-body">
+      <ion-item lines="none" *ngFor="let problemName of problems; let i = index; let j = last;">
+        <ion-label>{{problemName['problem']}}</ion-label>
+        <ion-checkbox slot="start" color="medium" [(ngModel)]="problemName['isChecked']" (click)="toggle(problemName, i)">
+        </ion-checkbox>
+  
+        <ion-input class="content-body--other-input" *ngIf="j" [(ngModel)]="Description" (keyup)="checkOther()">
+        </ion-input>
+      </ion-item>
+    </div>
+
+    <ion-item lines="none" class="content-title">
+      <ion-label>Upload images</ion-label>
     </ion-item>
 
     <div class="imageContainer">
-      <h4 lines="none" style="margin: 5px; width: 250px;">
-        Upload image optional
-      </h4>
+      <div class="imageContainer--input">
+        <div *ngIf="urlImage[0] === null">
+          <ion-icon size="large" slot="primary" name="add"></ion-icon>
+          <input id="input-file" accept="image/*" type="file" (change)="onFileSelect($event)" />
+        </div>
+        <div *ngIf="urlImage[0] !== null" style="max-width: 50px">
+          <img [src]="urlImage[0]" class="imageUrl">
+          <div class="delete" (click)="delete(0)"><u><b>Delete</b></u></div>
+        </div>
+      </div>
+      <div class="imageContainer--input">
+        <ion-icon size="large" slot="primary" name="add"></ion-icon>
+      </div>
+      <div class="imageContainer--input">
+        <ion-icon size="large" slot="primary" name="add"></ion-icon>
+      </div>
+    </div>
+
+    <!-- <div class="imageContainer content-body">
       <div *ngIf="urlImage[0]!=null" class="addImage">
         <img [src]="urlImage[0]" class="imageUrl">
         <div class="delete" (click)="delete(0)"><u><b>Delete</b></u></div>
@@ -52,15 +83,15 @@
         </label>
         <input id="file-input" accept="image/*" type="file" (change)="onFileSelect($event)" />
       </div>
-    </div>
+    </div> -->
 
     <section>
       <ion-button expand="block" ion-button (click)="submit()">Submit</ion-button>
     </section>
 
     <ion-item lines="none">
+      <ion-label style="white-space: normal">Tell me when the repair is complete</ion-label>
       <ion-checkbox [(ngModel)]="updateTrack" slot="start" mode="ios" color="medium"></ion-checkbox>
-      <h6>Tell me when the repair is complete</h6>
     </ion-item>
 
   </ion-list>

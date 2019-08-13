@@ -19,7 +19,7 @@ export class ReportProblemPage implements OnInit {
   // Initial data for report problem
   ErrorType = 0;
   Description: string = '';
-  urlImage: any = [];
+  urlImage: any = [null, null, null];
   fileImage: any = [];
   imageIndex = 0;
   updateTrack: boolean = false;
