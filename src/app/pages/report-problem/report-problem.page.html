@@ -46,22 +46,67 @@
     </ion-item>
 
     <div class="imageContainer">
-      <div class="imageContainer--input">
-        <div *ngIf="urlImage[0] === null">
-          <ion-icon size="large" slot="primary" name="add"></ion-icon>
-          <input id="input-file" accept="image/*" type="file" (change)="onFileSelect($event)" />
+      
+      <div class="imageContainer--input" *ngFor="let item of urlImage; let i=index">
+        <div *ngIf="urlImage[i] === null" class="image-upload">
+          <label for="input-file">
+            <ion-icon size="large" slot="primary" name="add"></ion-icon>
+          </label>
+          <input id="input-file" accept="image/*" type="file" (change)="onFileSelect($event, i)" />
+        </div>
+        <div *ngIf="urlImage[i] !== null" style="max-width: 50px">
+          <img [src]="urlImage[i]" class="imageUrl">
+          <div class="delete" (click)="delete(i)"><u><b>Delete</b></u></div>
+        </div>
+      </div>
+
+      <!-- <div class="imageContainer--input">
+        <div *ngIf="urlImage[0] === null" class="image-upload">
+          <label for="input-file">
+            <ion-icon size="large" slot="primary" name="add"></ion-icon>
+          </label>
+          <input id="input-file" accept="image/*" type="file" (change)="onFileSelect($event, 0)" />
         </div>
         <div *ngIf="urlImage[0] !== null" style="max-width: 50px">
           <img [src]="urlImage[0]" class="imageUrl">
           <div class="delete" (click)="delete(0)"><u><b>Delete</b></u></div>
         </div>
       </div>
+
       <div class="imageContainer--input">
+        <div *ngIf="urlImage[1] === null" class="image-upload">
+          <label for="input-file">
+            <ion-icon size="large" slot="primary" name="add"></ion-icon>
+          </label>
+          <input id="input-file" accept="image/*" type="file" (change)="onFileSelect($event, 1)" />
+        </div>
+        <div *ngIf="urlImage[1] !== null" style="max-width: 50px">
+          <img [src]="urlImage[1]" class="imageUrl">
+          <div class="delete" (click)="delete(1)"><u><b>Delete</b></u></div>
+        </div>
+      </div>
+
+      <div class="imageContainer--input">
+        <div *ngIf="urlImage[2] === null" class="image-upload">
+          <label for="input-file">
+            <ion-icon size="large" slot="primary" name="add"></ion-icon>
+          </label>
+          <input id="input-file" accept="image/*" type="file" (change)="onFileSelect($event, 2)" />
+        </div>
+        <div *ngIf="urlImage[2] !== null" style="max-width: 50px">
+          <img [src]="urlImage[2]" class="imageUrl">
+          <div class="delete" (click)="delete(2)"><u><b>Delete</b></u></div>
+        </div>
+      </div> -->
+
+      <!-- <div class="imageContainer--input">
         <ion-icon size="large" slot="primary" name="add"></ion-icon>
       </div>
+
       <div class="imageContainer--input">
         <ion-icon size="large" slot="primary" name="add"></ion-icon>
-      </div>
+      </div> -->
+
     </div>
 
     <!-- <div class="imageContainer content-body">

@@ -20,7 +20,7 @@ export class ReportProblemPage implements OnInit {
   ErrorType = 0;
   Description: string = '';
   urlImage: any = [null, null, null];
-  fileImage: any = [];
+  fileImage: any = [null, null, null];
   imageIndex = 0;
   updateTrack: boolean = false;
 
@@ -163,6 +163,17 @@ export class ReportProblemPage implements OnInit {
 
       } else {
 
+        let reportProblems = new FormData();
+        for (let i = 0; i < this.fileImage.length; i++) {
+          reportProblems.append('File', this.fileImage[i]);
+        }
+        reportProblems.append('Device_ID', this.selectedDeviceId);
+        reportProblems.append('Email', this.Email);
+        reportProblems.append('ErrorType', String(this.ErrorType));
+        reportProblems.append('Description', this.Description);
+
+        console.log(reportProblems.get('File'));
+
         // Make thank message
         alert = await this.alertCtrl.create({
           mode: "ios",
@@ -176,19 +187,19 @@ export class ReportProblemPage implements OnInit {
           ]
         });
 
-        // Send data from API
-        this.api.reportProblem(
-          this.fileImage, 
-          this.selectedDeviceId, 
-          this.Email, 
-          this.ErrorType, 
-          this.Description
-        );
+        // // Send data from API
+        // this.api.reportProblem(
+        //   this.fileImage, 
+        //   this.selectedDeviceId, 
+        //   this.Email, 
+        //   this.ErrorType, 
+        //   this.Description
+        // );
 
-        // If update track is true
-        if (this.updateTrack == true) {
-          this.api.wantUpdateTrack(this.selectedDeviceId, this.Email, true);
-        }
+        // // If update track is true
+        // if (this.updateTrack == true) {
+        //   this.api.wantUpdateTrack(this.selectedDeviceId, this.Email, true);
+        // }
       }
     }
 
@@ -199,7 +210,7 @@ export class ReportProblemPage implements OnInit {
     alert.present();
 
     // Go back to dashboard 
-    this.navCtrl.back();
+    // this.navCtrl.back();
   }
 
 
@@ -240,16 +251,17 @@ export class ReportProblemPage implements OnInit {
   /**
   * Method to add image
   */
-  async onFileSelect(event: any) {
+  async onFileSelect(event: any, index: number) {
 
     this.updateCurrentSession();
+    console.log(index);
 
     // Limit size image to 10 Mb
     if (event.target.files[0].size <= 10485760) {
 
       // Check image length, image cannot empty
       if (event.target.files.length > 0) {
-        this.fileImage[this.imageIndex] = event.target.files[0];
+        this.fileImage[index] = event.target.files[0];
 
         var reader = new FileReader();
 
@@ -258,8 +270,8 @@ export class ReportProblemPage implements OnInit {
 
         // Called once readAsDataURL is completed
         reader.onload = (event) => {
-          this.urlImage[this.imageIndex] = reader.result;
-          this.imageIndex++;
+          this.urlImage[index] = reader.result;
+          // this.imageIndex++;
         }
       }
 
@@ -287,30 +299,33 @@ export class ReportProblemPage implements OnInit {
    * @param index is number image uploaded by user 
    * Method to rearrange array if user delete the image
    */
-  async delete(index) {
+  async delete(index: number) {
 
     this.updateCurrentSession();
 
-    // Change the image array if image is delete by user
-    if (index === 0) {
-      this.urlImage[0] = this.urlImage[1];
-      this.urlImage[1] = this.urlImage[2];
-      this.urlImage[2] = null;
-      this.fileImage[0] = this.fileImage[1];
-      this.fileImage[1] = this.fileImage[2];
-      this.fileImage[2] = null;
+    this.fileImage[index] = null;
+    this.urlImage[index] = null;
 
-    } else if (index === 1) {
-      this.urlImage[1] = this.urlImage[2];
-      this.urlImage[2] = null;
-      this.fileImage[1] = this.fileImage[2];
-      this.fileImage[2] = null;
-    } else {
+    // // Change the image array if image is delete by user
+    // if (index === 0) {
+    //   this.urlImage[0] = this.urlImage[1];
+    //   this.urlImage[1] = this.urlImage[2];
+    //   this.urlImage[2] = null;
+    //   this.fileImage[0] = this.fileImage[1];
+    //   this.fileImage[1] = this.fileImage[2];
+    //   this.fileImage[2] = null;
 
-      this.urlImage[2] = null;
-      this.fileImage[2] = null;
-    }
-    this.imageIndex--;
+    // } else if (index === 1) {
+    //   this.urlImage[1] = this.urlImage[2];
+    //   this.urlImage[2] = null;
+    //   this.fileImage[1] = this.fileImage[2];
+    //   this.fileImage[2] = null;
+    // } else {
+
+    //   this.urlImage[2] = null;
+    //   this.fileImage[2] = null;
+    // }
+    // this.imageIndex--;
   }
 
   /**
