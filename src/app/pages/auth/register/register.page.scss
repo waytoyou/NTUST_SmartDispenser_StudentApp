@@ -1,6 +1,6 @@
 
 .i-theme1 {
-    --background: #dbdbdb;
+    --background: #bdbdbd;
     --color: #000000;
 }
 
@@ -46,7 +46,15 @@
     size: 12px
 }
 
-.confirm-text {
-    text-align: center;
+.title {
+    text-align: center; 
+    margin-bottom: 24px; 
+    border-bottom: solid #00000055 1px
+}
+
+p {
     margin-top: 30px;
+    text-align: center;
+    line-height: 1.4;
+    padding: 0px 5px;
 }

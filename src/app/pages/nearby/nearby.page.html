@@ -3,32 +3,36 @@
   <div class="header" [style.backgroundImage]="'url(' + backgroundImg + ')'">
     <div class="overlay header-inside">
       
-      <div class="header-inside--icon-left float-left">
-        <img 
-          class="icon"
-          src="assets/acuo-icons/rectangle_2@3x.png" 
-          alt="acuo-icons1"
-        >
+      <div>
+        <div class="header-inside--icon-left float-left">
+          <img 
+            class="icon"
+            src="assets/acuo-icons/rectangle_2@3x.png" 
+            alt="acuo-icons1"
+          >
+        </div>
+        
+        <div class="header-inside--title-center float-left">
+          <img 
+            class="icon avatar"
+            src="assets\acuo-avatar\group-6@3x.png" 
+            alt="acuo-avatar1"
+          >
+        </div>
+        
+        <div class="header-inside--icon-right float-left">
+          <img 
+            class="icon"
+            src="assets\cancel\rectangle@3x.png" 
+            alt="acuo-cancel1"
+            (click)="backFunc()"
+          >
+        </div>
       </div>
       
-      <div class="header-inside--title-center float-left">
-        <img 
-          class="icon avatar"
-          src="assets\acuo-avatar\group-6@3x.png" 
-          alt="acuo-avatar1"
-        >
+      <div class="header-inside--title">
         <h5>Nearby Water Dispenser</h5>
       </div>
-      
-      <div class="header-inside--icon-right float-left">
-        <img 
-          class="icon"
-          src="assets\cancel\rectangle@3x.png" 
-          alt="acuo-cancel1"
-          (click)="backFunc()"
-        >
-      </div>
-
     </div>
   </div>
 
@@ -88,26 +92,35 @@
         <ion-card *ngFor="let item of nearbySameBuilding" (click)="getDetailInformation(item.Device_ID)" >
 
           <div class="body-content--card" [style.backgroundImage]="'url(' + item.Picture + ')'">
-            <div class="overlay body-content--card-inside">
+            <div class="overlay body-content--card-inside with-data">
               <div class="body-content--card-item">
   
-                <!-- dispenser icon -->
-                <div class="float-left">
-                  <img class="body-content--card-item--icon" src="assets\acuo-avatar\group-6@3x.png" alt="avatar">
-                </div>
-    
-                <!-- dispenser detail -->
-                <div class="body-content--card-item--content">                
-                  <div class="body-content--card-item--content-title">
-                    {{item.Building}}
-                    <br>
-                    {{item.Position}}
+                <div class="body-content--card-item above-item">
+                  
+                  <!-- dispenser icon -->
+                  <div class="float-left">
+                    <img class="body-content--card-item--icon" src="assets\acuo-avatar\group-6@3x.png" alt="avatar">
                   </div>
-  
+      
+                  <!-- dispenser detail -->
+                  <div class="body-content--card-item--content">                
+                    <div class="body-content--card-item--content-title">
+                      {{item.Building}}
+                      <br>
+                      {{item.Position}}
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="body-content--card-item below-item">
+
+                  <!-- dispenser status no data -->
                   <div class="body-content--card-item--content-options" *ngIf="item.Status == 0">
                     <span style="color: white; font-size: 18px"><b>Status unavailable</b></span>
                   </div>
                   
+                  <!-- dispenser status options -->
                   <div class="body-content--card-item--content-options" *ngIf="item.Status != 0">
                     <div class="body-content--card-item--content-options-item float-left color-cold" *ngIf="item.ColdTemp > 0">
                       Cold
@@ -119,6 +132,7 @@
                       Hot
                     </div>
                   </div>
+
                 </div>
   
               </div>
@@ -144,26 +158,35 @@
         <ion-card *ngFor="let item of nearbyNextBuilding" (click)="getDetailInformation(item.Device_ID)" >
 
           <div class="body-content--card" [style.backgroundImage]="'url(' + item.Picture + ')'">
-            <div class="overlay body-content--card-inside">
+            <div class="overlay body-content--card-inside with-data">
               <div class="body-content--card-item">
   
-                <!-- dispenser icon -->
-                <div class="float-left">
-                  <img class="body-content--card-item--icon" src="assets\acuo-avatar\group-6@3x.png" alt="avatar">
-                </div>
-    
-                <!-- dispenser detail -->
-                <div class="body-content--card-item--content">
-                  <div class="body-content--card-item--content-title">
-                    {{item.Building}}
-                    <br>
-                    {{item.Position}}
+                <div class="body-content--card-item above-item">
+                  
+                  <!-- dispenser icon -->
+                  <div class="float-left">
+                    <img class="body-content--card-item--icon" src="assets\acuo-avatar\group-6@3x.png" alt="avatar">
                   </div>
-  
+      
+                  <!-- dispenser detail -->
+                  <div class="body-content--card-item--content">                
+                    <div class="body-content--card-item--content-title">
+                      {{item.Building}}
+                      <br>
+                      {{item.Position}}
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="body-content--card-item below-item">
+
+                  <!-- dispenser status no data -->
                   <div class="body-content--card-item--content-options" *ngIf="item.Status == 0">
                     <span style="color: white; font-size: 18px"><b>Status unavailable</b></span>
                   </div>
                   
+                  <!-- dispenser status options -->
                   <div class="body-content--card-item--content-options" *ngIf="item.Status != 0">
                     <div class="body-content--card-item--content-options-item float-left color-cold" *ngIf="item.ColdTemp > 0">
                       Cold
@@ -175,6 +198,7 @@
                       Hot
                     </div>
                   </div>
+
                 </div>
   
               </div>

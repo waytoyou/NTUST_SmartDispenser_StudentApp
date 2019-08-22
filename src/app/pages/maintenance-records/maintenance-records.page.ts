@@ -64,7 +64,8 @@ export class MaintenanceRecordsPage implements OnInit {
   async createLoadCtrl () {
     this.makeLoading = await this.loadCtrl.create({
       message: 'Loading data ...',
-      spinner: 'crescent'
+      spinner: 'crescent',
+      duration: 10000
     })
 
     this.makeLoading.present();

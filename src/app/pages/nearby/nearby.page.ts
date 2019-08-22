@@ -124,6 +124,11 @@ export class NearbyPage implements OnInit {
       // get dispenser location
       let dispenserBuildingLoc = await this.getBuildingLocation(dispenserDetails);
 
+      // get building detail from building name and floor
+      let dispenserBuildingName = await this.getBuildingName(dispenserDetails['Building']);
+      let dispenserBuildingFloor = await this.getBuildingFloor(dispenserDetails['Building']);
+      let dispenserBuildingDetail = await this.buildBuildingDetail(dispenserBuildingName, dispenserBuildingFloor);
+
       // build all components into an object
       let tempAllDetails = {
         'Device_ID': dispenserId,
@@ -131,7 +136,7 @@ export class NearbyPage implements OnInit {
         'HotTemp': getNearbyDispenserJson[i]['HotTemp'],
         'WarmTemp': getNearbyDispenserJson[i]['WarmTemp'],
         'ColdTemp': getNearbyDispenserJson[i]['ColdTemp'],
-        'Building': dispenserDetails['Building'],
+        'Building': dispenserBuildingDetail,
         'Position': dispenserDetails['Position'],
         'Picture': dispenserPicture
       };
@@ -173,7 +178,8 @@ export class NearbyPage implements OnInit {
     // create the loading controller
     this.makeLoading = await this.loadCtrl.create({
       message: 'Loading data ...',
-      spinner: 'crescent'
+      spinner: 'crescent',
+      duration: 10000
     })
 
     // display the loading controller
@@ -282,6 +288,53 @@ export class NearbyPage implements OnInit {
     let mbSplit = myBuilding.split("_");
 
     return mbSplit[0];
+  }
+
+  async getBuildingFloor (buildingLoc: string) {
+    if (await this.checkIfFloorExists(buildingLoc)) {
+      let splitLoc = buildingLoc.split(" ");
+      return splitLoc[splitLoc.length - 1];
+    } else {      
+      return "";
+    }
+  }
+
+  async getBuildingName (buildingLoc: string) {
+    let needLength: number;
+    let splitLoc = buildingLoc.split(" ");
+    
+    if (await this.checkIfFloorExists(buildingLoc)) {
+      needLength = splitLoc.length - 1;
+    } else {
+      needLength = splitLoc.length;
+    }
+
+    let buildString = splitLoc[0];
+    for (let i = 1 ; i < needLength ; i++) {
+      buildString = buildString + " " + splitLoc[i];
+    }
+
+    return buildString;
+  }
+
+  async checkIfFloorExists (buildingLoc: string) {
+    let splitLoc = buildingLoc.split(" ");
+    let getFloor = splitLoc[splitLoc.length - 1];    
+    let splitFloor = getFloor.split("");  
+    
+    if (splitFloor.length <= 4) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  async buildBuildingDetail (name: string, floor: string) {
+    if (floor !== "") {
+      return name + " / " + floor + " /";
+    } else {
+      return name;
+    }
   }
 
   /**

@@ -23,7 +23,8 @@ export class DispenserAPIService {
   /* 11 */ private urlReportDispenserProblem: string = this.domain + 'Dispenser/Report';
   /* 12 */ private urlUpdateTrack: string = this.domain + 'Dispenser/Track';
   /* 13 */ private urlCheckTrackStatus: string = this.domain + 'Dispenser/Track';
-  /* 14 */ private urlRepairConditionThingworx: string = this.domain + 'Thingworx/Dispenser/Repair?Status=';
+  /* 14 */ private urlForgotPassword: string = this.domain + 'UserForget';
+  /* 14 */ private urlPasswordReset: string = this.domain + 'PasswordReset';
 
   constructor(private http: HttpClient) { }
 
@@ -705,76 +706,6 @@ export class DispenserAPIService {
 
     return returnValue;
   }
-  
-  /**
-   * This function is to get list of dispenser maintenance info 
-   * from the current status from the API. For every dispenser with
-   * the same status, e.g. 1 or 2, will returned as list. It
-   * returns the json format.
-   * 
-   * @param     status      The current status of maintained dispenser
-   * 
-   * @returns   value       The json array of data
-   * 
-   * @example
-   * 
-   * @example   
-   * 
-   * *noted that the  email with "at" because using
-   * symbol will break the comment line
-   *
-   * [
-   *  {
-   *    "Device_ID": "MA_05_01",
-   *    "Email": "ntust.smartcampusgmail.com",
-   *    "ErrorType": 5,
-   *    "Description": "Broken",
-   *    "Status": 4,
-   *    "UploadTime": "2019-01-02 09:36:00",
-   *    "NotifyTime": "2019-01-02 09:36:00",
-   *    "Maintainer": "Mr.Pang",
-   *    "Result": "Someone push powersaving button",
-   *    "CompleteTime": "2019-01-02 24:00:00",
-   *    "Index": 0,
-   *    "Source": null,
-   *    "Source2": null,
-   *    "Source3": null
-   *  },
-   *  {
-   *    "Device_ID": "T4_04_01",
-   *    "Email": "ntust.smartcampusgmail.com",
-   *    "ErrorType": 3,
-   *    "Description": "Leaking water",
-   *    "Status": 4,
-   *    "UploadTime": "2019-01-02 20:16:00",
-   *    "NotifyTime": "2019-01-02 20:16:00",
-   *    "Maintainer": "Mr.Pang",
-   *    "Result": "Fan and Compressor are broken",
-   *    "CompleteTime": "2019-01-02 24:00:00",
-   *    "Index": 0,
-   *    "Source": null,
-   *    "Source2": null,
-   *    "Source3": null
-   *  },
-   *  ...
-   * ]
-   */
-  async getRepairThingworx (status: number) {
-    
-    let url = this.urlRepairConditionThingworx + status;
-    
-    return await this.http.get(url).toPromise()
-      .then((result) => {
-        return result['Data'];
-      }, () => {
-        console.error("Promise rejected: unable to get list of dispenser under repairment!");
-        return [{}];
-      })
-      .catch((e) => {
-        console.error("Function error: on getRepairThingworx => " + e);
-        return [{}];
-      });
-  }
 
   /**
    * This function is to check from getDispenserRepairCondition
@@ -804,5 +735,102 @@ export class DispenserAPIService {
     }
 
     return hasCorrectEmail;
+  }
+
+  async userForgotPassword (email: string) {
+
+    let url = this.urlForgotPassword;
+
+    const postBody = {
+      "Email": email
+    };
+
+    return await this.http.post(url, postBody).toPromise()
+      .then((result) => {
+        if (result['code'] === 200) {
+          return 1;
+        } else {
+          console.error("Error while send reset password request: " + result['msg']);
+          return 0;
+        }
+      }, () => {
+        console.error("Promise rejected: unable to send reset password request!");
+        return 0;
+      })
+      .catch((e) => {
+        console.error("Function error: on userForgotPassword => " + e);
+        return -1;
+      });
+  }
+
+  async userResetPassword (email: string, newPassword: string, reNewPassword: string, verifCode: string) {
+
+    let url = this.urlPasswordReset;
+    let token: string = "";
+    let returnValue = {
+      "RepsondNum": -1,
+      "Message": "Null message."
+    }
+
+    try {
+      token = await this.getToken();
+    } catch (e) {
+      console.error("Function error: on userResetPassword while getToken => " + e);
+      returnValue = {
+        "RepsondNum": -1,
+        "Message": "There is an error from server, please try again later!"
+      };
+    }
+
+    if (newPassword !== reNewPassword) {
+      returnValue = {
+        "RepsondNum": 0,
+        "Message": "Password not match!"
+      };
+    } else {
+
+      const postBody = {
+        "Email": email,
+        "Password": newPassword,
+        "VerificationCode": verifCode
+      };
+
+      let httpOption = await {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          'Authorization': token
+        })
+      };
+
+      await this.http.post(url, postBody, httpOption).toPromise()
+        .then((result) => {
+          if (result['code'] === 200) {
+            returnValue = {
+              "RepsondNum": 1,
+              "Message": "Your account password has successfully reset!"
+            };
+          } else {
+            returnValue = {
+              "RepsondNum": -1,
+              "Message": "There is an error from server, please try again later!"
+            };
+          }
+        }, () => {
+          console.error("Promise rejected: unable to reset password!");
+          returnValue = {
+            "RepsondNum": -1,
+            "Message": "The Email does not exist or Verification Code is not valid"
+          };
+        })
+        .catch((e) => {
+          console.error("Function error: on userResetPassword => " + e);
+          returnValue = {
+            "RepsondNum": -1,
+            "Message": "There is an error from server, please try again later!"
+          };
+        });
+    }
+
+    return returnValue;
   }
 }

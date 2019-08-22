@@ -3,6 +3,7 @@ import { NavController, ToastController, LoadingController } from '@ionic/angula
 import { PreferenceManagerService } from 'src/app/services/PreferenceManager/preference-manager.service';
 import { DispenserAPIService } from 'src/app/services/DispenserAPI/dispenser-api.service';
 import { StaticVariable } from 'src/app/classes/StaticVariable/static-variable';
+import {DashboardPage} from "../../dashboard/dashboard.page";
 
 @Component({
   selector: 'app-login',
@@ -42,11 +43,12 @@ export class LoginPage {
     // create the loading controller
     this.makeLoading = await this.loadCtrl.create({
       message: 'Loading data ...',
-      spinner: 'crescent'
-    })
+      spinner: 'crescent',
+      duration: 10000
+    });
 
     // display the loading controller
-    this.makeLoading.present();
+    await this.makeLoading.present();
   }
 
   /**
@@ -84,6 +86,9 @@ export class LoginPage {
 
       // get last page if exists (true)
       let lastPage = await this.pref.getData(StaticVariable.KEY__LAST_PAGE);
+
+      // set the login status in dashboard to be true.
+      DashboardPage.setLogoutButton(true);
 
       if (lastPage === false) {
 
@@ -135,7 +140,7 @@ export class LoginPage {
     }
 
     // display the Toast
-    myToast.present();
+    await myToast.present();
 
     // dismiss the loading screen
     this.dismissLoadCtrl();
@@ -146,5 +151,12 @@ export class LoginPage {
    */
   registerlink() {
     this.navCtrl.navigateForward(['register']); 
+  }  
+
+  /**
+   * This function is to route the user go to Forgot Password Page
+   */
+  recovery() {
+    this.navCtrl.navigateForward(['forgot-password']); 
   }  
 }

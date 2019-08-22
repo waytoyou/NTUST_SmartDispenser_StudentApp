@@ -37,6 +37,7 @@ export class DashboardPage implements OnInit {
   public pageLeft: any;
 
   // user personal settings (login id, track, report)
+  private static logoutButton: boolean = false;
   public trackIsActive: boolean = false;
   public hasReportSubmitted: boolean = false;
   private emailAddress: string = null;
@@ -58,7 +59,6 @@ export class DashboardPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-
     this.detectDevice();
 
     if (this.isDesktopType)
@@ -85,16 +85,16 @@ export class DashboardPage implements OnInit {
 
     // call again to make sure that data from ngOnInit will load to ionViewDidEnter
     await this.ionViewDidEnter();
-
-    // make ngOnInitDone to true so data can update
-    this.ngOnInitDone = true;
   }
 
   async ionViewDidEnter() {
-
-    await this.getLoginEmail();
-
     if (this.ngOnInitDone) {
+      await this.resetLoginSession();
+      await this.getLoginEmail();
+
+      // Log out button appear if user logged in.
+      await DashboardPage.setLogOut(this.emailAddress);
+
       // always check if any report submitted from login id
       await this.setReportCondition(this.emailAddress);
 
@@ -103,56 +103,76 @@ export class DashboardPage implements OnInit {
     }
   }
 
-
-
   /**
-   * This function is for create the loading controller
+   * Reset the session ID when time has over the limit, this
+   * will reset when user reload the page/open the app after
+   * certain time.
    */
-  async showLoadScreen () {
-    this.makeLoading = await this.loadCtrl.create({
-      message: 'Loading data ...',
-      spinner: 'crescent'
-    });
+  async resetLoginSession () {
+    let checkLogin = await this.checkSession();
+    if (checkLogin === 0) {
+      await this.pref.saveData(StaticVariable.KEY__SESSION_ID, "");
+    }
+  }
 
-    this.makeLoading.present();
+  getLogoutButton(): boolean {
+    return DashboardPage.logoutButton;
+  }
+
+  public static setLogoutButton(value: boolean) {
+    this.logoutButton = value;
   }
 
   /**
-   * This function is for dismiss the loading controller
+   * create the loading controller
+   */
+  async showLoadScreen() {
+    this.makeLoading = await this.loadCtrl.create({
+      message: 'Loading data ...',
+      spinner: 'crescent',
+      duration: 10000
+    });
+
+    await this.makeLoading.present();
+  }
+
+  /**
+   * dismiss the loading controller
    */
   async dismissLoadScreen () {
     this.makeLoading.dismiss();
   }
 
   /**
-   * This function is for detect the device type
-   * and store the result to field variable.
+   * Detect the device type and store the result to field variable.
    */
-  private detectDevice() {
+  private detectDevice(): void {
     this.isDesktopType = this.deviceDetector.isDesktop();
   }
+
   /**
-   * This function is to get the desktop size if desktop is use
+   * Get the desktop size if desktop is use
    * and store the result to field variable for display.
    */
-  private getDesktopScreenSize(){
+  private getDesktopScreenSize(): void{
     this.screenHeight = window.innerHeight;
     this.screenWidth = this.screenHeight/16 * 9;
   }
   /**
-   * This function is to get the desktop size if mobile device is use
+   * get the desktop size if mobile device is use
    * and store the result to field variable for display.
    */
-  private getMobileScreenSize(){
+  private getMobileScreenSize(): void{
     this.screenHeight = window.innerHeight;
     this.screenWidth = window.innerWidth;
   }
 
   /**
-   * This function is to adjust the screen based on device
-   * use and store the value to field variables for display.
+   * 1. Set the size of the height and width of the header and the content.
+   * 2. set the page size when portrait and landscape orientation.
+   * 3. Set the page
    */
-  private adjustScreen(){
+  private adjustScreen(): void{
     if((!this.isDesktopType) && (window.innerHeight < window.innerWidth)){
       this.headerHeight = this.screenHeight * 0.6;
       this.contentHeight = this.screenHeight * 0.4;
@@ -161,33 +181,34 @@ export class DashboardPage implements OnInit {
       this.contentHeight = this.screenHeight * 0.3;
     }
 
-    // set components based on display size
-    this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
+    if(this.isDesktopType){
+      // set components based on display size
+      this.pageLeft = window.innerWidth/2 - this.screenWidth/2;
+    }
   }
 
   /**
-   * This function is for call adjustment if desktop is use.
+   * Adjust the page with the desktop screen dynamically.
    */
-  private adjustDynamicDesktopScreen(){
+  private adjustDynamicDesktopScreen(): void{
     this.getDesktopScreenSize();
     this.adjustScreen();
   }
 
   /**
-   * This function is for call adjustment if mobile device is use.
+   * Adjust the page with the mobile screen dynamically.
    */
-  private adjustDynamicMobileScreen() {
+  private adjustDynamicMobileScreen(): void{
     this.getMobileScreenSize();
     this.adjustScreen();
   }
 
   /**
-   * This function is for choosing use dekstop or mobile
-   * configuration for display by listening the device
-   * used by the user.
+   * Listen to the screen resolution changes & adjust the page
+   * to the screen.
    */
   @HostListener('window:resize', ['$event'])
-  onresize() {
+  onresize(): void {
     if(this.isDesktopType)
       this.adjustDynamicDesktopScreen();
     else
@@ -195,48 +216,53 @@ export class DashboardPage implements OnInit {
   }
 
   /**
-   * Methods for routing to another page
-   * - to Detail Information page
-   * - to Maintenance Records page
-   * - to Nearby Dispenser page
-   * - to Maintenance Progress page
+   * Route to Detailed Information page.
    */
-  goToDetailedInformation(){
+  goToDetailedInformation(): void{
     this.updateCurrentSession();
     this.navCtrl.navigateForward(['detailed-information']);
   }
 
-  goToMaintenanceRecords(){
+  /**
+   * Route to Maintenance Records page.
+   */
+  goToMaintenanceRecords(): void{
     this.updateCurrentSession();
     this.navCtrl.navigateForward(['maintenance-records']);
   }
 
-  goToNearbyDispenser () {
+  /**
+   * Route to Nearby Dispenser page.
+   */
+  goToNearbyDispenser(): void{
     this.updateCurrentSession();
     this.navCtrl.navigateForward(['nearby']);
   }
 
-  async goToMaintenanceProgress() {
+  /**
+   * Route to Maintennace Progress page.
+   */
+  async goToMaintenanceProgress(){
 
     // check login first, return true if login is true
-    if (await this.checkLogin()) {
+    if (await this.checkLoggedIn()) {
       this.updateCurrentSession();
       this.navCtrl.navigateForward(['mt-progress']);
     }
   }
 
   /**
-   * This function is for the star button identify if the dispenser
-   * is being tracked or not by the user. This active when user click
-   * the button, it will also store the value to database through API.
+   * Identify the star button if the dispenser is being tracked or not by the user.
+   * This button is activated when the user click it, and it will store the track
+   * value to database through API.
    */
-  async trackButton () {
+  async trackButton(){
 
     // create loading screen
     await this.showLoadScreen();
 
     // check login first, return true if login is true
-    if (await this.checkLogin()) {
+    if (await this.checkLoggedIn()) {
 
       this.updateCurrentSession();
 
@@ -296,13 +322,13 @@ export class DashboardPage implements OnInit {
   }
 
   /**
-   * This function is when the user wants to report a problem. It also
-   * check whether the user has logged in or not.
+   * 1. This function is when the user wants to report a problem.
+   * 2. It also check whether the user has logged in or not.
    */
   async goToReportProblem(){
 
     // check login first, return true if login is true
-    if (await this.checkLogin()) {
+    if (await this.checkLoggedIn()) {
 
       this.updateCurrentSession();
 
@@ -312,8 +338,8 @@ export class DashboardPage implements OnInit {
   }
 
   /**
-   * This function is for check First Time Preference, this was for
-   * mobile device because cannot load data from preference if key was
+   * Check First Time Preference, this function is for mobile device
+   * because it cannot load data from preference if key was
    * not build first.
    */
   async checkPrefFirstTime () {
@@ -334,9 +360,9 @@ export class DashboardPage implements OnInit {
   }
 
   /**
-   * This function is for set device_id from URL also handling when URL
-   * doesn't has device id. It will get the device id from preference. When
-   * both ways doesn't has device id, it will alert error message.
+   * 1. Set device_id from URL also handling when URL doesn't has device id.
+   * 2. Get the device id from preference.
+   * 3. When both ways doesn't has device id, it will alert error message.
    */
   async setDeviceIdFromUrl (){
 
@@ -345,10 +371,8 @@ export class DashboardPage implements OnInit {
 
     // if not found then check from preference
     if (getId === null) {
-
       // get device id from preference
       getId = await this.pref.getData(StaticVariable.KEY__DEVICE_ID);
-
     } else {
 
       // if found from URL then store to field variable
@@ -375,10 +399,9 @@ export class DashboardPage implements OnInit {
       });
 
       // display the alert controller
-      errorAlert.present();
+      await errorAlert.present();
 
     } else {
-
       // if found from preference then use from it
       this.device_id = getId;
 
@@ -401,14 +424,14 @@ export class DashboardPage implements OnInit {
   }
 
   /**
-   * This function is for set device id to preference
+   * Set device id to preference
    */
   async setPrefs () {
     await this.pref.saveData(StaticVariable.KEY__DEVICE_ID, this.device_id);
   }
 
   /**
-   * This function is for set the url for background picture from API
+   * Set the url for background picture from API
    */
   async setAPIsData () {
     this.url_dispenser_picture = await this.api.getDispenserPictureUrlOnly(this.device_id);
@@ -416,28 +439,60 @@ export class DashboardPage implements OnInit {
   }
 
   /**
-   * This function is to get email from preference session id
+   * Get email from preference session id
    */
   async getLoginEmail () {
-
     // check if user has report something
     this.emailAddress = await this.pref.getData(StaticVariable.KEY__SESSION_ID);
   }
 
-  setLocationText(){
+  /**
+   * 1. Remove the user email from the preference.
+   * 2. Display an alert when the logout is success.
+   */
+  async logout(){
+    await this.pref.saveData(StaticVariable.KEY__SESSION_ID, "");
+
+    // gives alert that track is success
+    let alert = await this.alertCtrl.create({
+      mode: 'ios',
+      message: 'Logout success!',
+      buttons: [
+        {
+          text: 'OK',
+          handler: () => { }
+        }
+      ]
+    });
+
+    // display the alert controller
+    await alert.present();
+
+    DashboardPage.reloadPage();
+  }
+
+  /**
+   * Reload the current page.
+   */
+  private static reloadPage(): void{
+    window.location.reload();
+  }
+
+  /**
+   * Set the information in the location bubble text.
+   */
+  setLocationText(): void{
     this.bubble_text_location = "Hi! I am Jellyfish and lives in the ";
     this.dispenser_building_location = this.dispenser_detail['Building'];
     this.dispenser_floor_location = "," + "\n" + this.dispenser_detail['Position'] + "!";
   }
 
   /**
-   * This function is to check if the email is present and user report
-   * is present then user can check his report.
+   * User check his report when email & user report are present.
    *
    * @param email User's email address
    */
   async setReportCondition (email: string) {
-
     // if email is found from preference
     if (email !== "") {
 
@@ -447,12 +502,24 @@ export class DashboardPage implements OnInit {
   }
 
   /**
-   * This function is to check if the email is present and user has check the
-   * dispenser as being tracked or not. If it being tracked after user logged
-   * in then the star will filled and vice versa. Star displayed as filled or
-   * not based on trackIsActive variable.
+   * Set the Log out button is on or off depend of the existence of the user's email.
    *
-   * @param email User's email address
+   * @param email User's email address.
+   */
+  static async setLogOut (email: string) {
+    //If email is exist, display Logout button.
+    if (email !== "") {
+      DashboardPage.setLogoutButton(true);
+    } else {
+      DashboardPage.setLogoutButton(false);
+    }
+  }
+
+  /**
+   * 1. Set the track button if the user is logged in.
+   * 2. The track button is on when the user tracked the dispenser and vice versa.
+   *
+   * @param email User's email address.
    */
   async setTrackCondition (email: string) {
 
@@ -468,17 +535,18 @@ export class DashboardPage implements OnInit {
   }
 
   /**
-   * This function is to perform an alert to do login
+   * perform an alert to do login
    * if the user is checked has not logged in.
    */
-  async checkLogin () {
+  async checkLoggedIn () {
     // check if there any session ID
     let checkData = await this.checkSession();
 
-    let returnValue = false;
-
     // if the data is not present or empty
     if (checkData < 1) {
+      // User is not logged in.
+      DashboardPage.setLogoutButton(false);
+
       // initialize addString
       let addString = "";
 
@@ -487,7 +555,6 @@ export class DashboardPage implements OnInit {
         addString = "You need to login first in order to report a problem or track dispenser status, please click the Log In button below!";
       else if (checkData === 0)
         addString = "Your session login has timed out, please re login to grant the access!";
-
 
       // create alert to choose login or not
       let loginAlert = await this.alertCtrl.create({
@@ -513,17 +580,17 @@ export class DashboardPage implements OnInit {
       });
 
       // display the alert controller
-      loginAlert.present();
+      await loginAlert.present();
     } else {
-      // return true if login process has done before
-      returnValue = true;
+      // User is logged in
+      DashboardPage.setLogoutButton(true);
     }
 
-    return returnValue;
+    return this.getLogoutButton();
   }
 
   /**
-   * This function is to check whether the session login of the user. If
+   * check whether the session login of the user. If
    * the user still logged in under the session timeout limit then access
    * is granted, and not if above the time limit or no session id is present.
    */
@@ -557,9 +624,9 @@ export class DashboardPage implements OnInit {
   }
 
   /**
-   * This function is to update session login time whenever action is need
+   * Update session login time whenever action is need
    */
-  updateCurrentSession () {
+  updateCurrentSession(): void{
     let nowDate = new Date();
     this.pref.saveData(StaticVariable.KEY__LAST_DATE, nowDate);
   }
