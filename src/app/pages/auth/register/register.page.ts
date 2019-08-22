@@ -45,7 +45,8 @@ export class RegisterPage {
     // create the loading controller
     this.makeLoading = await this.loadCtrl.create({
       message: 'Loading data ...',
-      spinner: 'crescent'
+      spinner: 'crescent',
+      duration: 10000
     })
 
     // display the loading controller
@@ -103,7 +104,7 @@ export class RegisterPage {
   checkPassword (password: any) {
 
     // regex string
-    let regexString = '^(?=.*[0-9]+.*)(?=.*[a-zA-Z]+.*)[0-9a-zA-Z]{6,}$';
+    let regexString = '^(?=.*[0-9]+.*)(?=.*[a-zA-Z]+.*)[0-9a-zA-Z]{8,}$';
 
     // create new regex with regexString logic
     let reg = new RegExp(regexString);

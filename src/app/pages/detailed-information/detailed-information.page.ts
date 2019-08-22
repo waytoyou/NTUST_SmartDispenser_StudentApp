@@ -282,7 +282,8 @@ async getPrefsData(){
     // create the loading screen
     this.loadScreen = await this.loadCtrl.create({
       message: 'Loading data ...',
-      spinner: 'crescent'
+      spinner: 'crescent',
+      duration: 10000
     });
 
     // show the loading screen

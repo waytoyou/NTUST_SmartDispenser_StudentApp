@@ -28,7 +28,7 @@
       <ion-item>
         <ion-label position="floating">Password</ion-label>
         <ion-input type="password" [(ngModel)]="password" (change)=checkPassword(password)></ion-input>
-        <p *ngIf="passwordFalse" class="falseInput">Password must minimum 6 character with at least contains 1 alphabet and 1 number!</p>
+        <p *ngIf="passwordFalse" class="falseInput">Password must minimum 8 characters with at least contains 1 alphabet and 1 number!</p>
       </ion-item>
   
       <ion-item>

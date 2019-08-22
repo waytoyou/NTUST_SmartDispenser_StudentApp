@@ -89,6 +89,7 @@ export class DashboardPage implements OnInit {
 
   async ionViewDidEnter() {
     if (this.ngOnInitDone) {
+      await this.resetLoginSession();
       await this.getLoginEmail();
 
       // Log out button appear if user logged in.
@@ -99,6 +100,18 @@ export class DashboardPage implements OnInit {
 
       // always check if dispenser is being tracked
       await this.setTrackCondition(this.emailAddress);
+    }
+  }
+
+  /**
+   * Reset the session ID when time has over the limit, this
+   * will reset when user reload the page/open the app after
+   * certain time.
+   */
+  async resetLoginSession () {
+    let checkLogin = await this.checkSession();
+    if (checkLogin === 0) {
+      await this.pref.saveData(StaticVariable.KEY__SESSION_ID, "");
     }
   }
 
@@ -116,7 +129,8 @@ export class DashboardPage implements OnInit {
   async showLoadScreen() {
     this.makeLoading = await this.loadCtrl.create({
       message: 'Loading data ...',
-      spinner: 'crescent'
+      spinner: 'crescent',
+      duration: 10000
     });
 
     await this.makeLoading.present();

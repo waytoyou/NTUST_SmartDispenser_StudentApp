@@ -63,10 +63,9 @@ export class ResetPasswordPage implements OnInit {
 
     // initial local variables
     let myToast: any;
+    let myToastRespond: number;
     let myToastMessage: string = "";
-
-    // create loading screen
-    await this.createLoadCtrl();
+    const { email, password, re_password, verif_code } = this;
 
     // if form is not completed
     if (
@@ -78,20 +77,12 @@ export class ResetPasswordPage implements OnInit {
       myToastMessage = "Please fill in all the required form!";
     } else {
 
-      const { email, password, re_password, verif_code } = this;
+      // create loading screen
+      await this.createLoadCtrl();
+
       let resultData = await this.api.userResetPassword(email, password, re_password, verif_code);
-      
-      if (resultData === 1) {
-        myToastMessage = "Your account password has successfully reset!";
-        this.navCtrl.back();
-        this.navCtrl.back();
-      } else if (resultData === 0) {
-        myToastMessage = "Password not match!";
-      } else if (resultData === -3) {
-        myToastMessage = "The Email does not exist or Verification Code is not valid";
-      } else {
-        myToastMessage = "There is an unexpected error, please try again later!";
-      }
+      myToastRespond = resultData['RepsondNum']
+      myToastMessage = resultData['Message'];
     }
 
     // create Toast with myToastMessage as message display
@@ -108,5 +99,11 @@ export class ResetPasswordPage implements OnInit {
 
     // dismiss the loading screen
     this.dismissLoadCtrl();
+
+    // if success go back to login page
+    if (myToastRespond === 1) {
+      this.navCtrl.back();
+      this.navCtrl.back();
+    }
   }
 }

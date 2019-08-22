@@ -777,15 +777,16 @@ export class DispenserAPIService {
     } catch (e) {
       console.error("Function error: on userResetPassword while getToken => " + e);
       returnValue = {
-        "RepsondNum": -2,
+        "RepsondNum": -1,
         "Message": "There is an error from server, please try again later!"
       };
     }
 
     if (newPassword !== reNewPassword) {
-      
-      console.error("Password not match!");
-      return 0;
+      returnValue = {
+        "RepsondNum": 0,
+        "Message": "Password not match!"
+      };
     } else {
 
       const postBody = {
@@ -801,22 +802,35 @@ export class DispenserAPIService {
         })
       };
 
-      return await this.http.post(url, postBody, httpOption).toPromise()
+      await this.http.post(url, postBody, httpOption).toPromise()
         .then((result) => {
           if (result['code'] === 200) {
-            return 1;
+            returnValue = {
+              "RepsondNum": 1,
+              "Message": "Your account password has successfully reset!"
+            };
           } else {
-            console.error("Error while reset password: " + result['msg']);
-            return -1;
+            returnValue = {
+              "RepsondNum": -1,
+              "Message": "There is an error from server, please try again later!"
+            };
           }
         }, () => {
           console.error("Promise rejected: unable to reset password!");
-          return -3;
+          returnValue = {
+            "RepsondNum": -1,
+            "Message": "The Email does not exist or Verification Code is not valid"
+          };
         })
         .catch((e) => {
           console.error("Function error: on userResetPassword => " + e);
-          return -4;
+          returnValue = {
+            "RepsondNum": -1,
+            "Message": "There is an error from server, please try again later!"
+          };
         });
     }
+
+    return returnValue;
   }
 }

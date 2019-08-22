@@ -68,20 +68,20 @@ export class ForgotPasswordPage implements OnInit {
       // initial local variables
       let myToast: any;
       let myToastMessage: string = "";
-
-      // create loading screen
-      await this.createLoadCtrl();
+      const { email } = this;
 
       if (this.email === "") {
         myToastMessage = "Please fill in all the required form!"
       } else {
 
-        // if user click CONTINUE button
-        const { email } = this;
+        // create loading screen
+        await this.createLoadCtrl();
+
+        // if user click CONTINUE button        
         let resultData = await this.api.userForgotPassword(email);
         
         if (resultData === 1) {
-          myToastMessage = "Verification has been sent to your email address!";
+          myToastMessage = "Verification code has been sent to your email address!";
           this.navCtrl.navigateForward(['reset-password']);
         } else if (resultData === 0) {
           myToastMessage = "Email address is not found, please try again!";

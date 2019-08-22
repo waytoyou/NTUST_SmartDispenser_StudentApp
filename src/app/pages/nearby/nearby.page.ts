@@ -178,7 +178,8 @@ export class NearbyPage implements OnInit {
     // create the loading controller
     this.makeLoading = await this.loadCtrl.create({
       message: 'Loading data ...',
-      spinner: 'crescent'
+      spinner: 'crescent',
+      duration: 10000
     })
 
     // display the loading controller

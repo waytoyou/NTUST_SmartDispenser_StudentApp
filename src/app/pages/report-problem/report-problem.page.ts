@@ -172,8 +172,6 @@ export class ReportProblemPage implements OnInit {
         reportProblems.append('ErrorType', String(this.ErrorType));
         reportProblems.append('Description', this.Description);
 
-        console.log(reportProblems.get('File'));
-
         // Make thank message
         alert = await this.alertCtrl.create({
           mode: "ios",
@@ -187,19 +185,19 @@ export class ReportProblemPage implements OnInit {
           ]
         });
 
-        // // Send data from API
-        // this.api.reportProblem(
-        //   this.fileImage, 
-        //   this.selectedDeviceId, 
-        //   this.Email, 
-        //   this.ErrorType, 
-        //   this.Description
-        // );
+        // Send data from API
+        this.api.reportProblem(
+          this.fileImage, 
+          this.selectedDeviceId, 
+          this.Email, 
+          this.ErrorType, 
+          this.Description
+        );
 
-        // // If update track is true
-        // if (this.updateTrack == true) {
-        //   this.api.wantUpdateTrack(this.selectedDeviceId, this.Email, true);
-        // }
+        // If update track is true
+        if (this.updateTrack == true) {
+          this.api.wantUpdateTrack(this.selectedDeviceId, this.Email, true);
+        }
       }
     }
 
@@ -210,7 +208,7 @@ export class ReportProblemPage implements OnInit {
     alert.present();
 
     // Go back to dashboard 
-    // this.navCtrl.back();
+    this.navCtrl.back();
   }
 
 
@@ -305,27 +303,6 @@ export class ReportProblemPage implements OnInit {
 
     this.fileImage[index] = null;
     this.urlImage[index] = null;
-
-    // // Change the image array if image is delete by user
-    // if (index === 0) {
-    //   this.urlImage[0] = this.urlImage[1];
-    //   this.urlImage[1] = this.urlImage[2];
-    //   this.urlImage[2] = null;
-    //   this.fileImage[0] = this.fileImage[1];
-    //   this.fileImage[1] = this.fileImage[2];
-    //   this.fileImage[2] = null;
-
-    // } else if (index === 1) {
-    //   this.urlImage[1] = this.urlImage[2];
-    //   this.urlImage[2] = null;
-    //   this.fileImage[1] = this.fileImage[2];
-    //   this.fileImage[2] = null;
-    // } else {
-
-    //   this.urlImage[2] = null;
-    //   this.fileImage[2] = null;
-    // }
-    // this.imageIndex--;
   }
 
   /**
@@ -422,7 +399,8 @@ export class ReportProblemPage implements OnInit {
   async createLoadCtrl () {
     this.makeLoading = await this.loadCtrl.create({
       message: 'Loading data ...',
-      spinner: 'crescent'
+      spinner: 'crescent',
+      duration: 10000
     })
 
     this.makeLoading.present();
