@@ -9,11 +9,14 @@
 
       <div class="header-inside--title-center float-left">
         <img class="icon avatar" src="assets\acuo-avatar\group-6@3x.png" alt="acuo-avatar1">
-        <h5>Maintenance records</h5>
       </div>
 
       <div class="header-inside--icon-right float-left" (click)="goToDashboard()">
         <img class="icon" src="assets\cancel\rectangle@3x.png" alt="acuo-cancel1">
+      </div>
+
+      <div class="header-inside--title">
+        <h5>Maintenance Record</h5>
       </div>
 
     </div>
@@ -30,7 +33,7 @@
             <div>{{data.Day}}</div>
             <div><img src="assets/cup-coffe/rectangle_3@3x.png" class="coffeImage"></div>
           </ion-label>
-          <ion-label>
+          <ion-label text-wrap>
             <div>{{data.ErrorMeaning}}</div>
             <div>{{data.Description}}</div>
           </ion-label>

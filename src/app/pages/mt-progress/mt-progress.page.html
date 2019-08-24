@@ -50,8 +50,10 @@
         <div class="estimate-subtitle">
           Estimated completion time:
           <br>
-          <div *ngIf="!isFromRecords">{{reports.estimateTime}} hours later</div>
           <div *ngIf="isFromRecords"><b>Done!</b></div>
+          <div *ngIf="!isFromRecords && reports.data.length !== 7 && reports.estimateTime > 0">{{reports.estimateTime}} hours later</div>
+          <div *ngIf="!isFromRecords && reports.data.length !== 7 && reports.estimateTime <= 0">In soon...</div>
+          <div *ngIf="!isFromRecords && reports.data.length === 7  && reports.estimateTime > 0"><b>Done!</b></div>
         </div>
       </div>
 
