@@ -83,11 +83,52 @@ export class MaintenanceRecordsPage implements OnInit {
     // set background image
     this.backgroundImg = await this.getPicture(this.selectedDeviceId);
 
-    // get data from API and save to getAPI
-    this.getAPI = await this.api.getDispenserMaintenance(this.selectedDeviceId);
+    // get raw data from API
+    let getRawData = await this.api.getDispenserMaintenance(this.selectedDeviceId);
+    
+    // add Date class as JSON attribute
+    let rawDataWithDate = await this.addDateClass(getRawData);
+    
+    // sort data from the newest
+    await this.sortFunction(rawDataWithDate, false);
+
+    // remove Date class from JSON attribute
+    this.getAPI = await this.removeDateClass(rawDataWithDate);
 
     // Change format to make easier to display
     this.maintenanceData = this.changeFormat(this.getAPI);
+  }
+
+  /**
+   * Function to add Date class into JSON attribute, works only for
+   * getDispenserMaintenance raw data.
+   * 
+   * @param data JSON array, data want to be add a Date class
+   */
+  async addDateClass (data: any) {
+    let returnArray = [];
+    for (let i = 0 ; i < data.length ; i++) {
+      let completeTime = await this.convertApiTimeToDate(data[i]['CompleteTime']);
+      returnArray.push({
+        "Data": data[i],
+        "CompleteTime": completeTime
+      });
+    }
+    return returnArray;
+  }
+
+  /**
+   * Function to remove Date class into JSON attribute, works only for
+   * getDispenserMaintenance raw data.
+   * 
+   * @param data JSON array, data want to be add a Date class
+   */
+  async removeDateClass (data: any) {
+    let returnArray = [];
+    for (let i = 0 ; i < data.length ; i++) {
+      returnArray.push(data[i]['Data']);
+    }
+    return returnArray;
   }
 
   /**
@@ -112,24 +153,28 @@ export class MaintenanceRecordsPage implements OnInit {
 
     // Initiate error meaning to translate from error type
     let errorMeaning = [
-      "Button does not respond", 
-      "Unable to water", 
-      "Leaking water", 
-      "Screen not shown", 
-      "Other"
+      "The button does not respond any at all.", 
+      "Unable to emit water, water doesn't come out.", 
+      "Leaking water, water overflow and flood the floor.", 
+      "Screen doesn't shows anything and need to be fixed. "
     ];
 
     // iniatiate array for day
     let dayArray = [];
 
     // This loop is to take data from API
-    for (let i = data.length - 1; i >= 0; i--) {
+    for (let i = data.length - 1; i >= 0; i--) {  
+      let errorText = data[i]['Description'];      
+      if (data[i]['ErrorType'] === 5) {
+        errorMeaning.push(data[i]['Description']);
+        errorText = "Other";
+      }
       let dataForMaintenance = {
         'Device_ID': data[i]['Device_ID'],
         'ErrorType': data[i]['ErrorType'],
-        'Description': data[i]['Description'],
+        'Description': errorMeaning[data[i]['ErrorType'] - 1],
         'CompleteTime': data[i]['CompleteTime'],
-        'ErrorMeaning': errorMeaning[data[i]['ErrorType'] - 1],
+        'ErrorMeaning': errorText,
         'Day': this.getTime(data[i]['CompleteTime'])['dayForTime'],
         'Month': this.getTime(data[i]['CompleteTime'])['monthForTime'],
         'Year': this.getTime(data[i]['CompleteTime'])['yearForTime']
@@ -279,5 +324,81 @@ export class MaintenanceRecordsPage implements OnInit {
     };
 
     this.navCtrl.navigateForward(['mt-progress'], navigationExtras);
+  }
+
+  async sortFunction (myArray: any, isFromLatest: boolean) {
+    await myArray.sort((a: any, b: any) => {
+      let dateA = new Date(a['CompleteTime']), dateB = new Date(b['CompleteTime']);
+  
+      if (isFromLatest){
+
+        // sort from the latest Date
+        if (dateB > dateA)
+          return 1;
+        if (dateB < dateA)
+          return -1;
+      } else {
+
+        // sort from the newest Date
+        if (dateB < dateA)
+          return 1;
+        if (dateB > dateA)
+          return -1;
+      }
+
+      return 0;
+    });
+  }
+
+  convertApiTimeToDate (time: any) {
+    // time passed is String, construct into Date format
+    // time example from json: "2019-03-08 16:32:00"
+    // format: YEAR-MONTH-DATEOFMONTH HOUR:MINUTE:SECOND
+    
+    // split into DATE form and HOUR form
+    let splitTime = time.split(" ");
+
+      ////////////////////////////////////////////
+     //  DATE PART                             //
+    ////////////////////////////////////////////
+
+    // resultDate = YEAR-MONTH-DATEOFMONTH
+    let resultDate = splitTime[0];
+
+    // split DATE into YEAR, MONTH, and DATEOFMONTH
+    let splitDate = resultDate.split("-");
+
+    let resultYear = splitDate[0];
+    let resultMonth = splitDate[1] - 1;
+    let resultDateOfMonth = splitDate[2];
+
+      ////////////////////////////////////////////
+     //  HOUR PART                             //
+    ////////////////////////////////////////////
+
+    // resultHour = HOUR:MINUTE:SECOND
+    let resultHour = splitTime[1];
+
+    // split HOUR into HOUR, MINUTE, and SECOND
+    let splitHour = resultHour.split(":");
+
+    let resultHourC = splitHour[0];
+    let resultMinute = splitHour[1];
+    let resultSecond = splitHour[2];
+
+      ////////////////////////////////////////////
+     //  CONSTRUCT DATE PART                   //
+    ////////////////////////////////////////////
+
+    // now we get every component to construct date from String
+    return new Date(
+        resultYear,
+        resultMonth,
+        resultDateOfMonth,
+        resultHourC,
+        resultMinute,
+        resultSecond,
+        0
+    );
   }
 }
